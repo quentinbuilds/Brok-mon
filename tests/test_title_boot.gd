@@ -16,11 +16,11 @@ func test_boot_advances_to_label_then_title() -> void:
 	assert_eq(title.beat, TitleState.Beat.BOOT)
 	title.update(TitleState.BOOT_SECS)
 	assert_eq(title.beat, TitleState.Beat.LABEL)
-	assert_true(title.get_node("Label").text.contains("QUENTIN SOFT"))
-	assert_true(title.get_node("Label").text.contains("NOBODY"))
+	assert_true(title.get_node("Prompt").text.contains("QUENTIN SOFT"))
+	assert_true(title.get_node("Prompt").text.contains("NOBODY"))
 	title.update(TitleState.LABEL_SECS)
 	assert_eq(title.beat, TitleState.Beat.TITLE)
-	assert_true(title.get_node("Label").text.contains("PRESS A"))
+	assert_true(title.get_node("Prompt").text.contains("PRESS A"))
 	title.queue_free()
 	await tree.process_frame
 
@@ -32,6 +32,6 @@ func test_title_glitch_mentions_consent() -> void:
 	title._set_beat(TitleState.Beat.TITLE)
 	title._elapsed = 0.0
 	title.update(0.05)
-	assert_true(title.get_node("Label").text.contains("CONSENT"))
+	assert_true(title.get_node("Prompt").text.contains("CONSENT"))
 	title.queue_free()
 	await tree.process_frame

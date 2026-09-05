@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="Creature" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Creature" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://creatures/Creature.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/studio/grass_starter.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = 0
 name = "Starterpup"
+sprite = ExtResource("2")
 type = &"NORMAL"
 max_hp = 25
 hp = 25

@@ -44,10 +44,11 @@ func test_overworld_talks_to_nearby_npc() -> void:
 	await tree.process_frame
 	GameData.player_tile = Vector2i.ZERO
 	world.enter({})
-	world.get_node("Player").position = Vector2(72, 8)
+	# Start tile (3,3) is 16px from the sign at (3,5).
 	assert_true(world.try_talk())
 	assert_true(world.talking)
-	assert_true(world.get_node("TalkBox").visible)
-	assert_true(world.get_node("TalkBox").text.contains("TOKEN"))
+	var box: Label = world.get_node("TalkHud/TalkBox")
+	assert_true(box.visible)
+	assert_true(box.text.contains("TOKEN"))
 	world.queue_free()
 	await tree.process_frame

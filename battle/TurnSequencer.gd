@@ -82,6 +82,7 @@ func lunge(view: CreatureView) -> void:
 
 func impact(view: CreatureView, damage: int, at: Vector2) -> void:
 	ui.audio.hit()
+	EventBus.damage_dealt.emit(damage, view == ui.player_view)
 	if not instant:
 		await ui.fx.hitstop()
 	view.flash()

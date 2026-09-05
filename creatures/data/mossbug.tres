@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Creature" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://creatures/Creature.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/studio/grass_starter.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = 1
+name = "Mossbug"
+sprite = ExtResource("2")
+type = &"GRASS"
+max_hp = 20
+hp = 20
+attack = 5
+defense = 6
+catch_rate = 0.45

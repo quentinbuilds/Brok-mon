@@ -12,6 +12,7 @@ const BEAT_SECS := 0.45
 const BEAT_LAST := 3
 
 @onready var _label: Label = $Label
+@onready var _wild_sprite: Sprite2D = $WildSprite
 
 var _wild: Creature
 var _multiplier := 1.0
@@ -30,6 +31,7 @@ func _on_enter() -> void:
 	_beat = 0
 	_elapsed = 0.0
 	_resolved = false
+	_bind_sprite()
 	_refresh()
 	EventBus.catch_started.emit(_wild)
 
@@ -48,6 +50,15 @@ func update(delta: float) -> void:
 		_beat += 1
 		_elapsed = 0.0
 		_refresh()
+
+
+func _bind_sprite() -> void:
+	if _wild_sprite == null:
+		return
+	_wild_sprite.texture = _wild.sprite if _wild else null
+	if _wild_sprite.texture:
+		var size := Vector2(_wild_sprite.texture.get_size())
+		_wild_sprite.scale = Vector2.ONE * minf(58.0 / size.x, 54.0 / size.y)
 
 
 func _refresh() -> void:
