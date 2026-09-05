@@ -16,8 +16,12 @@ const PANEL_SELECTED := Color("78b568")
 var page: Page = Page.MAIN
 var selection: int = 0
 var party_selection: int = 0
+var _input_lock: float = 0.0
 
 func _on_enter() -> void:
+	# Escape is both B and Menu on desktop. Ignore the opening press briefly so the newly
+	# created menu cannot consume that same event and close itself immediately.
+	_input_lock = 0.12
 	page = Page.MAIN
 	selection = 0
 	party_selection = clampi(GameData.active_index, 0, maxi(GameData.party.size() - 1, 0))
@@ -28,7 +32,10 @@ func _on_enter() -> void:
 func exit() -> void:
 	EventBus.menu_closed.emit()
 
-func update(_delta: float) -> void:
+func update(delta: float) -> void:
+	if _input_lock > 0.0:
+		_input_lock -= delta
+		return
 	var direction := InputManager.direction_just_pressed()
 	if direction != Vector2i.ZERO:
 		_move_cursor(direction)

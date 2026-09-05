@@ -61,6 +61,9 @@ func test_escape_opens_menu_from_overworld() -> void:
 	await tree.process_frame
 	_lift(KEY_ESCAPE)
 	assert_eq(_name_of(_gs.current), "MENU", "Escape in overworld")
+	for i in 10:
+		await tree.process_frame
+	assert_eq(_name_of(_gs.current), "MENU", "opening Escape must not immediately close menu")
 
 func test_tab_opens_menu_from_overworld() -> void:
 	await tree.process_frame
@@ -72,3 +75,6 @@ func test_tab_opens_menu_from_overworld() -> void:
 	await tree.process_frame
 	_lift(KEY_TAB)
 	assert_eq(_name_of(_gs.current), "MENU", "Tab in overworld")
+	for i in 10:
+		await tree.process_frame
+	assert_eq(_name_of(_gs.current), "MENU", "opening Tab must not immediately close menu")
