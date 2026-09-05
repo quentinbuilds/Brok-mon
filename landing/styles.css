@@ -12,6 +12,7 @@
   --water: #3a7ca5;
   --rock: #8a7a5a;
   --electric: #c9b43a;
+  --bug: #7a9e3a;
   --grape: #6c5b8a;
   --grape-dk: #3d3354;
   --lens: #1c2430;
@@ -582,6 +583,7 @@ h2 span {
 .type.water { background: var(--water); color: #fff3c4; }
 .type.rock { background: var(--rock); color: #fff3c4; }
 .type.electric { background: var(--electric); color: #1c1c2b; }
+.type.bug { background: var(--bug); color: #fff3c4; }
 
 .stat {
   display: flex;
