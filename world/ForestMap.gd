@@ -16,6 +16,20 @@ func paint_named(cell: Vector2i, tile_name: String) -> void:
 	set_cell(cell, t.x, Vector2i(t.y, t.z))
 
 
+func is_water_cell(cell: Vector2i) -> bool:
+	var sid := get_cell_source_id(cell)
+	if sid < 0:
+		return false
+	var coords := get_cell_atlas_coords(cell)
+	for tile_name in Catalog.WATER_TILES:
+		if Catalog.source_id(tile_name) == sid and Catalog.atlas(tile_name) == coords:
+			return true
+	var data := get_cell_tile_data(cell)
+	if data == null:
+		return false
+	return Catalog.is_water(str(data.get_custom_data("name")))
+
+
 func paint_demo() -> void:
 	for y in 8:
 		for x in 13:

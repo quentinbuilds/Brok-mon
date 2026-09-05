@@ -23,6 +23,7 @@ text = "joystick: move   C: menu"
 [node name="Player" parent="." instance=ExtResource("3_player")]
 z_index = 3
 character_id = 0
+is_npc = false
 
 [node name="Characters" type="Node2D" parent="."]
 z_index = 2
