@@ -1,7 +1,6 @@
 extends GameStateBase
 class_name TitleState
-## Fake 1998 cartridge boot on Person 6's title art: BOOT -> LABEL -> TITLE, glitching the prompt
-## once the title settles.
+## Fake 1998 cartridge boot on Person 6's title art: BOOT -> LABEL -> TITLE.
 ##
 ## A does not leave immediately: it plays the line, then irises down onto the trainer before
 ## handing over to the overworld. The iris itself lives on the Transition autoload, not in this
@@ -15,12 +14,8 @@ enum Beat { BOOT, LABEL, TITLE }
 
 const BOOT_SECS := 0.7
 const LABEL_SECS := 1.1
-const GLITCH_CYCLE := 2.4
-const GLITCH_ON := 0.14
-
 const LABEL_PROMPT := "(C)1998 QUENTIN SOFT\nLICENSED BY NOBODY"
 const TITLE_PROMPT := "PRESS A TO START"
-const GLITCH_PROMPT := "PRESS A TO CONSENT TO TRAINING"
 
 ## How long the line sits on screen before the iris starts closing.
 const READ_TIME := 1.1
@@ -72,8 +67,6 @@ func update(delta: float) -> void:
 		Beat.LABEL:
 			if _elapsed >= LABEL_SECS:
 				_set_beat(Beat.TITLE)
-		Beat.TITLE:
-			_refresh_title_glitch()
 
 
 func _start() -> void:
@@ -157,11 +150,3 @@ func _show_chrome(on: bool) -> void:
 	if _prompt_panel:
 		_prompt_panel.visible = on
 
-
-func _refresh_title_glitch() -> void:
-	if _prompt == null:
-		return
-	if fmod(_elapsed, GLITCH_CYCLE) < GLITCH_ON:
-		_prompt.text = GLITCH_PROMPT
-	else:
-		_prompt.text = TITLE_PROMPT
