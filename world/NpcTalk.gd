@@ -39,13 +39,21 @@ static func line_for_node(node: Node) -> String:
 	return line_for(id_of(node))
 
 
+static func position_of(node: Node) -> Vector2:
+	if node is Node2D:
+		return (node as Node2D).position
+	if node is Control:
+		return (node as Control).position
+	return Vector2(INF, INF)
+
+
 static func nearest(from: Vector2, nodes: Array) -> Node:
 	var best: Node = null
 	var best_d := TALK_RANGE
 	for n in nodes:
-		if not (n is Node2D):
+		if n == null:
 			continue
-		var d := from.distance_to((n as Node2D).position)
+		var d := from.distance_to(position_of(n))
 		if d <= best_d:
 			best_d = d
 			best = n

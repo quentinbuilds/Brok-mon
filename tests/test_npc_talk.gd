@@ -29,8 +29,12 @@ func test_nearest_respects_talk_range() -> void:
 	assert_eq(hit, b)
 	var miss := NpcTalk.nearest(Vector2.ZERO, [a])
 	assert_eq(miss, null)
+	var stub := ColorRect.new()
+	stub.position = Vector2(4, 0)
+	assert_eq(NpcTalk.nearest(Vector2.ZERO, [stub]), stub)
 	a.free()
 	b.free()
+	stub.free()
 
 
 func test_overworld_talks_to_nearby_npc() -> void:
