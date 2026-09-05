@@ -11,15 +11,14 @@ reporting encounter zones. No encounter rolls, no battle, no menu UI.
 | `Player.gd` | Grid-stepping player sprite. Owns stepping and animation, reads no input. |
 | `OverworldState.gd` | The `GameStateBase` state. Paints the map, drives the player, moves the camera, emits `player_moved`. |
 | `OverworldState.tscn` | `Tiles` (TileMapLayer) + `Player` (Sprite2D) + `Camera` (Camera2D). |
-| `overworld_tileset.tres` | Generated TileSet over the tile atlas. |
-| `tools/gen_art.gd` | Generates `assets/tiles/overworld.png` and `assets/sprites/player.png`. |
-| `tools/gen_tileset.gd` | Generates `overworld_tileset.tres`. |
+| `overworld_tileset.tres` | TileSet over the compact Studio-derived tile atlas. |
+| `tools/prepare_studio_assets.gd` | Rebuilds the runtime tile and trainer atlases from the original Studio sheets. |
 
 Tests live in `tests/test_world.gd`.
 
 ## The map
 
-40 x 30 tiles of 8 px = 320 x 240 px, so a little over two screens of the 200 x 120
+40 x 30 tiles of 16 px = 640 x 480 px, so the camera reveals a compact section of the 200 x 120
 viewport. Small and dense on purpose: crossing it takes about a minute.
 
 The map is ASCII in `GrassMap.MAP`, one character per tile, and is edited by hand:
@@ -60,13 +59,14 @@ tile: Vector2i                 the tile the player occupies (commits when a step
 facing: Vector2i               UP / DOWN / LEFT / RIGHT
 ```
 
-Movement is one tile per step at `STEP_TIME` (0.14 s, about 57 px/s), four directions only.
+Movement is one tile per step at `STEP_TIME` (0.14 s, about 114 px/s), four directions only.
 Holding a direction chains steps with no pause; releasing stops at the next tile boundary,
 so the player always rests tile-aligned. Positions are rounded to whole pixels because
 sub-pixel sprites shimmer badly at this resolution.
 
-The sprite sheet is 8 frames of 8x12: `DIR_ROW[facing] * 2 + sub_frame`, where sub-frame 0
-is mid-stride and 1 is feet together. Idle rests on feet together.
+The Studio-derived sprite sheet is 8 frames of 16x20: `DIR_ROW[facing] * 2 + sub_frame`,
+where sub-frame 0 is mid-stride and 1 is feet together. Idle rests on feet together. The
+left-facing animation mirrors the matching right-facing Studio profile.
 
 ## Encounter-zone API (for Person 3)
 
@@ -97,14 +97,15 @@ never shows past the edge of the map. No smoothing: a hard follow matches the er
 
 ## Regenerating the art
 
-The art is generated so the palette stays in one place. After changing `tools/gen_art.gd`:
+The compact runtime atlases are deterministically cut from the original Summer Studio
+compositions. After replacing either source sheet, run:
 
 ```sh
 S=/Applications/Summer.app/Contents/MacOS/Summer
-$S --headless --disable-crash-handler --path . -s res://world/tools/gen_art.gd
-$S --headless --path . --import
-$S --headless --disable-crash-handler --path . -s res://world/tools/gen_tileset.gd
+$S --headless --disable-crash-handler --path . -s res://world/tools/prepare_studio_assets.gd
+$S --headless --disable-crash-handler --path . --import --quit-after 60
 ```
 
-The four-shade palette lives in `gen_art.gd`'s `PAL`. Person 6 owns the final look; this is
-a coherent starting point, not a claim on the art direction.
+The source files are `assets/studio/overworld_tileset.png` and
+`assets/studio/trainer_walk.png`; the generated runtime files are committed for reliable
+loading and export.

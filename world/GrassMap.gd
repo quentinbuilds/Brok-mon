@@ -6,7 +6,7 @@ extends RefCounted
 ## every step. Collision is therefore a glyph lookup, not a physics body -- there are no
 ## CollisionShapes in the overworld at all.
 ##
-## Glyph -> column in assets/tiles/overworld.png:
+## Glyph -> column in assets/tiles/studio_overworld.png:
 ##   "." grass 0    ":" tall grass 1    "=" path 2      "T" tree 3
 ##   "o" rock  4    "~" water      5    "," flowers 6   "#" hedge 7
 ##
@@ -14,7 +14,7 @@ extends RefCounted
 ## "#" so the player can never walk off the map. tests/test_world.gd asserts both, plus that
 ## every walkable tile is reachable from START_TILE.
 
-const TILE := 8
+const TILE := 16
 const WIDTH := 40
 const HEIGHT := 30
 

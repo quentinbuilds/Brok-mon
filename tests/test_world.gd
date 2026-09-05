@@ -85,7 +85,7 @@ func test_place_snaps_position_to_the_tile_grid() -> void:
 	var p := PlayerScript.new()
 	p.place(Vector2i(3, 3))
 	assert_eq(p.tile, Vector2i(3, 3))
-	assert_eq(p.position, Vector2(24, 24))
+	assert_eq(p.position, Vector2(Vector2i(3, 3) * GrassMap.TILE))
 	assert_false(p.is_stepping())
 	p.free()
 
@@ -116,7 +116,7 @@ func test_advance_reports_completion_exactly_once() -> void:
 			completions += 1
 	assert_eq(completions, 1)
 	assert_false(p.is_stepping())
-	assert_eq(p.position, Vector2(24, 32), "lands exactly on the tile")
+	assert_eq(p.position, Vector2(Vector2i(3, 4) * GrassMap.TILE), "lands exactly on the tile")
 	p.free()
 
 func test_only_one_step_at_a_time() -> void:
@@ -141,6 +141,25 @@ func test_facing_picks_the_sprite_row() -> void:
 		p.try_step(dir)
 		assert_eq(int(p.frame / 2), int(PlayerScript.DIR_ROW[dir]), "sprite row for %s" % dir)
 	p.free()
+
+func test_side_profile_mirrors_only_when_facing_left() -> void:
+	var p := PlayerScript.new()
+	p.place(Vector2i(3, 3))
+	p.try_step(Vector2i.LEFT)
+	assert_true(p.flip_h)
+	p.advance(PlayerScript.STEP_TIME)
+	p.try_step(Vector2i.RIGHT)
+	assert_false(p.flip_h)
+	p.free()
+
+func test_runtime_uses_compact_studio_atlases() -> void:
+	var tiles: Texture2D = load("res://assets/tiles/studio_overworld.png")
+	var trainer: Texture2D = load("res://assets/sprites/studio_trainer.png")
+	assert_eq(tiles.get_size(), Vector2(128, 16))
+	assert_eq(trainer.get_size(), Vector2(128, 20))
+	var scene_text := FileAccess.get_file_as_string("res://world/OverworldState.tscn")
+	assert_true(scene_text.contains("assets/sprites/studio_trainer.png"))
+	assert_false(scene_text.contains("assets/sprites/player.png"))
 
 # --- state wiring ---
 
