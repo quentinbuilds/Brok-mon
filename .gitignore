@@ -18,3 +18,6 @@ Thumbs.db
 
 # Export artifacts (ship-to-unoq writes build/game-linux-arm64.zip)
 build/
+
+# Godot editor backups
+*.bak
