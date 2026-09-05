@@ -11,6 +11,19 @@ It will ask for the game name and an emoji, then do the rest. First deploy takes
 minutes and needs you to run one `adb shell -t ... setup-board.sh` command in your own terminal
 for the sudo password.
 
+## Redeploying after that
+
+Once the board has the game, new builds do not need Claude or the skill's question flow:
+
+```
+hardware/redeploy.sh          # tests, exports, installs over the running app
+hardware/redeploy.sh --fast   # skip the tests
+```
+
+About 45 seconds. It refuses to deploy on a failing suite, and deletes the old zip before
+exporting so a silently-failed export cannot ship yesterday's build. `APP_NAME`, `APP_ICON`,
+`PRESET`, `GODOT_BIN` and `INSTALLER` are all overridable from the environment.
+
 ## Target
 
 | Item | Value |

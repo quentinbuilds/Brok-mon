@@ -20,7 +20,7 @@ const OVERRIDE_DIR := "res://assets/audio"
 ## Effects that exist only as files - no synth fallback. Listed explicitly rather than discovered
 ## by scanning OVERRIDE_DIR, because an exported build remaps imported resources and a directory
 ## listing of res:// does not reliably show them.
-const FILE_ONLY_SFX := ["bruh", "fahhh", "giant", "hurt"]
+const FILE_ONLY_SFX := ["bruh", "fahhh", "giant", "hurt", "nah"]
 
 ## Music lives here as .ogg, not .wav: AudioStreamOggVorbis streams and compresses, and a
 ## multi-minute track as raw WAV would bloat the .pck on a board with little to spare.
@@ -60,6 +60,10 @@ const HURT_SFX := "hurt"
 ## good outcome and already has BattleAudio's falling arpeggio over it.
 const FAINT_SFX := "bruh"
 
+## Played the instant the player picks RUN, not when the escape succeeds - the joke is the
+## decision, and waiting for the roll would put it after the message that already announced it.
+const RUN_SFX := "nah"
+
 ## A track may ship as two files: "<name>_intro.ogg" plays once, then "<name>.ogg" loops forever.
 ## Downloaded game music is usually mastered exactly this way - an opening flourish followed by a
 ## seamless body - and looping the whole thing would replay the flourish every time round.
@@ -96,6 +100,9 @@ func _ready() -> void:
 	EventBus.damage_dealt.connect(func(amount: int, to_player: bool) -> void:
 		if to_player and amount > 0 and has_sfx(HURT_SFX):
 			play_sfx(HURT_SFX))
+	EventBus.run_attempted.connect(func() -> void:
+		if has_sfx(RUN_SFX):
+			play_sfx(RUN_SFX))
 	# Same filter, same reason: the enemy fainting is a win, not a "bruh".
 	EventBus.creature_fainted.connect(func(to_player: bool) -> void:
 		if to_player and has_sfx(FAINT_SFX):

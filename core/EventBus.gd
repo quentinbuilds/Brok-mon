@@ -22,6 +22,10 @@ signal damage_dealt(amount: int, to_player: bool)
 ## animation plays. Same shape as damage_dealt so consumers filter the same way.
 signal creature_fainted(to_player: bool)
 
+## Emitted by BattleState the moment the player picks RUN, before the roll that decides whether
+## it works. Consumers that care about the outcome want battle_escaped instead.
+signal run_attempted()
+
 # Catching. creature_caught -> OVERWORLD, catch_failed -> back to BATTLE.
 signal catch_started(wild: Creature)
 signal creature_caught(wild: Creature)

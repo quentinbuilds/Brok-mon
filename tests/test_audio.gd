@@ -548,3 +548,68 @@ func test_every_trimmed_track_exists() -> void:
 	for track in _mgr().MUSIC_GAIN_DB.keys():
 		assert_true(_mgr().has_music(track), "MUSIC_GAIN_DB names '%s', which is not in %s" % [
 			track, _mgr().MUSIC_DIR])
+
+# --- run hook ---
+## EventBus.run_attempted fires the moment RUN is picked, before the roll. Both outcomes make the
+## same noise: the joke is the decision to leave, not whether it worked.
+
+func _run_players() -> int:
+	var n := 0
+	for p in _mgr()._players:
+		if p.playing and p.stream == _mgr().get_sfx(_mgr().RUN_SFX):
+			n += 1
+	return n
+
+func test_run_sfx_exists() -> void:
+	assert_true(_mgr().has_sfx(_mgr().RUN_SFX), "assets/audio/nah.wav is missing")
+
+func test_picking_run_plays_the_sound() -> void:
+	for p in _mgr()._players:
+		p.stop()
+	EventBus.run_attempted.emit()
+	assert_true(_run_players() > 0, "no sound when the player tried to run")
+
+## The point of the separate signal: it fires the instant RUN is picked, before the roll and
+## before any message. battle_escaped is no substitute - that one only fires on a successful
+## escape, and only after the line announcing it has been read.
+func test_the_run_signal_fires_before_the_roll() -> void:
+	var host := Node.new()
+	tree.root.add_child(host)
+	var battle := BattleState.new()
+	battle.instant = true
+	battle.services.inventory = BattleServices.NullInventory.new()
+	battle.services.party = BattleServices.NullParty.new()
+	host.add_child(battle)
+	await tree.process_frame
+
+	var mine := Creature.new()
+	mine.name = "HERO"; mine.max_hp = 40; mine.hp = 40; mine.attack = 5; mine.defense = 5
+	mine.catch_rate = 0.5; mine.type = &"NORMAL"
+	var wild := Creature.new()
+	wild.name = "BUG"; wild.max_hp = 40; wild.hp = 40; wild.attack = 5; wild.defense = 5
+	wild.catch_rate = 0.5; wild.type = &"NORMAL"
+	GameData.party = [mine]
+	GameData.active_index = 0
+	(battle.services.party as BattleServices.NullParty).party = [mine]
+
+	# An Array, not an int: a lambda captures a local by value, so an int counter would only ever
+	# be incremented inside the lambda's own copy.
+	var fired: Array = []
+	var probe := func() -> void: fired.append(true)
+	EventBus.run_attempted.connect(probe)
+
+	battle.enter({"wild": wild})
+	for _i in 45:
+		await tree.process_frame
+		if battle.sub == BattleState.Sub.PLAYER_TURN:
+			break
+	assert_eq(battle.sub, BattleState.Sub.PLAYER_TURN, "the battle never handed over the turn")
+	# Deliberately not awaited: the signal has to be out before attempt_run() yields for the first
+	# time, which is what "immediately, on the click" means.
+	battle.attempt_run()
+	assert_eq(fired.size(), 1, "the sound did not fire the moment RUN was picked")
+	await tree.process_frame
+
+	EventBus.run_attempted.disconnect(probe)
+	host.queue_free()
+	await tree.process_frame

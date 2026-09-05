@@ -351,6 +351,7 @@ func attempt_run() -> void:
 		return
 	busy = true
 	sub = Sub.RESOLVING
+	EventBus.run_attempted.emit()
 	if BattleLogic.try_run(run_failures, rng):
 		await seq.say_wait(BattleCopy.run_ok())
 		_finish(Result.ESCAPED)
