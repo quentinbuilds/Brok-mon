@@ -1,4 +1,4 @@
-# BrokéMon
+# Brokémon
 
 AI-native Game Boy-style monster-catching game for Arduino UNO Q + Summer Engine.
 
