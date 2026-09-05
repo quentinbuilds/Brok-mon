@@ -11,6 +11,7 @@ const EMPTY_COL := 3
 const FIRST_WALK_COL := 4
 const LAST_COL := 9
 const WALK_FPS := 6.0
+const NPC_GROUP := "npc"
 
 const NAMES: PackedStringArray = [
 	"cap_beard",
@@ -44,6 +45,8 @@ const ANIM_COLS := {
 	&"walk_side": [8, 9],
 }
 
+@export var is_npc: bool = true
+
 @export_range(0, 19, 1) var character_id: int = 0:
 	set(value):
 		character_id = clampi(value, 0, COUNT - 1)
@@ -59,6 +62,10 @@ func _ready() -> void:
 	texture_filter = TEXTURE_FILTER_NEAREST
 	_rebuild_frames()
 	_sync_animation()
+	if is_npc:
+		add_to_group(NPC_GROUP)
+	else:
+		remove_from_group(NPC_GROUP)
 
 
 func apply_move_dir(dir: Vector2i) -> void:
