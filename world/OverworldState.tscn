@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=32 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
@@ -14,6 +14,10 @@
 [ext_resource type="Texture2D" path="res://assets/backgrounds/house_interior_map.png" id="12_interior"]
 [ext_resource type="Texture2D" path="res://assets/studio/dialogue_box.png" id="13_dialogue"]
 [ext_resource type="Script" path="res://world/Minimap.gd" id="14_minimap"]
+[ext_resource type="PackedScene" path="res://world/characters/grey_tee.tscn" id="bh_beach_bum"]
+[ext_resource type="PackedScene" path="res://world/characters/red_band.tscn" id="bh_surfer"]
+[ext_resource type="PackedScene" path="res://world/characters/purple_band.tscn" id="bh_fisher"]
+[ext_resource type="PackedScene" path="res://world/characters/green_shirt.tscn" id="bh_lifeguard"]
 [ext_resource type="PackedScene" path="res://world/characters/wizard.tscn" id="np_wizard"]
 [ext_resource type="PackedScene" path="res://world/characters/skeleton.tscn" id="np_skeleton"]
 [ext_resource type="PackedScene" path="res://world/characters/goblin.tscn" id="np_goblin"]
@@ -120,6 +124,31 @@ position = Vector2(704, 240)
 [node name="maroon" parent="." instance=ExtResource("np_maroon") groups=["npc"]]
 z_index = 1
 position = Vector2(192, 448)
+
+[node name="beach_bum" parent="." instance=ExtResource("bh_beach_bum") groups=["npc"]]
+z_index = 1
+position = Vector2(176, 32)
+metadata/biome = "beach"
+
+[node name="surfer" parent="." instance=ExtResource("bh_surfer") groups=["npc"]]
+z_index = 1
+position = Vector2(112, 48)
+metadata/biome = "beach"
+
+[node name="fisher" parent="." instance=ExtResource("bh_fisher") groups=["npc"]]
+z_index = 1
+position = Vector2(192, 96)
+metadata/biome = "beach"
+
+[node name="lifeguard" parent="." instance=ExtResource("bh_lifeguard") groups=["npc"]]
+z_index = 1
+position = Vector2(192, 144)
+metadata/biome = "beach"
+
+[node name="tourist" parent="." instance=ExtResource("6_walker") groups=["npc"]]
+z_index = 1
+position = Vector2(272, 128)
+metadata/biome = "beach"
 
 [node name="House" type="Sprite2D" parent="."]
 z_index = 1

@@ -123,7 +123,10 @@ func test_minimap_follows_the_player_onto_the_beach() -> void:
 	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
 	assert_eq(map.map_mode, MapCycle.Mode.BEACH)
 	assert_eq(map.player_tile, MapCycle.BEACH_RETURN)
-	assert_eq(map._npc_tiles.size(), 0, "no overworld NPCs plotted on the beach")
+	# The beach has its own cast now; the default-map locals must not show up here.
+	assert_true(map._npc_tiles.size() > 0, "the beach cast is plotted")
+	for tile in map._npc_tiles:
+		assert_true(MapCycle.is_walkable(MapCycle.Mode.BEACH, tile), "dot on sand at %s" % tile)
 	map._blink_on = false
 	map.refresh()
 	var sea := _pixel_for(map, Vector2i(0, 5))

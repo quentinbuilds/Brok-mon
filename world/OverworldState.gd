@@ -245,6 +245,18 @@ func _is_active_tile_walkable(tile: Vector2i) -> bool:
 	return MapCycle.is_walkable(map_mode, tile)
 
 
+## Which map an NPC belongs to. Tagged with a "biome" meta in the scene; anything untagged is
+## a default-map local, which is what every NPC was before the beach got a cast of its own.
+static func npc_biome(npc: Node) -> MapCycle.Mode:
+	if npc != null and npc.has_meta("biome"):
+		match String(npc.get_meta("biome")).to_lower():
+			"beach":
+				return MapCycle.Mode.BEACH
+			"interior":
+				return MapCycle.Mode.INTERIOR
+	return MapCycle.Mode.DEFAULT
+
+
 ## The tile an NPC stands on, from its top-left position. NPC art is one tile wide, so this is
 ## the whole of its footprint.
 static func tile_of(node: Node2D) -> Vector2i:
@@ -272,7 +284,7 @@ func _apply_map_presentation() -> void:
 	_interior.visible = map_mode == MapCycle.Mode.INTERIOR
 	for npc in get_tree().get_nodes_in_group(NPC_GROUP):
 		if npc is CanvasItem:
-			npc.visible = on_default
+			npc.visible = npc_biome(npc) == map_mode
 	_refresh_npc_tiles()
 	if _minimap:
 		_minimap.set_source(map_mode, _npc_tiles)

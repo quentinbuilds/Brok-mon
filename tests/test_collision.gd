@@ -8,6 +8,13 @@ const MapCycle := preload("res://world/MapCycle.gd")
 const GrassMap := preload("res://world/GrassMap.gd")
 
 
+func _named(world: OverworldState, id: String) -> Vector2i:
+	for npc in world.get_tree().get_nodes_in_group("npc"):
+		if NpcTalk.id_of(npc) == id:
+			return OverworldState.tile_of(npc as Node2D)
+	return Vector2i(-1, -1)
+
+
 func _overworld() -> OverworldState:
 	var world := load("res://world/OverworldState.tscn").instantiate() as OverworldState
 	tree.root.add_child(world)
@@ -87,6 +94,8 @@ func test_npc_tiles_block_the_player() -> void:
 	var npcs := world.get_tree().get_nodes_in_group("npc")
 	assert_true(npcs.size() > 0, "overworld ships NPCs")
 	for npc in npcs:
+		if OverworldState.npc_biome(npc) != MapCycle.Mode.DEFAULT:
+			continue                        # beach locals are checked on the beach, below
 		var tile: Vector2i = OverworldState.tile_of(npc as Node2D)
 		assert_true(MapCycle.is_walkable(MapCycle.Mode.DEFAULT, tile), "NPC on open ground %s" % tile)
 		assert_false(world._is_active_tile_walkable(tile), "NPC tile is solid %s" % tile)
@@ -95,7 +104,11 @@ func test_npc_tiles_block_the_player() -> void:
 
 func test_player_cannot_step_onto_an_npc() -> void:
 	var world := _overworld()
-	var npc := world.get_tree().get_nodes_in_group("npc")[0] as Node2D
+	var npc: Node2D = null
+	for n in world.get_tree().get_nodes_in_group("npc"):
+		if OverworldState.npc_biome(n) == MapCycle.Mode.DEFAULT:
+			npc = n as Node2D
+			break
 	var tile := OverworldState.tile_of(npc)
 	var player := world.get_node("Player")
 	player.place(tile + Vector2i.LEFT)
@@ -129,10 +142,10 @@ func test_npcs_do_not_disconnect_the_map() -> void:
 ## NPCs live on the default map only; they must not haunt the beach or the interior.
 func test_hidden_npcs_stop_blocking() -> void:
 	var world := _overworld()
-	var tile: Vector2i = OverworldState.tile_of(world.get_tree().get_nodes_in_group("npc")[0])
+	var tile: Vector2i = _named(world, "elder")
 	assert_false(world._is_active_tile_walkable(tile), "blocks on the default map")
 	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
-	assert_eq(world._npc_tiles.size(), 0, "no NPC tiles held on the beach")
+	assert_false(world._npc_tiles.has(tile), "the elder does not haunt the beach")
 	world.free()
 
 
@@ -173,3 +186,50 @@ func test_the_beach_house_is_solid_too() -> void:
 			var tile: Vector2i = MapCycle.BEACH_HOUSE_FOOTPRINT.position + Vector2i(x, y)
 			assert_false(MapCycle.is_walkable(MapCycle.Mode.BEACH, tile), "through the beach house at %s" % tile)
 	assert_true(MapCycle.is_walkable(MapCycle.Mode.BEACH, MapCycle.BEACH_DOOR), "its door still opens")
+
+
+## The beach has a cast of its own now. They must be on sand, solid there, and absent from the
+## default map -- the visibility rule used to be all-or-nothing on the default map.
+func test_beach_locals_stand_on_sand_and_block_there() -> void:
+	var world := _overworld()
+	var found := 0
+	for npc in world.get_tree().get_nodes_in_group("npc"):
+		if OverworldState.npc_biome(npc) != MapCycle.Mode.BEACH:
+			continue
+		found += 1
+		var tile: Vector2i = OverworldState.tile_of(npc as Node2D)
+		assert_true(MapCycle.is_walkable(MapCycle.Mode.BEACH, tile), "%s on sand" % npc.name)
+		assert_false(world._npc_tiles.has(tile), "%s must not block the default map" % npc.name)
+	assert_true(found >= 4, "the beach is populated, got %d" % found)
+
+	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
+	for npc in world.get_tree().get_nodes_in_group("npc"):
+		var on_beach: bool = OverworldState.npc_biome(npc) == MapCycle.Mode.BEACH
+		assert_eq((npc as CanvasItem).visible, on_beach, "%s visibility on the beach" % npc.name)
+		if on_beach:
+			assert_true(world._npc_tiles.has(OverworldState.tile_of(npc as Node2D)),
+				"%s is solid on the beach" % npc.name)
+	world.free()
+
+
+## Blocking five tiles must not cut the island in half or seal the house off.
+func test_beach_locals_do_not_strand_anyone() -> void:
+	var world := _overworld()
+	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
+	var seen := {MapCycle.BEACH_RETURN: true}
+	var queue: Array[Vector2i] = [MapCycle.BEACH_RETURN]
+	while not queue.is_empty():
+		var tile: Vector2i = queue.pop_front()
+		for step in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+			var next: Vector2i = tile + step
+			if seen.has(next) or not world._is_active_tile_walkable(next):
+				continue
+			seen[next] = true
+			queue.append(next)
+	for y in MapCycle.BEACH_HEIGHT:
+		for x in MapCycle.BEACH_WIDTH:
+			var tile := Vector2i(x, y)
+			if world._is_active_tile_walkable(tile):
+				assert_true(seen.has(tile), "stranded beach tile %s" % tile)
+	assert_true(seen.has(MapCycle.BEACH_DOOR), "the beach house is still reachable")
+	world.free()

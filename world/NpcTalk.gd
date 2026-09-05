@@ -27,6 +27,16 @@ exploring hard.",
 grass. Nothing.",
 	"maroon": "I peaked at Lv.5
 and I'm fine.",
+	"beach_bum": "I live here now.
+No notes.",
+	"surfer": "Water's blocked off.
+Skill issue, honestly.",
+	"fisher": "Caught three boots
+and one opinion.",
+	"lifeguard": "You can't swim.
+I checked the code.",
+	"tourist": "Came for the beach.
+Stayed for the lag.",
 }
 
 ## Extra lines, played in order on repeat visits. LINES stays the one an NPC opens with, so a
@@ -120,6 +130,36 @@ Blacked out. Fine.",
 		"Waking up at home
 is basically a win.",
 	],
+	"beach_bum": [
+		"Sand gets everywhere.
+Even the tilemap.",
+		"My whole deal is
+vibes and sunburn.",
+	],
+	"surfer": [
+		"Waves look great.
+Can't reach them.",
+		"The sea is purely
+decorative. Rude.",
+	],
+	"fisher": [
+		"Fish respawn. I do
+not. Think on that.",
+		"Been here since the
+first commit.",
+	],
+	"lifeguard": [
+		"Nobody has drowned.
+Best record going.",
+		"I guard a beach
+with no water access.",
+	],
+	"tourist": [
+		"Is this the whole
+island? Bold.",
+		"Five stars. The palm
+tree is unreachable.",
+	],
 }
 
 ## Dialogue portrait per NPC, from world/characters/portraits/. Ids without one show the box
@@ -141,6 +181,11 @@ const PORTRAITS := {
 	"maroon": "Boy2",
 	"mohawk": "Punk",
 	"rusty_hair": "Girl2",
+	"beach_bum": "Boy",
+	"surfer": "Kid2",
+	"fisher": "old_man2",
+	"lifeguard": "Lady2",
+	"tourist": "Wizard2",
 }
 
 const PORTRAIT_DIR := "res://world/characters/portraits/"

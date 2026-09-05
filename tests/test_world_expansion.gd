@@ -66,7 +66,9 @@ func test_every_npc_stands_somewhere_legal() -> void:
 	var world := _overworld()
 	for npc in world.get_tree().get_nodes_in_group("npc"):
 		var tile: Vector2i = OverworldState.tile_of(npc as Node2D)
-		assert_true(GrassMap.is_walkable(tile), "%s is inside scenery at %s" % [npc.name, tile])
+		var biome: int = OverworldState.npc_biome(npc)
+		assert_true(MapCycle.is_walkable(biome, tile),
+			"%s is inside scenery at %s on %s" % [npc.name, tile, biome])
 	world.free()
 
 
