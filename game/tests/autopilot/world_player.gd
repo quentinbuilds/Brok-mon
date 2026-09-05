@@ -52,11 +52,34 @@ func _ready() -> void:
 	report("spawn", world.spawn_position())
 	save_frame("00_overworld")
 
-	actor.try_step(Vector2.RIGHT)
+	var reentrant_start: Vector2 = actor.position
+	if not actor.try_step(Vector2.RIGHT):
+		report("error", "initial reentrant-step fixture did not start")
+		finish()
+		return
 	await settle(2)
 	save_frame("00_step_right")
+	if not actor.is_moving():
+		report("error", "reentrant-step fixture was not still interpolating")
+		finish()
+		return
+	if actor.try_step(Vector2.DOWN):
+		report("error", "try_step accepted a second call during interpolation")
+		finish()
+		return
 	for _i in 12:
 		await get_tree().physics_frame
+	if actor.position != reentrant_start + Vector2.RIGHT * GameConfig.TILE_SIZE:
+		report("error", "reentrant attempt changed the active step target")
+		finish()
+		return
+	if (
+			int(actor.position.x) % GameConfig.TILE_SIZE != 0
+			or int(actor.position.y) % GameConfig.TILE_SIZE != 0
+	):
+		report("error", "reentrant attempt completed off the 8px grid")
+		finish()
+		return
 	actor.position = world.spawn_position()
 	Game.player.position = actor.position
 

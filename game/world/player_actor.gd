@@ -42,6 +42,8 @@ func is_in_encounter_zone() -> bool:
 
 
 func try_step(direction: Vector2) -> bool:
+	if _moving:
+		return false
 	Game.player.direction = direction
 	var target := position + direction * STEP_PIXELS
 	if not world.can_stand(target, BODY):
