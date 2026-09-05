@@ -15,3 +15,6 @@ Thumbs.db
 
 # Summer Engine local-only state (SummerGit, caches, locks)
 .summer/local/
+
+# Export artifacts (ship-to-unoq writes build/game-linux-arm64.zip)
+build/

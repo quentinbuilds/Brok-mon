@@ -8,6 +8,6 @@ script = ExtResource("1")
 [node name="Label" type="Label" parent="."]
 offset_right = 200.0
 offset_bottom = 120.0
-text = "GOK-MON\n\nPRESS A / START"
+text = "GOK-MON\n\nPRESS A"
 horizontal_alignment = 1
 vertical_alignment = 1
