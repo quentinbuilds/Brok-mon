@@ -1,13 +1,22 @@
-# World + player (Person 2)
+# Jungle world + player (Person 2)
 
 Replace target is still [`game/states/overworld.tscn`](../game/states/overworld.tscn). Map and actor code live in `game/world/`.
 
-Display is 480x800. Tiles are **32px**. The map is 20x26 tiles (640x832) so the camera can follow.
+The final display contract is **800×480 physical**, **200×120 logical**, and
+`GameConfig.PIXEL_SCALE == 4`. World movement uses an **8px logical grid step**.
+The jungle map is 50×30 tiles (400×240 logical pixels), so the camera can follow.
+
+The original pixel-art atlases are loaded from:
+
+- `res://assets/tiles/jungle_tiles.png`
+- `res://assets/sprites/jungle_props.png`
+- `res://assets/sprites/player.png`
 
 ## Files
 
 - [`game/world/world_map.gd`](../game/world/world_map.gd) — tiles, draw, collision, encounter zones, named regions
-- [`game/world/player_actor.gd`](../game/world/player_actor.gd) — 24px actor, facing, 2-frame walk
+- [`game/world/jungle_map_data.gd`](../game/world/jungle_map_data.gd) — deterministic 50×30 jungle layout
+- [`game/world/player_actor.gd`](../game/world/player_actor.gd) — 24px actor, facing, 8px grid steps
 - [`game/states/overworld.gd`](../game/states/overworld.gd) — hosts map + camera + HUD, keeps the menu key
 
 ## Tile legend
@@ -17,23 +26,34 @@ Display is 480x800. Tiles are **32px**. The map is 20x26 tiles (640x832) so the 
 | 0 | path | yes | no |
 | 1 | lawn | yes | no |
 | 2 | tall grass | yes | **yes** |
-| 3 | tree | no | no |
-| 4 | rock | no | no |
-| 5 | water | no | no |
+| 3 | water | no | no |
 
-Double tree border. South dirt path is the spawn (gold square). Pond is north-east. Tall grass is darker with vertical blades.
+Trees, rocks, hut walls and doors, fossil shrines, future-biome exit markers,
+and water are blocked independently of the visual tile ID. The two research
+houses are scenery only: their visible doors are intentionally blocked and
+cannot be entered.
 
 ## Collision
 
 `WorldMap.can_stand(world_pos, body)` tests the player's body corners against blocked tiles. The player cannot leave the map.
 
+## Jungle regions
+
+The named regions are `player_start`, `research_outpost`, `fossil_clearing`,
+`pond`, `north_meadow`, `south_meadow`, `west_thicket`, `volcanic_exit`,
+`snow_exit`, `desert_exit`, and `forest_exit`.
+
+Only the jungle region is playable. The volcanic, snow, desert, and forest
+markers are blocked signposts for future work.
+
 ## Encounter-zone API
 
-Person 2 does **not** start battles and does **not** emit `ENCOUNTER_TRIGGERED`.
+Person 2 does **not** start battles and does **not** emit
+`Events.encounter_triggered`.
 
 Only **tall grass** is an encounter zone. Lawn and path are safe.
 
-Person 3 should:
+Person 3 owns the encounter-zone handoff and should:
 
 1. Listen to `Events.player_moved(position)`
 2. Ask `world.is_encounter_zone(position)` or `player.is_in_encounter_zone()`
@@ -46,7 +66,9 @@ world.is_blocked(world_pos) -> bool
 world.world_to_tile(world_pos) -> Vector2i
 world.spawn_position() -> Vector2
 world.map_size_px() -> Vector2
-world.regions["player_start" | "pond" | "north_meadow" | "south_meadow" | "west_thicket"]
+world.regions["player_start" | "research_outpost" | "fossil_clearing" | "pond" |
+              "north_meadow" | "south_meadow" | "west_thicket" |
+              "volcanic_exit" | "snow_exit" | "desert_exit" | "forest_exit"]
 player.is_in_encounter_zone() -> bool
 player.is_moving() -> bool
 ```
@@ -58,9 +80,12 @@ Session position/direction stay on `Game.player`. The actor writes them every mo
 - 4 directions, no diagonals (`InputManager.move_vector()`)
 - Stops as soon as input stops
 - Faces the last move (eyes / back of head)
-- Two-frame walk when moving
+- Moves exactly 8 logical pixels per completed step
 - Camera2D follows, clamped to the map
 
 ## How to test
 
-Title → A → overworld. Walk the dirt path, push into trees/rocks/water (should stop), step into the dark bladed grass (HUD says TALL GRASS). C still opens the menu stub.
+Title → A → overworld. Walk the dirt path, push into hut doors or water
+(movement must stop), step into dark bladed grass (HUD says `TALL GRASS`),
+then return to the path (`SAFE`). C opens the menu stub and B returns to the
+jungle at the saved position.

@@ -8,9 +8,12 @@ This is a 12-hour hackathon. Do not rewrite the core. Implement against the inte
 
 Canonical numbers live in [`game/config/game_config.gd`](../game/config/game_config.gd):
 
-- Arduino / Waveshare display: **480 x 800** (portrait)
-- Source assets: **200 x 120**
-- Use `GameConfig.asset_fit_scale()` to place 200x120 art onto the 480x800 screen without inventing a second scale
+- Physical display: **800×480** (landscape)
+- Logical viewport and source-art canvas: **200×120**
+- Integer pixel scale: **4**
+- Jungle movement and tile grid step: **8 logical pixels**
+- Use `GameConfig.asset_fit_scale()` to place 200×120 art onto the 800×480
+  display without inventing a second scale
 
 Do not change these constants without telling the integration owner.
 
@@ -78,6 +81,10 @@ PRD name → GDScript signal
 
 Core already listens to `encounter_triggered` (OVERWORLD → BATTLE) and `catch_started` (BATTLE → CATCHING).
 
+The jungle world only identifies encounter zones; it does not emit
+`encounter_triggered` or contain battle logic. Person 3 owns the encounter roll
+and signal handoff after a completed `player_moved` step.
+
 ## Shared types
 
 - `Creature` — `game/core/creature.gd`. Starter: Emberfox (FIRE). Original creatures only.
@@ -95,6 +102,9 @@ Party max is 3. One active creature.
 5. Read input only through `InputManager`.
 
 Person 2 world/player: [`docs/world.md`](world.md).
+
+The MVP contains the jungle biome only. Volcanic, snowy mountain, desert, and
+forest biomes are planned but absent; their jungle exit markers remain blocked.
 
 Owner folders:
 
