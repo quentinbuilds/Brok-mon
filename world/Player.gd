@@ -12,7 +12,7 @@ const GrassMap := preload("res://world/GrassMap.gd")
 ## cadence of the handheld games the PRD is after.
 const STEP_TIME := 0.14
 
-const SPRITE_HEIGHT := 12
+const SPRITE_HEIGHT := 20
 const SHEET_COLUMNS := 8
 
 ## Sheet layout: frame index is DIR_ROW[facing] * 2 + sub_frame.
@@ -93,3 +93,6 @@ func _refresh_frame() -> void:
 	if _stepping and _elapsed / STEP_TIME < 0.5:
 		sub = 0
 	frame = int(DIR_ROW[facing]) * 2 + sub
+	# The Studio sheet supplies one clean side profile; mirroring it keeps both directions
+	# consistent without inventing a mismatched frame.
+	flip_h = facing == Vector2i.LEFT

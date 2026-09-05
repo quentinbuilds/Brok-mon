@@ -33,6 +33,9 @@ const SCENES := {
 var current: State = State.BOOT
 
 ## Optional hook for Person 6: Callable(from: State, to: State) run before the swap (fade out etc).
+## Note this is called synchronously and is NOT awaited, so it cannot hold a transition open for
+## an animation. Anything that has to span the swap belongs on the Transition autoload instead -
+## see title/TitleState.gd for the shape (await Transition.close(), transition_to(), open()).
 var transition_hook: Callable = Callable()
 
 var _world_layer: Node

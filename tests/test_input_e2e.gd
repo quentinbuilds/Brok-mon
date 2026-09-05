@@ -33,42 +33,54 @@ func _lift(code: Key) -> void:
 func _name_of(s) -> String:
 	return _gs.State.keys()[s]
 
+## Leaving the title now plays an iris transition. A second press skips it, which is what a
+## returning player does and what keeps this suite from waiting ~1.7s per test. Two taps, then
+## a few frames for the skipped close to resolve.
+func _leave_title(code: Key) -> void:
+	_tap(code)
+	await tree.process_frame
+	_lift(code)
+	await tree.process_frame
+	_tap(code)
+	await tree.process_frame
+	_lift(code)
+	for _i in 8:
+		await tree.process_frame
+		if _gs.current == _gs.State.OVERWORLD:
+			return
+
 func test_boots_to_title() -> void:
 	await tree.process_frame
 	assert_eq(_name_of(_gs.current), "TITLE", "boot state")
 
 func test_enter_leaves_title() -> void:
 	await tree.process_frame
-	_tap(KEY_ENTER)
-	await tree.process_frame
-	_lift(KEY_ENTER)
+	await _leave_title(KEY_ENTER)
 	assert_eq(_name_of(_gs.current), "OVERWORLD", "Enter at title")
 
 func test_space_leaves_title() -> void:
 	await tree.process_frame
-	_tap(KEY_SPACE)
-	await tree.process_frame
-	_lift(KEY_SPACE)
+	await _leave_title(KEY_SPACE)
 	assert_eq(_name_of(_gs.current), "OVERWORLD", "Space at title")
 
 func test_escape_opens_menu_from_overworld() -> void:
 	await tree.process_frame
-	_tap(KEY_ENTER)
-	await tree.process_frame
-	_lift(KEY_ENTER)
-	await tree.process_frame
+	await _leave_title(KEY_ENTER)
 	_tap(KEY_ESCAPE)
 	await tree.process_frame
 	_lift(KEY_ESCAPE)
 	assert_eq(_name_of(_gs.current), "MENU", "Escape in overworld")
+	for i in 10:
+		await tree.process_frame
+	assert_eq(_name_of(_gs.current), "MENU", "opening Escape must not immediately close menu")
 
 func test_tab_opens_menu_from_overworld() -> void:
 	await tree.process_frame
-	_tap(KEY_ENTER)
-	await tree.process_frame
-	_lift(KEY_ENTER)
-	await tree.process_frame
+	await _leave_title(KEY_ENTER)
 	_tap(KEY_TAB)
 	await tree.process_frame
 	_lift(KEY_TAB)
 	assert_eq(_name_of(_gs.current), "MENU", "Tab in overworld")
+	for i in 10:
+		await tree.process_frame
+	assert_eq(_name_of(_gs.current), "MENU", "opening Tab must not immediately close menu")
