@@ -52,6 +52,98 @@ func _ready() -> void:
 	report("spawn", world.spawn_position())
 	save_frame("00_overworld")
 
+	actor.try_step(Vector2.RIGHT)
+	await settle(2)
+	save_frame("00_step_right")
+	for _i in 12:
+		await get_tree().physics_frame
+	actor.position = world.spawn_position()
+	Game.player.position = actor.position
+
+	if (
+			actor.player_atlas == null
+			or actor.player_atlas.resource_path != "res://assets/sprites/player.png"
+	):
+		report("error", "player must use the imported player atlas")
+		finish()
+		return
+
+	var move_events := [0]
+	Events.player_moved.connect(func(_position): move_events[0] += 1)
+	var start_tile: Vector2i = actor.current_tile()
+	await press(InputManager.MOVE_RIGHT, 80)
+	if move_events[0] != 0:
+		report("error", "player_moved emitted before the step completed")
+		finish()
+		return
+	for _i in 12:
+		await get_tree().physics_frame
+	var after_tile: Vector2i = actor.current_tile()
+	if after_tile != start_tile + Vector2i.RIGHT:
+		report("error", "one input must move exactly one tile")
+		finish()
+		return
+	if int(actor.position.x) % GameConfig.TILE_SIZE != 0:
+		report("error", "player left the 8px grid")
+		finish()
+		return
+	if move_events[0] != 1:
+		report("error", "one completed step must emit player_moved exactly once")
+		finish()
+		return
+
+	var before_short_hold: Vector2i = actor.current_tile()
+	await press(InputManager.MOVE_RIGHT, 250)
+	for _i in 12:
+		await get_tree().physics_frame
+	if actor.current_tile() != before_short_hold + Vector2i.RIGHT:
+		report("error", "movement repeated before the hold delay")
+		finish()
+		return
+
+	var events_before_hold: int = move_events[0]
+	var before_hold: Vector2i = actor.current_tile()
+	await press(InputManager.MOVE_RIGHT, 350)
+	for _i in 12:
+		await get_tree().physics_frame
+	if actor.current_tile() != before_hold + Vector2i.RIGHT * 2:
+		report("error", "held movement must repeat after the hold delay")
+		finish()
+		return
+	if move_events[0] != events_before_hold + 2:
+		report("error", "held movement emitted the wrong number of completed steps")
+		finish()
+		return
+
+	var blocked_attempt := _find_blocked_attempt(world)
+	if blocked_attempt.is_empty():
+		report("error", "could not find a blocked movement fixture")
+		finish()
+		return
+	actor.position = blocked_attempt.position
+	Game.player.position = actor.position
+	var blocked_start: Vector2 = actor.position
+	var blocked_events: int = move_events[0]
+	if actor.try_step(blocked_attempt.direction):
+		report("error", "blocked step unexpectedly started")
+		finish()
+		return
+	if actor.position != blocked_start:
+		report("error", "blocked step changed player position")
+		finish()
+		return
+	if Game.player.direction != blocked_attempt.direction:
+		report("error", "blocked step did not update facing")
+		finish()
+		return
+	if move_events[0] != blocked_events:
+		report("error", "blocked step emitted player_moved")
+		finish()
+		return
+
+	actor.position = world.spawn_position()
+	Game.player.position = actor.position
+
 	var start: Vector2 = actor.position
 	await press(InputManager.MOVE_UP, 280)
 	await settle(2)
@@ -78,7 +170,7 @@ func _ready() -> void:
 
 	actor.position = world.spawn_position()
 	Game.player.position = actor.position
-	await press(InputManager.MOVE_RIGHT, 900)
+	await press(InputManager.MOVE_RIGHT, 1800)
 	await settle(2)
 	report("in_grass", actor.is_in_encounter_zone())
 	save_frame("03_grass")
@@ -93,6 +185,10 @@ func _ready() -> void:
 		if child is Camera2D:
 			camera = child
 			break
+	if camera == null or camera.position_smoothing_enabled or camera.limit_smoothed:
+		report("error", "camera must be pixel-snapped without smoothing")
+		finish()
+		return
 	for landmark in [
 		["04_fossil_clearing", "fossil_clearing", Vector2(12, 12)],
 		["05_pond", "pond", Vector2(52, 12)],
@@ -116,6 +212,22 @@ func _ready() -> void:
 		finish()
 		return
 	finish()
+
+
+func _find_blocked_attempt(world: Node) -> Dictionary:
+	var body := Vector2(24, 24)
+	var directions := [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
+	var size: Vector2i = Vector2i(world.map_size_px())
+	for y in range(0, size.y - int(body.y) + 1, GameConfig.TILE_SIZE):
+		for x in range(0, size.x - int(body.x) + 1, GameConfig.TILE_SIZE):
+			var position := Vector2(x, y)
+			if not world.can_stand(position, body):
+				continue
+			for direction in directions:
+				if not world.can_stand(
+						position + direction * GameConfig.TILE_SIZE, body):
+					return {"position": position, "direction": direction}
+	return {}
 
 
 func _find_world() -> Node:

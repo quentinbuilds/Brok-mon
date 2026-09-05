@@ -22,15 +22,15 @@ func enter() -> void:
 
 	var cam := Camera2D.new()
 	cam.enabled = true
-	cam.position_smoothing_enabled = true
-	cam.position_smoothing_speed = 8.0
+	cam.position_smoothing_enabled = false
 	var map_size: Vector2 = _world.map_size_px()
 	cam.limit_left = 0
 	cam.limit_top = 0
 	cam.limit_right = int(map_size.x)
 	cam.limit_bottom = int(map_size.y)
-	cam.limit_smoothed = true
+	cam.limit_smoothed = false
 	_player.add_child(cam)
+	cam.position = cam.position.round()
 	cam.make_current()
 
 	var hud := CanvasLayer.new()
