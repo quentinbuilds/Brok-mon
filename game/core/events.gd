@@ -2,6 +2,7 @@ extends Node
 ## Global signal bus. Use these names — do not invent parallel events.
 ## Payload types are untyped so this autoload parses before class_name cache exists.
 
+@warning_ignore_start("unused_signal")
 signal player_moved(position)
 signal encounter_triggered(creature)
 
@@ -20,3 +21,4 @@ signal menu_closed
 signal inventory_changed
 signal party_changed
 signal active_creature_changed(creature)
+@warning_ignore_restore("unused_signal")

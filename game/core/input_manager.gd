@@ -79,6 +79,6 @@ func _bind(action: String, keys: Array[int]) -> void:
 		InputMap.add_action(action)
 	for keycode in keys:
 		var ev := InputEventKey.new()
-		ev.physical_keycode = keycode
+		ev.physical_keycode = keycode as Key
 		if not InputMap.action_has_event(action, ev):
 			InputMap.action_add_event(action, ev)
