@@ -16,6 +16,7 @@ const NPC_GROUP := "npc"
 @onready var _talk_panel: TextureRect = get_node_or_null("TalkHud/Panel")
 @onready var _portrait: TextureRect = get_node_or_null("TalkHud/Portrait")
 @onready var _prompt: Node2D = get_node_or_null("InteractPrompt")
+@onready var _minimap: Minimap = get_node_or_null("Minimap")
 @onready var _beach: Sprite2D = $BeachBackground
 @onready var _interior: Sprite2D = $InteriorBackground
 @onready var _house: Sprite2D = $House
@@ -57,6 +58,8 @@ func _on_enter() -> void:
 	_player.texture = null
 	_sync_walker()
 	_follow_camera()
+	if _minimap:
+		_minimap.track(tile)
 	_close_talk()
 
 
@@ -172,6 +175,8 @@ func is_in_encounter_zone() -> bool:
 
 func _on_step_finished() -> void:
 	GameData.player_tile = _player.tile
+	if _minimap:
+		_minimap.track(_player.tile)
 	if _try_map_transition(_player.tile):
 		return
 	EventBus.player_moved.emit(_player.tile, is_in_encounter_zone())
@@ -201,6 +206,8 @@ func _switch_map(mode: MapCycle.Mode, spawn: Vector2i) -> void:
 	_sync_walker()
 	_follow_camera()
 	_refresh_prompt()
+	if _minimap:
+		_minimap.track(spawn)
 
 
 func _spawn_for_mode(mode: MapCycle.Mode) -> Vector2i:
@@ -244,6 +251,8 @@ func _apply_map_presentation() -> void:
 		if npc is CanvasItem:
 			npc.visible = on_default
 	_refresh_npc_tiles()
+	if _minimap:
+		_minimap.set_source(map_mode, _npc_tiles)
 	_setup_camera()
 
 

@@ -12,10 +12,31 @@ func before_each() -> void:
 func after_each() -> void:
 	menu.free()
 
+## The backdrop used to be the whole battle_menu.png mockup, which has a selection arrow, four
+## button labels and a green highlight painted into it. The panels covered the buttons but the
+## baked arrow sat outside the grid and read as a second cursor stuck beside PARTY. The frame
+## now comes from the clean dialogue sheet instead.
 func test_main_menu_uses_the_studio_asset() -> void:
-	assert_eq(menu.get_node("Backdrop").texture.resource_path, "res://assets/studio/battle_menu.png")
+	var frame := menu.get_node("Backdrop") as Panel
+	assert_ne(frame, null, "backdrop is a drawn frame, not a painted mockup")
+	var style := frame.get_theme_stylebox("panel") as StyleBoxFlat
+	assert_ne(style, null, "styled rather than textured")
+	assert_eq(style.bg_color, menu.FRAME_COLOR, "Studio cream")
+	assert_eq(style.border_color, menu.FRAME_BORDER, "Studio navy")
 	assert_true(menu.get_node("MainPage/Button0/Label").text.contains("PARTY"))
 	assert_true(menu.get_node("MainPage/Button1/Label").text.contains("INVENTORY"))
+
+
+## Exactly one arrow on screen, and it is the one the script animates.
+func test_only_one_selection_arrow_exists() -> void:
+	var arrows := 0
+	for node in menu.find_children("*", "", true, false):
+		if node is Polygon2D:
+			arrows += 1
+	assert_eq(arrows, 2, "one arrow drawn as a face plus its shadow")
+	for i in 4:
+		var text: String = menu.get_node("MainPage/Button%d/Label" % i).text
+		assert_false(text.contains(">"), "no arrow baked into a label")
 
 func test_main_cursor_wraps_in_two_by_two_grid() -> void:
 	menu._move_cursor(Vector2i.LEFT)
@@ -71,7 +92,7 @@ func test_save_opens_requested_studio_dialogue_without_changing_data() -> void:
 	menu._activate()
 	assert_true(menu.dialog_open)
 	assert_eq(menu.get_node("Dialog/Text").text, menu.SAVE_LINE)
-	assert_eq(menu.get_node("Dialog").get_child(0).texture.resource_path, "res://assets/studio/dialogue_box.png")
+	assert_eq((menu.get_node("Dialog").get_child(0).texture as AtlasTexture).atlas.resource_path, "res://assets/studio/dialogue_box.png")
 	assert_eq(GameData.party, before_party)
 	assert_eq(GameData.inventory, before_inventory)
 

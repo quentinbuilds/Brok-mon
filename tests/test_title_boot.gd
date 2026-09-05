@@ -16,11 +16,16 @@ func test_boot_advances_to_label_then_title() -> void:
 	assert_eq(title.beat, TitleState.Beat.BOOT)
 	title.update(TitleState.BOOT_SECS)
 	assert_eq(title.beat, TitleState.Beat.LABEL)
-	assert_true(title.get_node("Prompt").text.contains("QUENTIN SOFT"))
-	assert_true(title.get_node("Prompt").text.contains("NOBODY"))
+	# The copyright gag is gone: two lines never fit the prompt label and spilled out of it.
+	assert_eq(title.get_node("Prompt").text, "", "no copyright line on the label beat")
+	assert_false(title.get_node("PromptPanel").visible, "and no empty cream bar either")
+	assert_true(title.get_node("Title").visible, "the logo is up on its own")
 	title.update(TitleState.LABEL_SECS)
 	assert_eq(title.beat, TitleState.Beat.TITLE)
 	assert_true(title.get_node("Prompt").text.contains("PRESS A"))
+	assert_true(title.get_node("PromptPanel").visible, "prompt returns with its panel")
+	assert_false(title.get_node("Prompt").text.contains("
+"), "one line, so it fits the label")
 	title.queue_free()
 	await tree.process_frame
 
