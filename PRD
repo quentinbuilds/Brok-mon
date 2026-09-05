@@ -1,0 +1,1422 @@
+# AI-Native Game Boy
+
+## MVP Project Requirements & Cursor Agent Work Packages
+
+### 0. Project Objective
+
+Build a playable 2D top-down, Game Boy-inspired monster-catching game running on an Arduino UNO Q with:
+
+* Arduino Modulino Joystick
+* Arduino Modulino 3 Button
+* Waveshare display
+* UNO Q provided hardware/software stack
+* Summer Engine
+* Summer MCP
+* GitHub shared repository
+* Cursor AI coding agents
+
+The MVP should reproduce the feeling of exploring a small classic handheld monster-catching game:
+
+1. Start the game.
+2. Navigate a top-down grassland world.
+3. Control a player character.
+4. Explore the environment.
+5. Encounter creatures at a defined spawn rate.
+6. Enter a battle.
+7. Fight the creature.
+8. Attempt to catch it.
+9. Return to the overworld.
+10. Open the menu.
+11. View equipped/owned creatures and inventory.
+
+The first biome is **grassland only**.
+
+The MVP must prioritize:
+
+**playability > integration > game feel > visual polish > additional features.**
+
+Do not add features outside this specification until the MVP is fully playable.
+
+---
+
+# 1. Technical Architecture
+
+The game should be divided into independent systems.
+
+Recommended architecture:
+
+```text
+                    GAME APPLICATION
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+        Game State                  Input Manager
+             │                           │
+      ┌──────┼──────┐                    │
+      │      │      │                    │
+   World   Battle  Menu             UNO Q Input
+      │      │      │
+      └──────┼──────┘
+             │
+        Entity System
+             │
+      Rendering System
+             │
+        Summer Engine
+             │
+        Waveshare Display
+```
+
+The game should use a central state machine.
+
+Minimum game states:
+
+```text
+BOOT
+  ↓
+TITLE
+  ↓
+OVERWORLD
+  ↓
+BATTLE
+  ↓
+CATCHING
+  ↓
+OVERWORLD
+  ↕
+MENU
+```
+
+A state must own its input handling and rendering behavior.
+
+Do not allow individual systems to directly manipulate unrelated systems.
+
+---
+
+# 2. Repository Structure
+
+Use a shared GitHub repository with a structure similar to:
+
+```text
+/game
+    /core
+        game_state
+        game_loop
+        input_manager
+        event_bus
+
+    /world
+        map
+        player
+        collision
+        encounter_system
+
+    /creatures
+        creature_data
+        creature_manager
+        creature_assets
+
+    /battle
+        battle_state
+        battle_logic
+        battle_ui
+
+    /catching
+        catching_logic
+        catching_ui
+
+    /menu
+        menu_state
+        inventory
+        party
+
+    /ui
+        components
+        fonts
+        panels
+        transitions
+
+    /assets
+        /sprites
+        /tiles
+        /backgrounds
+        /audio
+
+    /config
+        game_config
+
+/tests
+
+/docs
+```
+
+The exact Summer Engine structure may differ. Preserve the conceptual separation even if Summer requires a different physical directory layout.
+
+---
+
+# 3. Git Rules
+
+Every developer works on their own branch.
+
+Recommended branches:
+
+```text
+main
+
+feature/core
+feature/world
+feature/encounters
+feature/battle
+feature/catching
+feature/ui
+```
+
+Rules:
+
+* Never directly rewrite another developer's system.
+* Never commit generated junk/build directories.
+* Do not rename shared files without notifying the integration owner.
+* Pull from `main` frequently.
+* Keep commits small and descriptive.
+* Each feature must be independently testable.
+* Merge only after the feature works.
+
+Commit examples:
+
+```text
+feat: add player movement
+feat: add grassland collision
+feat: implement random encounters
+feat: implement battle state
+feat: add creature inventory
+feat: add menu navigation
+fix: prevent player movement during battle
+```
+
+---
+
+# 4. Shared Design Contract
+
+All developers must use these concepts consistently.
+
+## Game State
+
+```text
+BOOT
+TITLE
+OVERWORLD
+BATTLE
+CATCHING
+MENU
+```
+
+## Player
+
+The player has:
+
+```text
+position
+movement_speed
+direction
+sprite
+party
+inventory
+```
+
+## Creature
+
+Every creature must have:
+
+```text
+id
+name
+sprite
+type
+max_hp
+hp
+attack
+defense
+catch_rate
+```
+
+Example:
+
+```text
+Creature:
+    id: 001
+    name: Emberfox
+    type: FIRE
+    max_hp: 30
+    hp: 30
+    attack: 8
+    defense: 5
+    catch_rate: 0.35
+```
+
+Use original creatures/assets rather than copyrighted Pokémon assets.
+
+## Inventory
+
+Minimum items:
+
+```text
+Capture Orb
+Potion
+```
+
+The exact item count can be small.
+
+---
+
+# 5. Person 1 — CORE ARCHITECTURE & INTEGRATION
+
+## Objective
+
+Own the overall architecture and ensure that everyone else's systems can be integrated into one playable executable.
+
+You are the integration owner.
+
+You should NOT spend the majority of your time making graphics.
+
+## Responsibilities
+
+Implement:
+
+* Game loop
+* Game state machine
+* Input abstraction
+* Scene/state transitions
+* Shared game data
+* Global configuration
+* Event system
+* Save/reset state if time permits
+* Integration of other developers' branches
+* Final build
+
+## Input abstraction
+
+Do not allow gameplay systems to directly depend on the physical joystick/buttons.
+
+Create an abstraction such as:
+
+```text
+InputManager
+
+is_up()
+is_down()
+is_left()
+is_right()
+
+button_a_pressed()
+button_b_pressed()
+button_menu_pressed()
+
+button_a_just_pressed()
+button_b_just_pressed()
+button_menu_just_pressed()
+```
+
+The underlying hardware implementation can be replaced without changing gameplay code.
+
+## State interface
+
+Every major state should conceptually implement:
+
+```text
+enter()
+update(delta_time)
+render()
+exit()
+```
+
+## State transitions
+
+Implement:
+
+```text
+TITLE → OVERWORLD
+
+OVERWORLD → BATTLE
+
+BATTLE → CATCHING
+
+BATTLE → OVERWORLD
+
+CATCHING → OVERWORLD
+
+OVERWORLD → MENU
+
+MENU → OVERWORLD
+```
+
+## Agent instructions
+
+Use this prompt:
+
+```text
+You are the lead software architect and integration engineer for a 12-hour hackathon.
+
+We are building a 2D Game Boy-inspired monster-catching game using Summer Engine and Summer MCP.
+
+Six developers are working simultaneously in one GitHub repository.
+
+Your responsibility is the CORE ARCHITECTURE and INTEGRATION layer.
+
+Do not implement other people's features unless necessary to create integration interfaces.
+
+Create a clean state-driven architecture with:
+
+BOOT
+TITLE
+OVERWORLD
+BATTLE
+CATCHING
+MENU
+
+Create a central game loop and a clean InputManager abstraction.
+
+Gameplay systems must NOT directly depend on physical UNO Q hardware APIs.
+
+Define stable interfaces for:
+
+Player
+Creature
+Inventory
+World
+Battle
+Catching
+Menu
+
+Create a lightweight event/message system where useful.
+
+The architecture must allow the other five developers to independently implement their systems without modifying the core.
+
+First inspect the existing repository and Summer MCP environment.
+
+Do not blindly create files.
+
+Determine the actual Summer Engine project structure first.
+
+Then implement the smallest functional architecture.
+
+After implementation, run/test the project and fix all errors.
+
+Document:
+- project architecture
+- state machine
+- interfaces
+- how another developer should integrate their feature
+
+Do not add unnecessary abstraction or over-engineer the project.
+This is a 12-hour hackathon.
+```
+
+---
+
+# 6. Person 2 — WORLD + PLAYER
+
+## Objective
+
+Create the playable grassland world and responsive player movement.
+
+## Responsibilities
+
+Implement:
+
+* Grassland map
+* Tile/map layout
+* Player sprite
+* Player movement
+* Collision
+* Camera
+* Grass encounter areas
+* Spawn points/regions
+* Visual environment
+
+## MVP map
+
+The map should contain:
+
+```text
+grass
+paths
+trees
+rocks
+water/blocked area if useful
+```
+
+The map should be small enough that the player can explore it in approximately 1–2 minutes.
+
+Do NOT build a gigantic open world.
+
+A small, dense map will look much more polished.
+
+## Movement
+
+Requirements:
+
+* 4-direction movement
+* No diagonal movement unless the hardware/game design supports it
+* Collision with obstacles
+* Smooth or grid-based movement depending on what produces the best Game Boy feel
+* Player always visible
+* Camera follows player
+
+## Encounter zones
+
+Define grass tiles as:
+
+```text
+encounter_zone = true
+```
+
+The encounter system should be able to query whether the player is currently inside an encounter zone.
+
+Do not implement battle logic here.
+
+## Agent prompt
+
+```text
+You are the WORLD and PLAYER developer.
+
+We are building a 2D top-down Game Boy-inspired monster-catching game using Summer Engine.
+
+Your responsibility is ONLY:
+
+1. Grassland map
+2. Player
+3. Player movement
+4. Collision
+5. Camera
+6. Encounter-zone detection
+
+First inspect the existing project architecture and follow the interfaces created by the core/integration developer.
+
+Do not rewrite the core architecture.
+
+Create a compact but visually polished grassland map.
+
+The player must:
+- move in four directions
+- collide with obstacles
+- remain inside the map
+- animate while moving
+- stop immediately when input stops
+- face the direction of movement
+
+Create clearly identifiable grass encounter zones.
+
+Expose a clean API/event when the player enters or moves through an encounter zone.
+
+DO NOT implement the battle system.
+
+DO NOT implement random encounters.
+
+DO NOT implement menus.
+
+Use placeholder/original assets if final assets do not yet exist.
+
+The result must be playable independently.
+
+Test movement and collision thoroughly.
+
+Optimize for a small polished map rather than a large unfinished world.
+
+Before finishing, document:
+- how the map works
+- collision representation
+- player API
+- encounter-zone API
+- files modified
+```
+
+---
+
+# 7. Person 3 — CREATURES + ENCOUNTERS
+
+## Objective
+
+Implement the creature data system and random encounters.
+
+## Responsibilities
+
+Implement:
+
+* Creature definitions
+* Creature manager
+* Encounter system
+* Encounter probability
+* Encounter cooldown
+* Wild creature selection
+* Encounter transition to battle
+
+## Encounter mechanics
+
+Example:
+
+```text
+Player enters grass
+        ↓
+Each movement step
+        ↓
+Random roll
+        ↓
+Probability succeeds?
+        ↓
+YES
+        ↓
+Wild creature generated
+        ↓
+BATTLE
+```
+
+Do not trigger encounters every frame.
+
+Use a movement-based or timed encounter cooldown.
+
+Suggested initial encounter probability:
+
+```text
+5–10% per valid movement step
+```
+
+Tune during testing.
+
+## Creature pool
+
+Create 3–5 original creatures.
+
+For example:
+
+```text
+Emberfox
+Mossbug
+Pebblit
+Aquafin
+Voltkit
+```
+
+Only one biome is required.
+
+Each creature should have distinct:
+
+* sprite
+* silhouette
+* stats
+* color palette
+* type
+
+## Agent prompt
+
+```text
+You are the CREATURE and ENCOUNTER SYSTEM developer.
+
+We are building a 2D Game Boy-inspired monster-catching game.
+
+Your responsibilities are:
+
+1. Creature data
+2. Creature definitions
+3. Creature manager
+4. Wild encounter generation
+5. Encounter probability
+6. Encounter cooldown
+7. Transition from OVERWORLD to BATTLE
+
+Create 3-5 original collectible creatures.
+
+Each creature must have:
+
+id
+name
+type
+max_hp
+hp
+attack
+defense
+catch_rate
+sprite
+
+Do not use copyrighted Pokémon names, sprites, sounds, or assets.
+
+The encounter system must:
+- only operate in designated encounter zones
+- not run every frame
+- use a configurable probability
+- have a cooldown preventing immediate repeated encounters
+- randomly select a valid creature
+- generate a battle encounter event
+
+Expose a clean API such as:
+
+generate_wild_creature()
+try_encounter(player_position)
+start_encounter(creature)
+
+Do not implement the battle system itself.
+
+Do not implement menus.
+
+Do not implement catching logic.
+
+Use configuration values rather than hardcoding probabilities throughout the code.
+
+Create tests or deterministic debug controls for encounter probability.
+
+Make it easy for the integration developer to trigger an encounter manually for testing.
+
+First inspect the existing architecture and use its state/event interfaces.
+
+Run the game and verify encounters work.
+
+Document all interfaces and configuration values.
+```
+
+---
+
+# 8. Person 4 — BATTLE SYSTEM
+
+## Objective
+
+Build the battle experience.
+
+This should be one of the most visually impressive parts of the MVP.
+
+## Battle flow
+
+```text
+Wild creature appears
+        ↓
+Battle intro
+        ↓
+Player creature + wild creature
+        ↓
+Action menu
+        ↓
+Attack / Item / Run
+        ↓
+Action resolves
+        ↓
+HP changes
+        ↓
+Victory / defeat / catch attempt
+```
+
+Minimum actions:
+
+```text
+ATTACK
+BAG
+CATCH
+RUN
+```
+
+If time is tight, `BAG` can initially contain only Potion and `ATTACK` can have one attack.
+
+## Battle requirements
+
+Include:
+
+* Player creature
+* Wild creature
+* HP bars
+* HP numbers if visually appropriate
+* Action menu
+* Damage feedback
+* Attack animation
+* Hit feedback
+* Victory state
+* Defeat state
+* Run option
+
+## Agent prompt
+
+```text
+You are the BATTLE SYSTEM developer.
+
+Build the complete MVP battle experience for our 2D Game Boy-inspired monster-catching game.
+
+Follow the existing state-machine architecture.
+
+Battle states should support:
+
+BATTLE_START
+PLAYER_TURN
+ACTION_RESOLUTION
+ENEMY_TURN
+VICTORY
+DEFEAT
+
+Minimum player actions:
+
+ATTACK
+BAG
+CATCH
+RUN
+
+ATTACK must:
+- calculate damage
+- animate the attack
+- update HP
+- show visual feedback
+- prevent input during animations
+
+The enemy should perform a simple deterministic/random attack after the player's attack.
+
+The battle must clearly display:
+- player creature
+- wild creature
+- both HP bars
+- action menu
+- battle messages
+
+The battle should feel satisfying despite using a limited Game Boy-inspired resolution.
+
+Use short animations, screen movement, sprite effects, and sound if supported by the engine.
+
+Do not implement the actual catch algorithm beyond calling a catch interface.
+
+Do not implement the inventory system.
+
+Do not modify the physical UNO Q hardware interface.
+
+Provide a clean API:
+
+start_battle(player_creature, wild_creature)
+perform_attack()
+request_catch()
+attempt_run()
+end_battle()
+
+The integration developer must be able to receive battle result events such as:
+
+BATTLE_WON
+BATTLE_LOST
+CREATURE_CAUGHT
+BATTLE_ESCAPED
+
+First inspect existing architecture.
+
+Do not create a second game-state architecture.
+
+Make the battle independently testable by allowing a debug battle to be started immediately.
+
+Prioritize game feel and reliability over complex combat mechanics.
+```
+
+---
+
+# 9. Person 5 — CATCHING + INVENTORY + PARTY
+
+## Objective
+
+Implement the player's collection system.
+
+## Responsibilities
+
+* Catching screen
+* Catch probability
+* Capture animation
+* Inventory
+* Party/equipped creature
+* Creature collection
+* Potion
+* Menu data interface
+
+## Catch flow
+
+```text
+BATTLE
+ ↓
+CATCH
+ ↓
+CATCHING SCREEN
+ ↓
+Animation
+ ↓
+Success?
+ ├── YES → Creature added to party
+ └── NO → Return to battle
+```
+
+The catching screen should be a distinct visual experience rather than simply displaying text.
+
+## Agent prompt
+
+```text
+You are the CATCHING, PARTY, and INVENTORY developer.
+
+Build the complete MVP creature-catching and collection system.
+
+Responsibilities:
+
+1. Catching screen
+2. Catch attempt
+3. Capture probability
+4. Capture animation
+5. Party storage
+6. Inventory
+7. Equipped/active creature
+
+Catch flow:
+
+BATTLE
+→ CATCH
+→ CATCHING
+→ SUCCESS or FAILURE
+
+On success:
+- add the creature to the player's collection
+- update inventory
+- emit CREATURE_CAUGHT
+- return to OVERWORLD or the appropriate post-battle state
+
+On failure:
+- show the failed capture
+- return to BATTLE
+
+Implement a small inventory containing:
+
+Capture Orb
+Potion
+
+Implement a party containing up to 3 creatures for the MVP.
+
+The player must have one active/equipped creature.
+
+Provide APIs such as:
+
+attempt_catch(creature)
+add_to_party(creature)
+remove_from_party(creature)
+set_active_creature(creature)
+use_item(item)
+get_inventory()
+get_party()
+
+Do not implement the complete menu UI. Expose the data cleanly so the UI developer can consume it.
+
+Do not modify battle logic except through defined interfaces/events.
+
+Create a visually satisfying capture animation using Summer Engine capabilities.
+
+Make the catch probability configurable.
+
+Provide deterministic debug mode allowing the integration developer to force success/failure.
+
+Test:
+- successful catch
+- failed catch
+- full party
+- inventory decrement
+- active creature selection
+
+Follow the existing architecture and do not create a parallel state machine.
+```
+
+---
+
+# 10. Person 6 — UI/UX + AUDIOVISUAL POLISH
+
+## Objective
+
+Own the visual identity and make the project feel like an actual finished handheld game rather than a technical prototype.
+
+This person should eventually touch almost every screen.
+
+## Screens
+
+### Title
+
+```text
+GAME TITLE
+
+PRESS START
+```
+
+### Overworld
+
+Minimal HUD.
+
+### Menu
+
+```text
+┌─────────────────────┐
+│ PARTY               │
+│                     │
+│ > Emberfox     Lv 5 │
+│   Mossbug      Lv 4 │
+│                     │
+│ INVENTORY            │
+│                     │
+│ Capture Orb × 5     │
+│ Potion × 3          │
+└─────────────────────┘
+```
+
+### Battle
+
+Classic handheld composition:
+
+```text
+      WILD CREATURE
+        HP ███████
+
+             sprite
+
+
+ player sprite
+
+PLAYER CREATURE
+HP ██████
+
+> ATTACK
+  BAG
+  CATCH
+  RUN
+```
+
+## Visual direction
+
+Use:
+
+* Limited palette
+* Pixel-art-inspired UI
+* Crisp sprites
+* Chunky borders
+* Consistent typography
+* Small animations
+* Screen transitions
+* UI sound effects
+
+Do not simply put modern UI on top of pixel art.
+
+The UI itself should feel like an old handheld game.
+
+## Agent prompt
+
+```text
+You are the UI/UX, VISUAL POLISH, and AUDIOVISUAL director.
+
+We are building a 2D Game Boy-inspired monster-catching game using Summer Engine.
+
+Your goal is to make the MVP feel like a cohesive finished handheld game rather than a collection of developer prototypes.
+
+First inspect every existing screen and system.
+
+Create a consistent visual language:
+
+- limited Game Boy-inspired palette
+- pixel-art-inspired presentation
+- crisp edges
+- consistent typography
+- consistent panels
+- clear hierarchy
+- satisfying transitions
+- restrained animations
+
+Create/polish:
+
+1. TITLE SCREEN
+2. OVERWORLD HUD
+3. BATTLE UI
+4. CATCHING SCREEN
+5. MENU
+6. PARTY SCREEN
+7. INVENTORY SCREEN
+8. TRANSITIONS
+
+The menu must allow the player to:
+- view their party
+- see the active/equipped creature
+- view inventory
+- navigate using the available three-button interface
+
+Make navigation extremely clear.
+
+Every important action should have feedback:
+- button press
+- menu selection
+- attack
+- damage
+- capture
+- error
+- victory
+- defeat
+
+Use audio wherever Summer Engine supports it.
+
+Create original sounds/assets or use assets with appropriate licensing.
+
+Do not use copyrighted Pokémon assets.
+
+Do not change gameplay logic.
+
+Build reusable UI components rather than drawing every screen independently.
+
+Prioritize:
+1. consistency
+2. readability
+3. responsiveness
+4. visual polish
+5. nostalgia
+
+After implementation, test every screen at the actual target display resolution/aspect ratio.
+
+The game should still be readable and attractive on the small Waveshare display.
+```
+
+---
+
+# 11. Hardware Integration Contract
+
+The hardware developer is intentionally **not assigned a separate workstream**.
+
+The hardware is treated as plug-and-play.
+
+The rest of the team should therefore program against:
+
+```text
+INPUT
+```
+
+rather than:
+
+```text
+JOYSTICK HARDWARE
+```
+
+The physical controls should map approximately to:
+
+```text
+Joystick up       → UP
+Joystick down     → DOWN
+Joystick left     → LEFT
+Joystick right    → RIGHT
+
+Button 1          → CONFIRM / ACTION
+Button 2          → BACK / CANCEL
+Button 3          → MENU
+```
+
+The exact mapping can be changed centrally.
+
+No game system should care whether input comes from:
+
+* UNO Q
+* keyboard
+* joystick
+* automated testing
+
+This allows the team to develop rapidly on PCs and then run on the hardware.
+
+---
+
+# 12. Critical Integration Interface
+
+The following events should be standardized:
+
+```text
+PLAYER_MOVED
+ENCOUNTER_TRIGGERED
+
+BATTLE_STARTED
+BATTLE_WON
+BATTLE_LOST
+BATTLE_ESCAPED
+
+CATCH_STARTED
+CREATURE_CAUGHT
+CATCH_FAILED
+
+MENU_OPENED
+MENU_CLOSED
+
+INVENTORY_CHANGED
+PARTY_CHANGED
+ACTIVE_CREATURE_CHANGED
+```
+
+This is extremely important.
+
+For example:
+
+**World developer:**
+
+```text
+PLAYER_MOVED
+```
+
+↓
+
+**Encounter developer:**
+
+```text
+check encounter
+```
+
+↓
+
+```text
+ENCOUNTER_TRIGGERED
+```
+
+↓
+
+**Core:**
+
+```text
+OVERWORLD → BATTLE
+```
+
+↓
+
+**Battle developer:**
+
+```text
+BATTLE_STARTED
+```
+
+This prevents six agents from tightly coupling their code.
+
+---
+
+# 13. Development Order
+
+Do NOT have everyone immediately build their complete feature.
+
+Use this order:
+
+## Phase 1 — First 60–90 minutes
+
+Person 1:
+
+```text
+Project architecture
+Game loop
+State machine
+Input abstraction
+```
+
+Person 2:
+
+```text
+Basic map
+Player
+Movement
+```
+
+Person 3:
+
+```text
+Creature data
+```
+
+Person 4:
+
+```text
+Battle prototype
+```
+
+Person 5:
+
+```text
+Inventory/party data
+```
+
+Person 6:
+
+```text
+Visual style + basic UI framework
+```
+
+The goal is:
+
+> **A player can walk around the world within the first 90 minutes.**
+
+---
+
+# 14. Phase 2 — Core Gameplay
+
+Next:
+
+```text
+PLAYER
+ ↓
+GRASS
+ ↓
+ENCOUNTER
+ ↓
+BATTLE
+ ↓
+ATTACK
+ ↓
+CATCH
+ ↓
+CREATURE ADDED
+ ↓
+OVERWORLD
+```
+
+Do not work on secondary features until this loop works.
+
+---
+
+# 15. Phase 3 — Menu
+
+Implement:
+
+```text
+MENU
+ ├── PARTY
+ │    ├── Active creature
+ │    └── Creature list
+ │
+ └── INVENTORY
+      ├── Capture Orb
+      └── Potion
+```
+
+---
+
+# 16. Phase 4 — Polish
+
+Only once the complete loop works:
+
+```text
+visual polish
+animations
+sound
+transitions
+better sprites
+battle effects
+catching animation
+UI polish
+startup sequence
+```
+
+---
+
+# 17. Final 2-Hour Rule
+
+At approximately two hours before submission:
+
+**STOP ADDING FEATURES.**
+
+No new mechanics.
+
+No new systems.
+
+No refactoring.
+
+No "one more cool idea."
+
+The remaining time is for:
+
+* integration
+* bug fixing
+* performance
+* hardware testing
+* visual polish
+* demo preparation
+* submission
+
+---
+
+# 18. Definition of Done
+
+The MVP is considered complete when a player can perform this entire sequence without developer intervention:
+
+```text
+BOOT
+ ↓
+TITLE
+ ↓
+OVERWORLD
+ ↓
+MOVE
+ ↓
+ENTER GRASS
+ ↓
+RANDOM ENCOUNTER
+ ↓
+BATTLE
+ ↓
+ATTACK
+ ↓
+CATCH
+ ↓
+CATCHING ANIMATION
+ ↓
+CREATURE CAUGHT
+ ↓
+OVERWORLD
+ ↓
+OPEN MENU
+ ↓
+VIEW PARTY
+ ↓
+VIEW INVENTORY
+ ↓
+CLOSE MENU
+ ↓
+CONTINUE EXPLORING
+```
+
+The game must be playable using the physical UNO Q controls and display.
+
+---
+
+# 19. Final Quality Target
+
+The project should feel like:
+
+> **A lost Game Boy game from 1998 that somehow knows it is 2026.**
+
+The first impression should be nostalgic.
+
+The second impression should be polished.
+
+The third impression should be:
+
+> **"Wait... how is the AI actually part of the game?"**
+
+That third impression is what should differentiate the project from a conventional retro game.
+
+---
+
+# 20. Master Instruction for Every Cursor Agent
+
+Every developer should prepend this philosophy to their work:
+
+```text
+This is a 12-hour hackathon.
+
+Do not over-engineer.
+
+Do not rewrite systems you do not own.
+
+Do not introduce unnecessary dependencies.
+
+Do not create duplicate architectures.
+
+Inspect the existing repository before making changes.
+
+Follow existing interfaces.
+
+Prefer simple, reliable implementations.
+
+The project must run continuously throughout development.
+
+If a requested feature conflicts with the existing architecture, explain the conflict and propose the smallest compatible solution.
+
+Always test your changes.
+
+Keep your changes isolated to your assigned subsystem.
+
+Assume five other developers are modifying the repository simultaneously.
+
+Your job is not to make the most sophisticated implementation.
+
+Your job is to make your subsystem reliable, visually coherent, and easy to integrate.
+```
