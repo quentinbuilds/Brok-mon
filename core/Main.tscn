@@ -1,11 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ch8tvqeaklrmq"]
 
-[ext_resource type="Script" path="res://core/Main.gd" id="1"]
+[ext_resource type="Script" uid="uid://bid1b0sjva0rk" path="res://core/Main.gd" id="1"]
 
-[node name="Main" type="Node"]
+[node name="Main" type="Node" unique_id=1493366846]
 script = ExtResource("1")
 
-[node name="WorldLayer" type="Node2D" parent="."]
+[node name="WorldLayer" type="Node2D" parent="." unique_id=1532784293]
 
-[node name="OverlayLayer" type="CanvasLayer" parent="."]
-layer = 1
+[node name="OverlayLayer" type="CanvasLayer" parent="." unique_id=1310295105]

@@ -7,13 +7,18 @@ extends GameStateBase
 ## Stub: A = succeed, B = fail.
 
 @onready var _label: Label = $Label
+@onready var _wild_sprite: Sprite2D = $WildSprite
 
 func debug_payload() -> Dictionary:
 	return {"wild": (load(GameConfig.DEBUG_WILD_PATH) as Creature).make_instance()}
 
 func _on_enter() -> void:
 	var wild: Creature = payload.get("wild")
-	_label.text = "CATCHING %s\n\nA: success   B: fail" % (wild.name if wild else "?")
+	_label.text = "Catch %s?\nA THROW   B BACK" % (wild.name if wild else "?")
+	_wild_sprite.texture = wild.sprite if wild else null
+	if _wild_sprite.texture:
+		var size := Vector2(_wild_sprite.texture.get_size())
+		_wild_sprite.scale = Vector2.ONE * minf(58.0 / size.x, 54.0 / size.y)
 	EventBus.catch_started.emit(wild)
 
 func update(_delta: float) -> void:
