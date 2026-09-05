@@ -18,10 +18,15 @@ func test_starter_and_debug_wild_use_studio_art() -> void:
 	assert_true(wild.sprite.resource_path.begins_with(STUDIO))
 
 func test_battle_and_catching_present_creature_sprites() -> void:
-	var battle: Node = load("res://battle/BattleState.tscn").instantiate()
+	var battle: BattleState = load("res://battle/BattleState.tscn").instantiate()
 	var catching: Node = load("res://catching/CatchingState.tscn").instantiate()
-	assert_true(battle.has_node("WildSprite"))
-	assert_true(battle.has_node("PlayerSprite"))
+	tree.root.add_child(battle)
+	await tree.process_frame
+	var starter := (load(GameConfig.STARTER_PATH) as Creature).make_instance()
+	var wild := (load(GameConfig.DEBUG_WILD_PATH) as Creature).make_instance()
+	battle.ui.bind(starter, wild)
+	assert_true(battle.ui.player_view.creature.sprite != null)
+	assert_true(battle.ui.enemy_view.creature.sprite != null)
 	assert_true(catching.has_node("WildSprite"))
 	battle.free()
 	catching.free()

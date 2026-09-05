@@ -135,3 +135,30 @@ func test_state_changed_signal_fires() -> void:
 	_gs().transition_to(GameState.State.TITLE)
 	assert_eq(seen.size(), 1)
 	assert_eq(seen[0], [GameState.State.BOOT, GameState.State.TITLE])
+
+# --- SOUND_TEST: dev audio screen, reached from the menu (MENU -> A) ---
+
+func test_menu_opens_sound_test_and_returns() -> void:
+	var S := GameState.State
+	_go([S.TITLE, S.OVERWORLD, S.MENU, S.SOUND_TEST])
+	assert_eq(overlay.get_child_count(), 1, "sound test replaces the menu in the overlay")
+	_go([S.MENU])
+	assert_eq(_gs().current, S.MENU)
+
+func test_sound_test_is_only_reachable_from_the_menu() -> void:
+	var S := GameState.State
+	_go([S.TITLE, S.OVERWORLD])
+	assert_false(_gs().transition_to(S.SOUND_TEST), "overworld must not jump to the sound test")
+	assert_eq(_gs().current, S.OVERWORLD)
+
+func test_sound_test_cannot_skip_straight_to_overworld() -> void:
+	var S := GameState.State
+	_go([S.TITLE, S.OVERWORLD, S.MENU, S.SOUND_TEST])
+	assert_false(_gs().transition_to(S.OVERWORLD), "C returns to the menu, not the map")
+	assert_eq(_gs().current, S.SOUND_TEST)
+
+func test_overworld_stays_frozen_under_the_sound_test() -> void:
+	var S := GameState.State
+	_go([S.TITLE, S.OVERWORLD, S.MENU, S.SOUND_TEST])
+	assert_eq(world.get_child_count(), 1, "overworld kept alive")
+	assert_eq(world.get_child(0).process_mode, Node.PROCESS_MODE_DISABLED)

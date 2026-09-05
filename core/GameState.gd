@@ -1,13 +1,15 @@
 extends Node
 ## Central state machine (PRD §1, §5). Owns transitions and the two-layer scene model:
 ##   WorldLayer   -> OVERWORLD, created once, hidden + frozen while an overlay is up
-##   OverlayLayer -> TITLE / BATTLE / CATCHING / MENU, one at a time, freed on exit
+##   OverlayLayer -> TITLE / BATTLE / CATCHING / MENU / SOUND_TEST, one at a time, freed on exit
 ## States never call each other. They call transition_to() for their own exit, or emit
 ## EventBus signals that this node reacts to.
 
 signal state_changed(from: State, to: State)
 
-enum State { BOOT, TITLE, OVERWORLD, BATTLE, CATCHING, MENU }
+## SOUND_TEST is a dev screen reached from the menu. Appended last so the existing
+## ordinals stay put for anything that persisted them.
+enum State { BOOT, TITLE, OVERWORLD, BATTLE, CATCHING, MENU, SOUND_TEST }
 
 const LEGAL := {
 	State.BOOT: [State.TITLE],
@@ -15,7 +17,8 @@ const LEGAL := {
 	State.OVERWORLD: [State.BATTLE, State.MENU],
 	State.BATTLE: [State.CATCHING, State.OVERWORLD],
 	State.CATCHING: [State.OVERWORLD, State.BATTLE],
-	State.MENU: [State.OVERWORLD],
+	State.MENU: [State.OVERWORLD, State.SOUND_TEST],
+	State.SOUND_TEST: [State.MENU],
 }
 
 const SCENES := {
@@ -24,6 +27,7 @@ const SCENES := {
 	State.BATTLE: "res://battle/BattleState.tscn",
 	State.CATCHING: "res://catching/CatchingState.tscn",
 	State.MENU: "res://menu/MenuState.tscn",
+	State.SOUND_TEST: "res://audio/AudioTest.tscn",
 }
 
 var current: State = State.BOOT
