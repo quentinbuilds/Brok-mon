@@ -24,6 +24,20 @@ func _ready() -> void:
 		finish()
 		return
 
+	if world.map_size_px() != Vector2(400, 240):
+		report("error", "jungle map must be 50x30 8px tiles")
+		finish()
+		return
+	for region_name in [
+		"player_start", "research_outpost", "fossil_clearing", "pond",
+		"north_meadow", "south_meadow", "west_thicket",
+		"volcanic_exit", "snow_exit", "desert_exit", "forest_exit"
+	]:
+		if world.region_position(region_name) == Vector2.ZERO:
+			report("error", "missing region: " + region_name)
+			finish()
+			return
+
 	report("map_size", world.map_size_px())
 	report("spawn", world.spawn_position())
 	save_frame("00_overworld")
@@ -63,6 +77,22 @@ func _ready() -> void:
 		report("error", "expected to be in tall grass after walking east of the spawn path")
 		finish()
 		return
+
+	var camera: Camera2D = null
+	for child in actor.get_children():
+		if child is Camera2D:
+			camera = child
+			break
+	for landmark in [
+		["04_fossil_clearing", "fossil_clearing", Vector2(12, 12)],
+		["05_pond", "pond", Vector2(52, 12)],
+	]:
+		actor.position = world.region_position(landmark[1]) - landmark[2]
+		Game.player.position = actor.position
+		if camera != null:
+			camera.reset_smoothing()
+		await settle(3)
+		save_frame(landmark[0])
 
 	report("logical_size", GameConfig.LOGICAL_SIZE)
 	report("display_size", GameConfig.DISPLAY_SIZE)

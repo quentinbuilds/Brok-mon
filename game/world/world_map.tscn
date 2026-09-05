@@ -3,4 +3,6 @@
 [ext_resource type="Script" path="res://world/world_map.gd" id="1_script"]
 
 [node name="WorldMap" type="Node2D"]
+texture_filter = 1
+editor_description = "50x30 Expedition Trail; runtime script builds ground, encounter, back-prop, and front-prop layers."
 script = ExtResource("1_script")
