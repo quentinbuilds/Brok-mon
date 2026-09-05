@@ -1,16 +1,24 @@
 extends GameStateBase
-## Overworld: 16x16 forest tiles (visual) on an 8px movement grid.
-## Person 2 owns player, camera, collision, and encounter zones.
+## Overworld: ForestMap (16x16 art) on an 8px movement grid.
+## Player is the Person 6 walker (OverworldCharacter). Grid-step like Player.gd;
+## walkability is ForestMap water + NPC rects, not GrassMap glyphs.
 ## Keep: menu key opens MENU; emit EventBus.player_moved when the tile changes.
 
-const SPEED := 60.0
 const TILE := 8
 const SPRITE := 16
 const NPC_GROUP := "npc"
+## Same cadence as world/Player.gd (one 8px tile per step).
+const STEP_TIME := 0.14
 
 @onready var _player = $Player
 @onready var _map: TileMapLayer = $ForestMap
 @onready var _camera: Camera2D = $Player/Camera2D
+
+var _stepping := false
+var _step_from := Vector2.ZERO
+var _step_to := Vector2.ZERO
+var _step_elapsed := 0.0
+var _step_dir := Vector2i.ZERO
 
 func _ready() -> void:
 	_apply_camera_limits()
@@ -20,6 +28,9 @@ func _on_enter() -> void:
 	if GameData.player_tile == Vector2i.ZERO:
 		GameData.player_tile = _fresh_spawn_tile()
 	_player.position = Vector2(GameData.player_tile * TILE)
+	_stepping = false
+	if _player.has_method("apply_move_dir"):
+		_player.apply_move_dir(Vector2i.ZERO)
 
 func _apply_camera_limits() -> void:
 	if _camera == null:
@@ -61,12 +72,47 @@ func update(delta: float) -> void:
 	if InputManager.button_menu_just_pressed():
 		GameState.transition_to(GameState.State.MENU)
 		return
-	var dir := InputManager.direction()
-	_player.apply_move_dir(dir)
-	if dir == Vector2i.ZERO:
+	if _stepping:
+		_advance_step(delta)
+		_sync_walker()
 		return
-	var next: Vector2 = _player.position + Vector2(dir) * SPEED * delta
-	try_move(next)
+	var dir := InputManager.direction()
+	if dir != Vector2i.ZERO:
+		_try_grid_step(dir)
+	_sync_walker()
+
+func _sync_walker() -> void:
+	if _player == null or not _player.has_method("apply_move_dir"):
+		return
+	_player.apply_move_dir(_step_dir if _stepping else Vector2i.ZERO)
+
+func _try_grid_step(dir: Vector2i) -> bool:
+	if _stepping or dir == Vector2i.ZERO:
+		return false
+	_step_dir = dir
+	var dest: Vector2 = _player.position + Vector2(dir) * TILE
+	if not can_walk(dest):
+		_sync_walker()
+		return false
+	_step_from = _player.position
+	_step_to = dest
+	_step_elapsed = 0.0
+	_stepping = true
+	return true
+
+func _advance_step(delta: float) -> void:
+	_step_elapsed += delta
+	var t := clampf(_step_elapsed / STEP_TIME, 0.0, 1.0)
+	_player.position = _step_from.lerp(_step_to, t).round()
+	if t < 1.0:
+		return
+	_player.position = _step_to
+	_stepping = false
+	_step_dir = Vector2i.ZERO
+	var tile := Vector2i((_player.position / TILE).floor())
+	if tile != GameData.player_tile:
+		GameData.player_tile = tile
+		EventBus.player_moved.emit(tile, is_in_encounter_zone())
 
 func can_walk(pos: Vector2) -> bool:
 	return not is_blocked(_footprint(pos))
@@ -93,6 +139,7 @@ func try_move(next: Vector2) -> bool:
 	if is_blocked(_footprint(next)):
 		return false
 	_player.position = next
+	_stepping = false
 	var tile := Vector2i((next / TILE).floor())
 	if tile != GameData.player_tile:
 		GameData.player_tile = tile

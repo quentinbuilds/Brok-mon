@@ -3,9 +3,14 @@
 *.translation
 export/
 *.tmp
+*.godot.bak
+*.bak
 
 # Summer (keep .summer/ project memory, drop caches)
 .summer/cache/
+.summer/local/
+.superpowers/
+gok-mon-(4.6)/
 
 # OS / editors
 .DS_Store
@@ -13,16 +18,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Summer Engine local-only state (SummerGit, caches, locks)
-.summer/local/
-
-# Export artifacts (ship-to-unoq writes build/game-linux-arm64.zip)
+# Export artifacts
 build/
 
-# Godot editor backups
-*.bak
-
-# Raw downloads kept beside the scene for convenience. The game uses the converted .wav files
-# in assets/audio/, which are committed; these originals are not needed by anyone else.
+# Raw audio downloads; converted wavs in assets/audio/ are committed
 audio/*.mp3
 audio/*.mp3.import
