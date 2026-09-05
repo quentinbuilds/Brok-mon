@@ -1,4 +1,4 @@
-﻿extends TestCase
+extends TestCase
 ## Forest overworld tiles: 16x16 TileSet, named catalog, and a loadable demo map.
 
 const Catalog := preload("res://world/tiles/ForestTileCatalog.gd")
@@ -78,3 +78,15 @@ func test_map_scene_loads() -> void:
 	assert_true(layer.get_used_cells().size() > 0, "demo map has painted tiles")
 	map.queue_free()
 
+
+func test_overworld_instances_forest_map() -> void:
+	var packed := load("res://world/OverworldState.tscn") as PackedScene
+	assert_true(packed != null, "OverworldState.tscn must load")
+	var ow: Node = packed.instantiate()
+	tree.root.add_child(ow)
+	await tree.process_frame
+	assert_true(ow.get_node_or_null("Player") != null, "Player node kept")
+	var fmap := ow.get_node_or_null("ForestMap")
+	assert_true(fmap != null, "ForestMap instanced under OverworldState")
+	assert_true(fmap is TileMapLayer)
+	ow.queue_free()
