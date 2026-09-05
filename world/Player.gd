@@ -30,6 +30,7 @@ var _from: Vector2 = Vector2.ZERO
 var _to: Vector2 = Vector2.ZERO
 var _elapsed: float = 0.0
 var _stepping: bool = false
+var _walkable_query: Callable
 
 ## Configured here rather than in the scene so a bare instance behaves identically in tests.
 ## The sprite is one tile wide and taller than a tile, so it is offset upward to stand with
@@ -51,6 +52,10 @@ func place(p_tile: Vector2i) -> void:
 func is_stepping() -> bool:
 	return _stepping
 
+## Lets OverworldState swap map collision without duplicating movement logic.
+func set_walkable_query(query: Callable) -> void:
+	_walkable_query = query
+
 ## Turns to face dir, then starts a step when the target tile is walkable.
 ## Returns true only when a step actually began; a blocked direction still turns the sprite.
 func try_step(dir: Vector2i) -> bool:
@@ -58,7 +63,10 @@ func try_step(dir: Vector2i) -> bool:
 		return false
 	facing = dir
 	var target := tile + dir
-	if not GrassMap.is_walkable(target):
+	var can_enter := GrassMap.is_walkable(target)
+	if _walkable_query.is_valid():
+		can_enter = bool(_walkable_query.call(target))
+	if not can_enter:
 		_refresh_frame()
 		return false
 	_from = Vector2(tile * GrassMap.TILE)
