@@ -5,6 +5,7 @@ class_name OverworldState
 
 const GrassMap := preload("res://world/GrassMap.gd")
 const PlayerScript := preload("res://world/Player.gd")
+const MapCycle := preload("res://world/MapCycle.gd")
 const NPC_GROUP := "npc"
 
 @onready var _tiles: TileMapLayer = $Tiles
@@ -13,19 +14,27 @@ const NPC_GROUP := "npc"
 @onready var _walker: Node = get_node_or_null("Player/Walker")
 @onready var _talk: Label = get_node_or_null("TalkHud/TalkBox")
 @onready var _talk_panel: ColorRect = get_node_or_null("TalkHud/Panel")
+@onready var _beach: Sprite2D = $BeachBackground
+@onready var _interior: Sprite2D = $InteriorBackground
+@onready var _house: Sprite2D = $House
+@onready var _beach_house: Sprite2D = $BeachHouse
 
 var talking: bool = false
+var map_mode: MapCycle.Mode = MapCycle.Mode.DEFAULT
+var next_exterior: MapCycle.Mode = MapCycle.Mode.BEACH
+var _map_transition_locked: bool = false
 
 
 func _on_enter() -> void:
 	if _tiles.get_used_cells().is_empty():
 		_paint_map()
-	_setup_camera()
+	_apply_map_presentation()
+	_player.set_walkable_query(_is_active_tile_walkable)
 	# GameData.reset() zeroes the stored tile, and tile 0,0 is border hedge, so fall back to
 	# the start tile whenever the stored one is not somewhere we can stand.
 	var tile := GameData.player_tile
-	if not GrassMap.is_walkable(tile):
-		tile = GrassMap.START_TILE
+	if not _is_active_tile_walkable(tile):
+		tile = _spawn_for_mode(map_mode)
 	GameData.player_tile = tile
 	_player.place(tile)
 	# Person 6 owns the walkable character sprite. Hide the Person 2 sheet so we do not
@@ -49,8 +58,19 @@ func update(delta: float) -> void:
 	if InputManager.button_a_just_pressed():
 		if try_talk():
 			return
+	if _map_transition_locked:
+		if InputManager.direction() == Vector2i.ZERO:
+			_map_transition_locked = false
+		else:
+			_sync_walker()
+			_follow_camera()
+			return
 	if _player.advance(delta):
 		_on_step_finished()
+		if _map_transition_locked:
+			_sync_walker()
+			_follow_camera()
+			return
 	# Starting the next step in the same frame a step lands keeps a held direction smooth.
 	# Movement stays on Player.gd (try_step / advance). Do not add a second walk loop.
 	if not _player.is_stepping():
@@ -99,12 +119,65 @@ func _sync_walker() -> void:
 ## True while the player stands in tall grass. Person 3 may poll this, but the
 ## in_encounter_zone flag on player_moved is the interface to prefer.
 func is_in_encounter_zone() -> bool:
-	return GrassMap.is_encounter_zone(GameData.player_tile)
+	return MapCycle.is_encounter_zone(map_mode, GameData.player_tile)
 
 
 func _on_step_finished() -> void:
 	GameData.player_tile = _player.tile
-	EventBus.player_moved.emit(_player.tile, GrassMap.is_encounter_zone(_player.tile))
+	if _try_map_transition(_player.tile):
+		return
+	EventBus.player_moved.emit(_player.tile, is_in_encounter_zone())
+
+
+func _try_map_transition(tile: Vector2i) -> bool:
+	if map_mode == MapCycle.Mode.INTERIOR and tile == MapCycle.INTERIOR_EXIT:
+		var destination := next_exterior
+		next_exterior = MapCycle.Mode.DEFAULT if destination == MapCycle.Mode.BEACH else MapCycle.Mode.BEACH
+		_switch_map(destination, _spawn_for_mode(destination))
+		return true
+	if map_mode == MapCycle.Mode.DEFAULT and tile == MapCycle.DEFAULT_DOOR:
+		_switch_map(MapCycle.Mode.INTERIOR, MapCycle.INTERIOR_SPAWN)
+		return true
+	if map_mode == MapCycle.Mode.BEACH and tile == MapCycle.BEACH_DOOR:
+		_switch_map(MapCycle.Mode.INTERIOR, MapCycle.INTERIOR_SPAWN)
+		return true
+	return false
+
+
+func _switch_map(mode: MapCycle.Mode, spawn: Vector2i) -> void:
+	map_mode = mode
+	_map_transition_locked = true
+	_apply_map_presentation()
+	_player.place(spawn)
+	GameData.player_tile = spawn
+	_sync_walker()
+	_follow_camera()
+
+
+func _spawn_for_mode(mode: MapCycle.Mode) -> Vector2i:
+	match mode:
+		MapCycle.Mode.INTERIOR:
+			return MapCycle.INTERIOR_SPAWN
+		MapCycle.Mode.BEACH:
+			return MapCycle.BEACH_RETURN
+	return MapCycle.DEFAULT_RETURN if map_mode != MapCycle.Mode.DEFAULT else GrassMap.START_TILE
+
+
+func _is_active_tile_walkable(tile: Vector2i) -> bool:
+	return MapCycle.is_walkable(map_mode, tile)
+
+
+func _apply_map_presentation() -> void:
+	var on_default := map_mode == MapCycle.Mode.DEFAULT
+	_tiles.visible = on_default
+	_house.visible = on_default
+	_beach.visible = map_mode == MapCycle.Mode.BEACH
+	_beach_house.visible = map_mode == MapCycle.Mode.BEACH
+	_interior.visible = map_mode == MapCycle.Mode.INTERIOR
+	for npc in get_tree().get_nodes_in_group(NPC_GROUP):
+		if npc is CanvasItem:
+			npc.visible = on_default
+	_setup_camera()
 
 
 func _paint_map() -> void:
@@ -116,7 +189,7 @@ func _paint_map() -> void:
 
 func _setup_camera() -> void:
 	# Limits stop the camera showing anything outside the map on a 200x120 viewport.
-	var size := GrassMap.pixel_size()
+	var size := MapCycle.pixel_size(map_mode)
 	_camera.limit_left = 0
 	_camera.limit_top = 0
 	_camera.limit_right = size.x
