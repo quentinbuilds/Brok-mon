@@ -77,6 +77,49 @@ func test_source_swappable() -> void:
 	assert_eq(r.source.get_line(c, 0), "CUSTOM")
 
 
+func test_default_source_is_line_table() -> void:
+	var r := Ragebait.new()
+	assert_true(r.source is RagebaitSource.LineTable)
+
+
+func test_line_table_varies_by_type_and_band() -> void:
+	var table := RagebaitSource.LineTable.new()
+	var fire := Creature.new()
+	fire.name = "Emberfox"
+	fire.type = &"FIRE"
+	fire.id = 1
+	var grass := Creature.new()
+	grass.name = "Debugbug"
+	grass.type = &"GRASS"
+	grass.id = 2
+	assert_eq(RagebaitSource.LineTable.band_for(0), "mild")
+	assert_eq(RagebaitSource.LineTable.band_for(2), "hot")
+	assert_eq(RagebaitSource.LineTable.band_for(3), "max")
+	assert_eq(RagebaitSource.LineTable.band_for(-1), "wary")
+	var mild_fire := table.get_line(fire, 0)
+	var max_grass := table.get_line(grass, 3)
+	assert_true(mild_fire.length() > 0)
+	assert_true(max_grass.length() > 0)
+	assert_true(mild_fire != max_grass)
+	var fire_pool: Array = table.pool_for(fire, 0)
+	var grass_pool: Array = table.pool_for(grass, 3)
+	assert_true(fire_pool.has(mild_fire))
+	assert_true(grass_pool.has(max_grass))
+
+
+func test_every_table_line_fits_the_battle_box() -> void:
+	var table := RagebaitSource.LineTable.new()
+	var types := ["FIRE", "GRASS", "WATER", "ROCK", "NORMAL", "GHOST"]
+	for type_name in types:
+		var c := Creature.new()
+		c.name = "Mossbug"
+		c.type = StringName(type_name)
+		c.id = type_name.length()
+		for level in range(BattleConfig.RAGE_LEVEL_MIN, BattleConfig.RAGE_LEVEL_MAX + 1):
+			var line := table.get_line(c, level)
+			assert_true(BattleCopy.fits(BattleCopy.you_said(line)), BattleCopy.you_said(line))
+
+
 class _CustomSource:
 	extends RagebaitSource
 	func get_line(_creature: Creature, _rage_level: int) -> String:

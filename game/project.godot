@@ -1,0 +1,39 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Gok-Mon"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+Events="*res://core/events.gd"
+GameConfig="*res://config/game_config.gd"
+InputManager="*res://core/input_manager.gd"
+Game="*res://core/game.gd"
+
+[display]
+
+window/size/viewport_width=200
+window/size/viewport_height=120
+window/size/window_width_override=800
+window/size/window_height_override=480
+window/stretch/mode="canvas_items"
+window/stretch/scale_mode="integer"
+
+[dotnet]
+
+project/assembly_name="Gok-Mon"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

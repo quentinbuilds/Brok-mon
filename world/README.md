@@ -8,7 +8,8 @@ reporting encounter zones. No encounter rolls, no battle, no menu UI.
 | File | Purpose |
 |---|---|
 | `GrassMap.gd` | Map data (ASCII) plus `is_walkable` / `is_encounter_zone` / `atlas_coords`. Pure data, no nodes. |
-| `Player.gd` | Grid-stepping player sprite. Owns stepping and animation, reads no input. |
+| `Player.gd` | Grid-stepping controller. Owns stepping, reads no input. Do not replace Person 6's `characters/OverworldCharacter.gd`. |
+| `characters/OverworldCharacter.gd` | Person 6 walkable character. Overworld only drives `apply_move_dir`. |
 | `OverworldState.gd` | The `GameStateBase` state. Paints the map, drives the player, moves the camera, emits `player_moved`. |
 | `OverworldState.tscn` | `Tiles` (TileMapLayer) + `Player` (Sprite2D) + `Camera` (Camera2D). |
 | `overworld_tileset.tres` | TileSet over the compact Studio-derived tile atlas. |

@@ -5,7 +5,7 @@ extends RefCounted
 enum Direction { ENRAGED, WARY }
 
 var level: int = 0
-var source: RagebaitSource = RagebaitSource.SingleLine.new()
+var source: RagebaitSource = RagebaitSource.LineTable.new()
 ## Tests set this to force a direction instead of rolling (-1 = roll).
 var forced_direction: int = -1
 
@@ -69,5 +69,5 @@ func outcome_message(creature_name: String, outcome: Outcome) -> String:
 			return "%s is too furious to hear you!" % creature_name
 		return "%s ignores you completely." % creature_name
 	if outcome.direction == Direction.ENRAGED:
-		return "%s is FURIOUS! Easier to catch, but it hits harder!" % creature_name
-	return "%s is WARY! Harder to catch, but it holds back." % creature_name
+		return "%s is FURIOUS! Easier catch. Hits harder!" % creature_name
+	return "%s is WARY! Harder catch. It holds back." % creature_name

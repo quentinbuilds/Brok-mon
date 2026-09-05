@@ -197,19 +197,19 @@ func perform_attack() -> void:
 	busy = true
 	sub = Sub.RESOLVING
 	var move := BattleLogic.default_move(player)
-	await seq.say_auto("%s used %s!" % [player.name, move.name])
+	await seq.say_auto(BattleCopy.used_move(player.name, move.name))
 	await seq.lunge(ui.player_view)
 	var result := BattleLogic.resolve_attack(
 		player, enemy, move, rng, 1.0, ragebait.enemy_defense_multiplier()
 	)
 	if not result.hit:
-		await seq.say_auto("It missed!")
+		await seq.say_auto(BattleCopy.miss())
 	else:
 		await seq.impact(ui.enemy_view, result.damage, ui.enemy_center())
 		await seq.drain_enemy_hp()
 	if enemy.is_fainted():
 		await seq.faint(ui.enemy_view)
-		await seq.say_wait("Wild %s fainted!" % enemy.name)
+		await seq.say_wait(BattleCopy.faint_wild(enemy.name))
 		_finish(Result.WON)
 		return
 	await _enemy_turn()
@@ -226,12 +226,12 @@ func use_item(item_id: StringName) -> void:
 		sub = Sub.RESOLVING
 		if not services.inventory.use_item(item_id):
 			ui.audio.denied()
-			await seq.say_wait("You have none left!")
+			await seq.say_wait(BattleCopy.no_item())
 			busy = false
 			_open_action_menu()
 			return
 		var healed := BattleLogic.apply_heal(player, BattleConfig.POTION_HEAL)
-		await seq.say_auto("%s recovered %d HP!" % [player.name, healed])
+		await seq.say_auto(BattleCopy.recovered(player.name, healed))
 		await seq.drain_player_hp()
 		await _enemy_turn()
 		return
@@ -246,12 +246,12 @@ func request_catch() -> void:
 	if not services.inventory.use_item(GameData.ITEM_CAPTURE_ORB) \
 			and not services.inventory.use_item(&"capture_orb"):
 		ui.audio.denied()
-		await seq.say_wait("You have no Capture Orbs!")
+		await seq.say_wait(BattleCopy.no_orbs())
 		busy = false
 		_open_action_menu()
 		return
 	var multiplier := ragebait.catch_multiplier()
-	await seq.say_auto("You threw a Capture Orb!")
+	await seq.say_auto(BattleCopy.catch_throw(ragebait.level))
 	# Person 5 owns catching. Hand off wild + rage multiplier via payload.
 	finished = true
 	busy = false
@@ -272,19 +272,19 @@ func switch_creature(index: int) -> void:
 	if party[index] == player:
 		ui.audio.denied()
 		busy = true
-		await seq.say_wait("%s is already out!" % player.name)
+		await seq.say_wait(BattleCopy.already_out(player.name))
 		busy = false
 		_open_action_menu()
 		return
 	busy = true
 	sub = Sub.RESOLVING
 	var incoming := party[index]
-	await seq.say_auto("Come back, %s!" % player.name)
+	await seq.say_auto(BattleCopy.switch_out(player.name))
 	services.party.set_active_index(index)
 	player = incoming
 	ui.bind(player, enemy)
 	ui.player_view.slide_in(Vector2(-70, 0))
-	await seq.say_auto("Go, %s!" % player.name)
+	await seq.say_auto(BattleCopy.switch_in(player.name))
 	await _enemy_turn()
 
 
@@ -296,7 +296,7 @@ func perform_ragebait() -> void:
 	var outcome := ragebait.taunt(enemy, rng)
 	ui.rage_level = ragebait.level
 	ui.audio.taunt()
-	await seq.say_auto("You: \"%s\"" % outcome.line)
+	await seq.say_auto(BattleCopy.you_said(outcome.line))
 	await seq.anger(maxi(1, absi(outcome.level)), outcome.direction == Ragebait.Direction.WARY)
 	await seq.say_wait(ragebait.outcome_message(enemy.name, outcome))
 	await _enemy_turn()
@@ -308,11 +308,11 @@ func attempt_run() -> void:
 	busy = true
 	sub = Sub.RESOLVING
 	if BattleLogic.try_run(run_failures, rng):
-		await seq.say_wait("Got away safely!")
+		await seq.say_wait(BattleCopy.run_ok())
 		_finish(Result.ESCAPED)
 		return
 	run_failures += 1
-	await seq.say_auto("Couldn't get away!")
+	await seq.say_auto(BattleCopy.run_fail())
 	await _enemy_turn()
 
 
@@ -321,19 +321,19 @@ func _enemy_turn() -> void:
 		return
 	sub = Sub.ENEMY_TURN
 	var move := BattleLogic.choose_enemy_move(enemy, rng)
-	await seq.say_auto("Wild %s used %s!" % [enemy.name, move.name])
+	await seq.say_auto(BattleCopy.wild_used_move(enemy.name, move.name))
 	await seq.lunge(ui.enemy_view)
 	var result := BattleLogic.resolve_attack(
 		enemy, player, move, rng, ragebait.enemy_attack_multiplier(), 1.0
 	)
 	if not result.hit:
-		await seq.say_auto("It missed!")
+		await seq.say_auto(BattleCopy.miss())
 	else:
 		await seq.impact(ui.player_view, result.damage, ui.player_center())
 		await seq.drain_player_hp()
 	if player.is_fainted():
 		await seq.faint(ui.player_view)
-		await seq.say_wait("%s fainted!" % player.name)
+		await seq.say_wait(BattleCopy.faint_player(player.name))
 		_finish(Result.LOST)
 		return
 	busy = false
