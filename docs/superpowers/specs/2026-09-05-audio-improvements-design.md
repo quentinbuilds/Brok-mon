@@ -17,7 +17,8 @@ Owner of the *seam* (autoloads, EventBus, state machine): **Person 1**.
 | Board audio bridge | `hardware/audio-bridge.sh` | Plays the UNO Q's audio through a Mac while testing |
 | Battle audio | `battle/fx/BattleAudio.gd` | **A second, independent system.** See "Convergence" below |
 
-Effects today: `confirm`, `cancel`, `menu`, `bump` (synth) plus `fahhh`, `giant`, `hurt` (files).
+Effects today: `confirm`, `cancel`, `menu`, `bump`, `sigh` (synth) plus `bruh`, `fahhh`, `giant`,
+`hurt` (files).
 Music today: `battle`, started on entering the sound test so that C then A from the overworld
 is a one-gesture check that music reaches the speakers.
 
@@ -131,6 +132,16 @@ Tested at both levels: the side filter by emitting on `EventBus` directly, and t
 real battle and asserting the reported amount equals the HP the player actually lost — because the
 failure that matters is `view == ui.player_view` being backwards, and that reads as correct in
 every synthetic test.
+
+## Faint hook — **built 2026-09-05**
+
+The damage hook again, one step further down the turn. `EventBus.creature_fainted(to_player)` is
+emitted by `TurnSequencer.faint()` next to the existing `ui.audio.faint()`, and `AudioManager`
+plays `bruh` on it — **only** when `to_player`. The wild creature dropping is the win, and it
+already has BattleAudio's falling arpeggio over it; a "bruh" there mocks the wrong side.
+
+`assets/audio/bruh.wav` is the source mp3 at 22.05 kHz mono, normalised to -1 dBFS, 0.864 s — it
+finishes under the faint animation, before the "X fainted!" line is done typing.
 
 ## Improvement 3 — wire the remaining EventBus signals
 

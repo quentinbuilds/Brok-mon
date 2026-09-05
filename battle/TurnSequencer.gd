@@ -114,6 +114,7 @@ func drain_player_hp() -> void:
 
 func faint(view: CreatureView) -> void:
 	ui.audio.faint()
+	EventBus.creature_fainted.emit(view == ui.player_view)
 	if instant:
 		view.faint_progress = 1.0
 		await get_tree().process_frame

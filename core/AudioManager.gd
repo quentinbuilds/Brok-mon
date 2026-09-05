@@ -20,7 +20,7 @@ const OVERRIDE_DIR := "res://assets/audio"
 ## Effects that exist only as files - no synth fallback. Listed explicitly rather than discovered
 ## by scanning OVERRIDE_DIR, because an exported build remaps imported resources and a directory
 ## listing of res:// does not reliably show them.
-const FILE_ONLY_SFX := ["fahhh", "giant", "hurt"]
+const FILE_ONLY_SFX := ["bruh", "fahhh", "giant", "hurt"]
 
 ## Music lives here as .ogg, not .wav: AudioStreamOggVorbis streams and compresses, and a
 ## multi-minute track as raw WAV would bloat the .pck on a board with little to spare.
@@ -43,6 +43,10 @@ const BATTLE_FADE := 0.35
 ## the full 2.3 s clip is mostly a decaying room tail, and at one hit per turn those tails pile up
 ## on each other and smother the fight. "hurt" is the 0.85 s that actually carries the joke.
 const HURT_SFX := "hurt"
+
+## Played when the player's creature faints. Only theirs: the wild creature going down is the
+## good outcome and already has BattleAudio's falling arpeggio over it.
+const FAINT_SFX := "bruh"
 
 ## A track may ship as two files: "<name>_intro.ogg" plays once, then "<name>.ogg" loops forever.
 ## Downloaded game music is usually mastered exactly this way - an opening flourish followed by a
@@ -79,6 +83,10 @@ func _ready() -> void:
 	EventBus.damage_dealt.connect(func(amount: int, to_player: bool) -> void:
 		if to_player and amount > 0 and has_sfx(HURT_SFX):
 			play_sfx(HURT_SFX))
+	# Same filter, same reason: the enemy fainting is a win, not a "bruh".
+	EventBus.creature_fainted.connect(func(to_player: bool) -> void:
+		if to_player and has_sfx(FAINT_SFX):
+			play_sfx(FAINT_SFX))
 
 ## Battle music, driven entirely by signals battle/ already emits. Nothing in battle/ changed to
 ## make this work and nothing there needs to know about it.
