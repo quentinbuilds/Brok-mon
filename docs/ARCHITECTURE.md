@@ -56,7 +56,8 @@ button_a_just_pressed() button_b_just_pressed() button_menu_just_pressed()
 ```
 A = confirm, B = cancel, MENU = menu. Bindings live in `project.godot` under `[input]`.
 On the UNO Q the Modulino bridge sends **keyboard keys**: joystick = W/A/S/D, buttons A/B/C =
-J/K/L. Desktop aliases: arrows, Z or Enter, X or Backspace, Tab. A gamepad also works.
+J/K/L. Desktop aliases for playtesting on Mac/Windows: movement = arrows or WASD,
+A = Space, Enter or Z, B = Escape, Backspace or X, C/MENU = Escape or Tab. A gamepad also works.
 `tests/test_input_bindings.gd` guards this. In UI text say "joystick", "A", "B", "C", never key
 names. See `hardware/README.md`.
 

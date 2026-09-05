@@ -1,6 +1,7 @@
 extends GameStateBase
 ## Party summary plus a 3x3 inventory grid. Person 6 may restyle.
 ## Keep: emit menu_opened / menu_closed; B or menu key closes back to OVERWORLD.
+## A opens the SOUND_TEST screen (dev tool for checking audio on real hardware).
 
 const ICON := 20
 const SLOT := 22
@@ -25,7 +26,9 @@ func exit() -> void:
 	EventBus.menu_closed.emit()
 
 func update(_delta: float) -> void:
-	if InputManager.button_b_just_pressed() or InputManager.button_menu_just_pressed():
+	if InputManager.button_a_just_pressed():
+		GameState.transition_to(GameState.State.SOUND_TEST)
+	elif InputManager.button_b_just_pressed() or InputManager.button_menu_just_pressed():
 		GameState.transition_to(GameState.State.OVERWORLD)
 		return
 	var d := InputManager.direction_just_pressed()

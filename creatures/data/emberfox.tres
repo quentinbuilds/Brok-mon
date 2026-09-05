@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Creature" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://creatures/Creature.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/studio/fire_starter.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = 4
+name = "Emberfox"
+sprite = ExtResource("2")
+type = &"FIRE"
+max_hp = 24
+hp = 24
+attack = 8
+defense = 4
+catch_rate = 0.3

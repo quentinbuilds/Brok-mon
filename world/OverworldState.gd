@@ -79,6 +79,12 @@ func walk_bounds() -> Rect2:
 		return _map.pixel_rect()
 	return Rect2(0, 0, 200, 120)
 
+## True while the player stands on a grass-tuft encounter tile.
+func is_in_encounter_zone() -> bool:
+	if _map == null or _player == null:
+		return false
+	var center: Vector2 = _player.position + Vector2(SPRITE * 0.5, SPRITE * 0.5)
+	return _map.is_encounter_cell(_map.local_to_map(center))
 
 func try_move(next: Vector2) -> bool:
 	var b := walk_bounds()
@@ -90,7 +96,7 @@ func try_move(next: Vector2) -> bool:
 	var tile := Vector2i((next / TILE).floor())
 	if tile != GameData.player_tile:
 		GameData.player_tile = tile
-		EventBus.player_moved.emit(tile, false)
+		EventBus.player_moved.emit(tile, is_in_encounter_zone())
 	return true
 
 func _footprint(pos: Vector2) -> Rect2:

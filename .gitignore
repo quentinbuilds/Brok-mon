@@ -21,3 +21,8 @@ build/
 
 # Godot editor backups
 *.bak
+
+# Raw downloads kept beside the scene for convenience. The game uses the converted .wav files
+# in assets/audio/, which are committed; these originals are not needed by anyone else.
+audio/*.mp3
+audio/*.mp3.import

@@ -34,6 +34,20 @@ func is_water_cell(cell: Vector2i) -> bool:
 	return Catalog.is_water(str(data.get_custom_data("name")))
 
 
+func is_encounter_cell(cell: Vector2i) -> bool:
+	var sid := get_cell_source_id(cell)
+	if sid < 0:
+		return false
+	var coords := get_cell_atlas_coords(cell)
+	for tile_name in Catalog.ENCOUNTER_TILES:
+		if Catalog.source_id(tile_name) == sid and Catalog.atlas(tile_name) == coords:
+			return true
+	var data := get_cell_tile_data(cell)
+	if data == null:
+		return false
+	return Catalog.is_encounter(str(data.get_custom_data("name")))
+
+
 func pixel_rect() -> Rect2:
 	var used := get_used_rect()
 	var ts := Vector2(Catalog.TILE_SIZE, Catalog.TILE_SIZE)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="PackedScene" path="res://world/ForestMap.tscn" id="2_fmap"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://world/characters/elder.tscn" id="4_elder"]
 [ext_resource type="PackedScene" path="res://world/characters/wizard.tscn" id="5_wiz"]
 [ext_resource type="PackedScene" path="res://world/characters/knight.tscn" id="6_kni"]
+[ext_resource type="PackedScene" path="res://encounters/EncounterSystem.tscn" id="7_enc"]
 
 [node name="OverworldState" type="Node2D"]
 script = ExtResource("1")
@@ -33,3 +34,5 @@ position = Vector2(8, 88)
 
 [node name="Knight" parent="Characters" instance=ExtResource("6_kni")]
 position = Vector2(216, 40)
+
+[node name="EncounterSystem" parent="." instance=ExtResource("7_enc")]

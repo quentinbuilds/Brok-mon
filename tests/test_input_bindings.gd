@@ -24,6 +24,14 @@ func test_modulino_buttons_bound() -> void:
 	assert_true(_has_key("cancel", KEY_K), "button B (K) -> cancel")
 	assert_true(_has_key("menu", KEY_L), "button C (L) -> menu")
 
+func test_desktop_keys_bound() -> void:
+	# Most playtesting happens on a Mac or Windows keyboard, not the handheld.
+	# Space/Enter and Escape are what testers reach for first.
+	assert_true(_has_key("confirm", KEY_SPACE), "Space -> confirm")
+	assert_true(_has_key("confirm", KEY_ENTER), "Enter -> confirm")
+	assert_true(_has_key("cancel", KEY_ESCAPE), "Escape -> cancel")
+	assert_true(_has_key("menu", KEY_ESCAPE), "Escape -> menu")
+
 func test_all_seven_actions_exist() -> void:
 	for a in ["move_up", "move_down", "move_left", "move_right", "confirm", "cancel", "menu"]:
 		assert_true(InputMap.has_action(a), "missing action %s" % a)
