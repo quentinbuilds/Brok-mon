@@ -3,7 +3,11 @@ extends GameStateBase
 
 enum Page { MAIN, PARTY, INVENTORY }
 
-const MAIN_LABELS := ["PARTY", "INVENTORY", "SAVE", "CLOSE"]
+## The party page is the creature list, so it is branded rather than named after the
+## mechanic. Page.PARTY stays the internal name; only the label changed.
+const PARTY_LABEL := "BROKEDEX"
+
+const MAIN_LABELS := [PARTY_LABEL, "INVENTORY", "SAVE", "CLOSE"]
 const SAVE_LINE := "Save the game from who? You? Huh dumbass"
 const PANEL_COLOR := Color("78a8ad")
 const ARROW_POSITIONS := [Vector2(4, 25), Vector2(96, 25), Vector2(4, 66), Vector2(96, 66)]
@@ -166,7 +170,7 @@ func _refresh() -> void:
 		_hint.text = "A INFO   B BACK   C CLOSE"
 
 func _refresh_party() -> void:
-	_detail_title.text = "PARTY"
+	_detail_title.text = PARTY_LABEL
 	_detail_body.visible = GameData.party.is_empty()
 	_detail_body.text = "NO CREATURES"
 	for i in GameData.party.size():

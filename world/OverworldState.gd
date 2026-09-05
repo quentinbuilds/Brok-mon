@@ -194,6 +194,7 @@ func is_in_encounter_zone() -> bool:
 
 func _on_step_finished() -> void:
 	GameData.player_tile = _player.tile
+	MapCycle.publish_ground(_player.tile)
 	if _minimap:
 		_minimap.track(_player.tile)
 	if _try_map_transition(_player.tile):
@@ -260,6 +261,9 @@ func _refresh_npc_tiles() -> void:
 
 
 func _apply_map_presentation() -> void:
+	# Publish the biome so the battle backdrop matches wherever the encounter starts.
+	MapCycle.active_mode = map_mode
+	MapCycle.publish_ground(GameData.player_tile)
 	var on_default := map_mode == MapCycle.Mode.DEFAULT
 	_tiles.visible = on_default
 	_house.visible = on_default

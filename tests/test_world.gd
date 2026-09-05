@@ -46,7 +46,11 @@ func test_obstacles_block_and_ground_does_not() -> void:
 	assert_false(GrassMap.is_walkable(Vector2i(16, 5)), "rock")
 	assert_true(GrassMap.is_walkable(Vector2i(6, 4)), "tall grass")
 	assert_true(GrassMap.is_walkable(Vector2i(3, 2)), "path")
-	assert_false(GrassMap.is_walkable(Vector2i(30, 11)), "house footprint")
+	# The house body is rows 8-10, matching where its sprite is drawn. It used to be rows
+	# 10-12, three below the artwork, so you walked through the house and hit open grass.
+	assert_false(GrassMap.is_walkable(Vector2i(29, 9)), "house footprint")
+	assert_false(GrassMap.is_walkable(Vector2i(31, 8)), "house footprint corner")
+	assert_true(GrassMap.is_walkable(Vector2i(30, 11)), "the ground below the door is clear")
 
 func test_map_has_a_usable_amount_of_tall_grass() -> void:
 	var n := 0

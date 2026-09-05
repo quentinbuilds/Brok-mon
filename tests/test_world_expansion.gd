@@ -34,7 +34,7 @@ func test_the_original_town_survived_the_expansion() -> void:
 	assert_true(GrassMap.is_walkable(GrassMap.START_TILE), "start")
 	assert_false(GrassMap.is_walkable(Vector2i(26, 4)), "tree")
 	assert_false(GrassMap.is_walkable(Vector2i(4, 16)), "water")
-	assert_false(GrassMap.is_walkable(Vector2i(30, 11)), "house footprint")
+	assert_false(GrassMap.is_walkable(Vector2i(29, 9)), "house footprint")
 	# The doorway is carved through the house footprint by MapCycle, not by the glyph map.
 	assert_true(MapCycle.is_walkable(MapCycle.Mode.DEFAULT, MapCycle.DEFAULT_DOOR), "door opens")
 	assert_true(MapCycle.is_walkable(MapCycle.Mode.DEFAULT, MapCycle.DEFAULT_RETURN), "and back out")

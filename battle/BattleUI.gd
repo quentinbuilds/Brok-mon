@@ -2,6 +2,11 @@ class_name BattleUI
 extends Control
 ## Immediate-mode battle screen. BattleState owns the rules.
 
+## Map data only -- pure static tables, never an overworld node. The backdrop is built
+## from the terrain the encounter started on.
+const MapCycle := preload("res://world/MapCycle.gd")
+const GrassMap := preload("res://world/GrassMap.gd")
+
 enum Mode { MESSAGE, ACTION, BAG, PARTY, FIGHT }
 
 var mode: int = Mode.MESSAGE
@@ -82,13 +87,41 @@ func _draw() -> void:
 	_draw_bottom_box()
 
 
+## Sky over ground tiled with the terrain the encounter started on, rather than the flat
+## four-colour wash this used to be. The terrain comes from world/ map data, which is pure data
+## any system may ask about; nothing here touches an overworld node. Falls back to the old flat
+## bands if the atlas is missing, so a checkout without assets still fights.
 func _draw_world() -> void:
-	draw_rect(Rect2(0, 0, BattleConfig.SCREEN.x, BattleConfig.HORIZON_Y), BattleConfig.LIGHTEST, true)
-	draw_rect(Rect2(0, BattleConfig.HORIZON_Y, BattleConfig.SCREEN.x,
-		BattleConfig.BOTTOM_BOX.position.y - BattleConfig.HORIZON_Y), BattleConfig.LIGHT, true)
-	draw_rect(Rect2(0, BattleConfig.HORIZON_Y, BattleConfig.SCREEN.x, 1), BattleConfig.DARK, true)
-	Dmg.platform(self, BattleConfig.ENEMY_PLATFORM_CENTER, BattleConfig.ENEMY_PLATFORM_RADIUS, BattleConfig.DARK)
-	Dmg.platform(self, BattleConfig.PLAYER_PLATFORM_CENTER, BattleConfig.PLAYER_PLATFORM_RADIUS, BattleConfig.DARK)
+	var ground_top := float(BattleConfig.HORIZON_Y)
+	var ground_h := BattleConfig.BOTTOM_BOX.position.y - BattleConfig.HORIZON_Y
+	draw_rect(Rect2(0, 0, BattleConfig.SCREEN.x, ground_top), MapCycle.battle_sky(), true)
+
+	var atlas := ground_texture()
+	var column: int = GrassMap.ATLAS_COLUMN.get(MapCycle.battle_ground_glyph(), 0)
+	if atlas == null:
+		draw_rect(Rect2(0, ground_top, BattleConfig.SCREEN.x, ground_h), BattleConfig.LIGHT, true)
+	else:
+		var tile := float(GrassMap.TILE)
+		var source := Rect2(column * tile, 0.0, tile, tile)
+		var y := ground_top
+		while y < ground_top + ground_h:
+			var x := 0.0
+			while x < float(BattleConfig.SCREEN.x):
+				draw_texture_rect_region(atlas, Rect2(x, y, tile, tile), source)
+				x += tile
+			y += tile
+
+	draw_rect(Rect2(0, ground_top, BattleConfig.SCREEN.x, 1), BattleConfig.DARKEST, true)
+	Dmg.platform(self, BattleConfig.ENEMY_PLATFORM_CENTER, BattleConfig.ENEMY_PLATFORM_RADIUS,
+		BattleConfig.PLATFORM_SHADOW)
+	Dmg.platform(self, BattleConfig.PLAYER_PLATFORM_CENTER, BattleConfig.PLAYER_PLATFORM_RADIUS,
+		BattleConfig.PLATFORM_SHADOW)
+
+
+static func ground_texture() -> Texture2D:
+	if not ResourceLoader.exists(BattleConfig.GROUND_ATLAS):
+		return null
+	return load(BattleConfig.GROUND_ATLAS) as Texture2D
 
 
 func _draw_enemy_panel() -> void:

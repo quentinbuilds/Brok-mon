@@ -7,9 +7,14 @@ enum Mode { DEFAULT, INTERIOR, BEACH }
 
 const TILE := 16
 const DEFAULT_DOOR := Vector2i(30, 10)
-const DEFAULT_RETURN := Vector2i(30, 13)
+const DEFAULT_RETURN := Vector2i(30, 11)
 const INTERIOR_SPAWN := Vector2i(10, 9)
 const INTERIOR_EXIT := Vector2i(10, 10)
+## Solid body of the beach house, matching where its sprite is drawn: pinned at tile (14, 3),
+## three tiles wide, with its door at the bottom of the middle column on BEACH_DOOR. The beach
+## mask is traced off the background art and knows nothing about props placed on top of it, so
+## without this the player walks through the house here too.
+const BEACH_HOUSE_FOOTPRINT := Rect2i(14, 3, 3, 3)
 const BEACH_DOOR := Vector2i(15, 6)
 const BEACH_RETURN := Vector2i(15, 7)
 
@@ -57,12 +62,14 @@ const BEACH_TOP_MARGIN := 16
 static func is_walkable(mode: Mode, tile: Vector2i) -> bool:
 	match mode:
 		Mode.DEFAULT:
-			var doorway := tile.x == DEFAULT_DOOR.x and tile.y >= DEFAULT_DOOR.y and tile.y <= 12
-			return doorway or GrassMap.is_walkable(tile)
+			# The door is carved back out of the house body so it can be stepped on.
+			return tile == DEFAULT_DOOR or GrassMap.is_walkable(tile)
 		Mode.INTERIOR:
 			return tile.x >= 6 and tile.x <= 13 and tile.y >= 3 and tile.y <= 10 \
 				and not INTERIOR_BLOCKED.has(tile)
 		Mode.BEACH:
+			if BEACH_HOUSE_FOOTPRINT.has_point(tile) and tile != BEACH_DOOR:
+				return false
 			return beach_glyph(tile) == "."
 	return false
 
@@ -86,6 +93,44 @@ static func pixel_size(mode: Mode) -> Vector2i:
 	if mode == Mode.DEFAULT:
 		return GrassMap.pixel_size()
 	return Vector2i(320, 180)
+
+## Which map the player is standing on, published so the battle can build its backdrop out of
+## the terrain the encounter actually happened in. This is map data, not a node reference:
+## GrassMap's header already invites any system to ask it about a tile, and battle/ asking here
+## is the same thing one level up. OverworldState keeps it current.
+static var active_mode: Mode = Mode.DEFAULT
+
+## Sky behind the battle, per biome.
+const BATTLE_SKY := {
+	Mode.DEFAULT: Color("74b8dd"),
+	Mode.BEACH: Color("8fd4ea"),
+	Mode.INTERIOR: Color("2f2118"),
+}
+
+
+static func battle_sky() -> Color:
+	return BATTLE_SKY.get(active_mode, BATTLE_SKY[Mode.DEFAULT])
+
+
+## Glyph the battle tiles its floor with: whatever the player last stood on, so a fight started
+## in tall grass is fought in tall grass. OverworldState publishes it, because a static function
+## here cannot reach the GameData autoload to look the tile up itself.
+static var active_ground := "."
+
+
+static func battle_ground_glyph() -> String:
+	return active_ground
+
+
+## Called by OverworldState as the player moves. Sand on the beach and indoors, otherwise
+## whatever tile is underfoot, falling back to plain grass.
+static func publish_ground(tile: Vector2i) -> void:
+	if active_mode != Mode.DEFAULT:
+		active_ground = "="
+		return
+	var here := GrassMap.glyph(tile)
+	active_ground = here if GrassMap.WALKABLE.contains(here) else "."
+
 
 ## Size of a map in tiles, for anything that needs to frame the whole thing.
 static func map_tiles(mode: Mode) -> Vector2i:

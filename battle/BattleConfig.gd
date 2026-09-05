@@ -71,6 +71,13 @@ const ANGER_ICON_CYCLE := 0.25
 const LOW_HP_FRACTION := 0.2
 const LOW_HP_FLASH_CYCLE := 0.22
 
+## Battle backdrop. The ground is tiled from the overworld atlas so a fight looks like it is
+## happening where it started, rather than on a flat green field.
+const GROUND_ATLAS := "res://assets/tiles/studio_overworld.png"
+
+## Contact shadow under each creature. Translucent so it reads on any terrain.
+const PLATFORM_SHADOW := Color(0.06, 0.11, 0.08, 0.35)
+
 const HORIZON_Y := 52
 const ENEMY_PANEL := Rect2i(4, 4, 92, 24)
 const ENEMY_SPRITE_RECT := Rect2i(148, 8, 40, 40)

@@ -134,3 +134,42 @@ func test_hidden_npcs_stop_blocking() -> void:
 	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
 	assert_eq(world._npc_tiles.size(), 0, "no NPC tiles held on the beach")
 	world.free()
+
+
+## The house prop is drawn by OverworldState.tscn but blocked by map data, and the two have to
+## agree. They did not: the footprint sat three rows below the sprite, so the player walked
+## through the house and was stopped by nothing in the grass underneath.
+func test_house_body_is_solid_where_the_sprite_is_drawn() -> void:
+	var world := _overworld()
+	var house: Sprite2D = world.get_node("House")
+	var origin := OverworldState.tile_of(house)
+	assert_eq(origin, GrassMap.HOUSE_FOOTPRINT.position, "sprite sits on its own footprint")
+	var span := Vector2i(house.texture.get_width(), house.texture.get_height()) / GrassMap.TILE
+	assert_true(span.x == GrassMap.HOUSE_FOOTPRINT.size.x, "footprint is as wide as the art")
+	for y in GrassMap.HOUSE_FOOTPRINT.size.y:
+		for x in GrassMap.HOUSE_FOOTPRINT.size.x:
+			var tile: Vector2i = GrassMap.HOUSE_FOOTPRINT.position + Vector2i(x, y)
+			if tile == MapCycle.DEFAULT_DOOR:
+				continue
+			assert_false(world._is_active_tile_walkable(tile), "walked through the house at %s" % tile)
+	world.free()
+
+
+func test_the_front_door_opens_and_lets_you_back_out() -> void:
+	var world := _overworld()
+	assert_true(MapCycle.is_walkable(MapCycle.Mode.DEFAULT, MapCycle.DEFAULT_DOOR), "door")
+	assert_true(MapCycle.is_walkable(MapCycle.Mode.DEFAULT, MapCycle.DEFAULT_RETURN), "step back out")
+	assert_eq(MapCycle.DEFAULT_RETURN, MapCycle.DEFAULT_DOOR + Vector2i.DOWN, "return is at the door")
+	# Walking up onto the door tile enters the house.
+	world._player.place(MapCycle.DEFAULT_RETURN)
+	assert_true(world._player.try_step(Vector2i.UP), "can reach the door from outside")
+	world.free()
+
+
+## The beach mask is traced off the background art and knows nothing about props laid on top.
+func test_the_beach_house_is_solid_too() -> void:
+	for y in MapCycle.BEACH_HOUSE_FOOTPRINT.size.y:
+		for x in MapCycle.BEACH_HOUSE_FOOTPRINT.size.x:
+			var tile: Vector2i = MapCycle.BEACH_HOUSE_FOOTPRINT.position + Vector2i(x, y)
+			assert_false(MapCycle.is_walkable(MapCycle.Mode.BEACH, tile), "through the beach house at %s" % tile)
+	assert_true(MapCycle.is_walkable(MapCycle.Mode.BEACH, MapCycle.BEACH_DOOR), "its door still opens")

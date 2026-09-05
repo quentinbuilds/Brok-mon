@@ -23,7 +23,7 @@ func test_main_menu_uses_the_studio_asset() -> void:
 	assert_ne(style, null, "styled rather than textured")
 	assert_eq(style.bg_color, menu.FRAME_COLOR, "Studio cream")
 	assert_eq(style.border_color, menu.FRAME_BORDER, "Studio navy")
-	assert_true(menu.get_node("MainPage/Button0/Label").text.contains("PARTY"))
+	assert_true(menu.get_node("MainPage/Button0/Label").text.contains(menu.PARTY_LABEL))
 	assert_true(menu.get_node("MainPage/Button1/Label").text.contains("INVENTORY"))
 
 
@@ -43,6 +43,15 @@ func test_main_cursor_wraps_in_two_by_two_grid() -> void:
 	assert_eq(menu.selection, 1)
 	menu._move_cursor(Vector2i.UP)
 	assert_eq(menu.selection, 3)
+
+## The creature list is branded BROKEDEX in the UI; Page.PARTY is only the internal name.
+func test_the_creature_list_is_called_brokedex() -> void:
+	assert_eq(menu.PARTY_LABEL, "BROKEDEX")
+	assert_eq(menu.get_node("MainPage/Button0/Label").text, "BROKEDEX")
+	menu.selection = 0
+	menu._activate()
+	assert_eq(menu.get_node("DetailPage/Title").text, "BROKEDEX", "page heading too")
+
 
 func test_party_page_shows_active_creature_and_hp() -> void:
 	menu.selection = 0

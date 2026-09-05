@@ -20,7 +20,12 @@ const HEIGHT := 48
 
 ## Where a new game (or a stored tile that is no longer walkable) puts the player.
 const START_TILE := Vector2i(3, 3)
-const HOUSE_FOOTPRINT := Rect2i(29, 10, 3, 3)
+## The solid body of the house prop, in tiles. This has to agree with where the House sprite is
+## actually drawn in OverworldState.tscn: it used to sit three rows below the artwork, so the
+## player walked straight through the house and then hit a wall in the open grass underneath.
+## The sprite is 48x56 -- three tiles wide, three and a half tall -- pinned at tile (29, 8), and
+## its door is the bottom of the middle column, which is MapCycle.DEFAULT_DOOR.
+const HOUSE_FOOTPRINT := Rect2i(29, 8, 3, 3)
 
 const ATLAS_COLUMN := {
 	".": 0, ":": 1, "=": 2, "T": 3, "o": 4, "~": 5, ",": 6, "#": 7,
