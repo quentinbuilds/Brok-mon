@@ -18,8 +18,8 @@ var door_tiles: Dictionary = {}
 var tiles: Array = []
 var props: Array = []
 var spawn_tile := Vector2i(5, 25)
-var tile_atlas: Texture2D
-var prop_atlas: Texture2D
+var tile_atlas: Texture2D = preload("res://assets/tiles/jungle_tiles.png")
+var prop_atlas: Texture2D = preload("res://assets/sprites/jungle_props.png")
 
 
 class AtlasLayer extends Node2D:
@@ -137,8 +137,6 @@ class AtlasLayer extends Node2D:
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	tile_atlas = _texture_from_png("res://assets/tiles/jungle_tiles.png")
-	prop_atlas = _texture_from_png("res://assets/sprites/jungle_props.png")
 	var data := MapData.build()
 	tiles = data.ground
 	props = data.props
@@ -170,14 +168,6 @@ func _make_layer(
 	layer.setup(kind, ground_data, prop_data, tile_atlas, prop_atlas)
 	add_child(layer)
 	return layer
-
-
-func _texture_from_png(resource_path: String) -> Texture2D:
-	var image := Image.load_from_file(ProjectSettings.globalize_path(resource_path))
-	if image == null or image.is_empty():
-		push_error("Could not load atlas: " + resource_path)
-		return null
-	return ImageTexture.create_from_image(image)
 
 
 func map_size_px() -> Vector2:

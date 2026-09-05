@@ -24,6 +24,16 @@ func _ready() -> void:
 		finish()
 		return
 
+	if (
+			world.tile_atlas == null
+			or world.tile_atlas.resource_path != "res://assets/tiles/jungle_tiles.png"
+			or world.prop_atlas == null
+			or world.prop_atlas.resource_path != "res://assets/sprites/jungle_props.png"
+	):
+		report("error", "jungle atlases must use imported Texture2D resources")
+		finish()
+		return
+
 	if world.map_size_px() != Vector2(400, 240):
 		report("error", "jungle map must be 50x30 8px tiles")
 		finish()
