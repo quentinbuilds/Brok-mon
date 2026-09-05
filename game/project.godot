@@ -28,7 +28,6 @@ window/size/viewport_height=120
 window/size/window_width_override=800
 window/size/window_height_override=480
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/stretch/scale_mode="integer"
 
 [dotnet]
@@ -37,5 +36,4 @@ project/assembly_name="Gok-Mon"
 
 [rendering]
 
-textures/default_filters/use_nearest_mipmap_filter=false
 textures/canvas_textures/default_texture_filter=0
