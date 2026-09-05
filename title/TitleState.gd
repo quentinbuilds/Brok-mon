@@ -1,37 +1,74 @@
 extends GameStateBase
-## Placeholder title screen. Person 6 replaces the visuals; keep the transition.
+class_name TitleState
+## Fake 1998 cartridge boot on Person 6's title art: BOOT -> LABEL -> TITLE, glitching the prompt
+## once the title settles.
 ##
-## A does not leave immediately any more: it plays the line, then irises down onto the trainer
-## before handing over to the overworld. The iris itself lives on the Transition autoload, not in
-## this scene - GameState frees this node during the swap, so an effect owned here could only ever
-## play the closing half and would vanish before the overworld appeared.
+## A does not leave immediately: it plays the line, then irises down onto the trainer before
+## handing over to the overworld. The iris itself lives on the Transition autoload, not in this
+## scene - GameState frees this node during the swap, so an effect owned here could only ever play
+## the closing half and would vanish before the overworld appeared.
 ##
 ## Pressing A again during the intro skips it. Nobody wants to sit through the same joke on their
 ## twentieth playtest run, and it gives the tests a way to reach OVERWORLD in two frames.
 
-@onready var _line: Label = $Line
-@onready var _line_panel: ColorRect = $LinePanel
-@onready var _trainer: Sprite2D = $Trainer
+enum Beat { BOOT, LABEL, TITLE }
+
+const BOOT_SECS := 0.7
+const LABEL_SECS := 1.1
+const GLITCH_CYCLE := 2.4
+const GLITCH_ON := 0.14
+
+const LABEL_PROMPT := "(C)1998 QUENTIN SOFT\nLICENSED BY NOBODY"
+const TITLE_PROMPT := "PRESS A TO START"
+const GLITCH_PROMPT := "PRESS A TO CONSENT TO TRAINING"
 
 ## How long the line sits on screen before the iris starts closing.
 const READ_TIME := 1.1
 
 const IRIS_TIME := 0.55
 
+@onready var _trainer: Sprite2D = $Trainer
+@onready var _title: Label = $Title
+@onready var _prompt: Label = $Prompt
+@onready var _prompt_panel: ColorRect = $PromptPanel
+@onready var _line: Label = $Line
+@onready var _line_panel: ColorRect = $LinePanel
+
+var beat: int = Beat.BOOT
+var _elapsed := 0.0
 var _starting := false
 var _skipped := false
+
 
 func _on_enter() -> void:
 	# Arriving here with the screen still black (a return to title) would leave it black forever.
 	Transition.snap_open()
+	_set_beat(Beat.BOOT)
+	if AudioManager.has_sfx("confirm"):
+		AudioManager.play_sfx("confirm")
 
-func update(_delta: float) -> void:
+
+func update(delta: float) -> void:
+	# The boot sequence stops the moment the player commits: the cartridge chrome has nothing left
+	# to say once the line is on screen.
 	if _starting:
 		if InputManager.button_a_just_pressed():
 			_skipped = true
 		return
 	if InputManager.button_a_just_pressed():
 		_start()
+		return
+	_elapsed += delta
+	match beat:
+		Beat.BOOT:
+			if _elapsed >= BOOT_SECS:
+				_set_beat(Beat.LABEL)
+		Beat.LABEL:
+			if _elapsed >= LABEL_SECS:
+				_set_beat(Beat.TITLE)
+		Beat.TITLE:
+			_refresh_title_glitch()
+
 
 func _start() -> void:
 	_starting = true
@@ -50,12 +87,14 @@ func _start() -> void:
 		_skipped = false
 		_line.visible = false
 		_line_panel.visible = false
+		_set_beat(Beat.TITLE)
 		return
 	GameData.reset()
 	GameState.transition_to(GameState.State.OVERWORLD)
 	# Not awaited on purpose: transition_to() queues this node for deletion, and awaiting past
 	# that point resumes inside a freed object. The autoload finishes the reveal on its own.
 	Transition.open(0.0 if _skipped else IRIS_TIME)
+
 
 ## A wait that a skip can cut short, checked per frame rather than as one long timer.
 func _hold(seconds: float) -> void:
@@ -65,3 +104,49 @@ func _hold(seconds: float) -> void:
 		if not is_inside_tree():
 			return
 		left -= get_process_delta_time()
+
+
+func _set_beat(next: int) -> void:
+	beat = next
+	_elapsed = 0.0
+	match beat:
+		Beat.BOOT:
+			_show_chrome(false)
+			if _title:
+				_title.text = ""
+			if _prompt:
+				_prompt.text = ""
+		Beat.LABEL:
+			_show_chrome(true)
+			if _title:
+				_title.text = "GOK-MON"
+			if _prompt:
+				_prompt.text = LABEL_PROMPT
+			if AudioManager.has_sfx("menu"):
+				AudioManager.play_sfx("menu")
+		Beat.TITLE:
+			_show_chrome(true)
+			if _title:
+				_title.text = "GOK-MON"
+			if _prompt:
+				_prompt.text = TITLE_PROMPT
+
+
+func _show_chrome(on: bool) -> void:
+	if _trainer:
+		_trainer.visible = on
+	if _title:
+		_title.visible = on
+	if _prompt:
+		_prompt.visible = on
+	if _prompt_panel:
+		_prompt_panel.visible = on
+
+
+func _refresh_title_glitch() -> void:
+	if _prompt == null:
+		return
+	if fmod(_elapsed, GLITCH_CYCLE) < GLITCH_ON:
+		_prompt.text = GLITCH_PROMPT
+	else:
+		_prompt.text = TITLE_PROMPT
