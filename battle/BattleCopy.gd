@@ -70,6 +70,22 @@ static func you_said(line: String) -> String:
 	return "You: \"%s\"" % line
 
 
+static func gained_exp(player_name: String, amount: int) -> String:
+	return "%s gained %d EXP." % [player_name, amount]
+
+
+static func leveled_up(player_name: String, new_level: int) -> String:
+	return "%s grew to Lv.%d!" % [player_name, new_level]
+
+
+static func learned_move(player_name: String, move_name: String) -> String:
+	return "%s learned %s!" % [player_name, move_name]
+
+
+static func uninstalled_move(dropped_name: String) -> String:
+	return "Uninstalled %s. Inbox full." % dropped_name
+
+
 static func fits(text: String) -> bool:
 	var wrapped := MessageBox.wrap_lines(text)
 	if wrapped.size() > BattleConfig.TEXT_MAX_LINES or wrapped.is_empty():
