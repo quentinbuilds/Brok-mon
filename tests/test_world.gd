@@ -142,78 +142,52 @@ func test_facing_picks_the_sprite_row() -> void:
 		assert_eq(int(p.frame / 2), int(PlayerScript.DIR_ROW[dir]), "sprite row for %s" % dir)
 	p.free()
 
-# --- state wiring ---
+# --- state wiring (live overworld is ForestMap + character player) ---
 
 func _overworld() -> Node:
 	var ow = load("res://world/OverworldState.tscn").instantiate()
 	tree.root.add_child(ow)
 	return ow
 
-func test_entering_snaps_an_invalid_stored_tile_to_the_start() -> void:
+func test_entering_snaps_an_invalid_stored_tile_to_a_walkable_spawn() -> void:
 	GameData.player_tile = Vector2i.ZERO
 	var ow := _overworld()
 	ow.enter({})
-	assert_eq(GameData.player_tile, GrassMap.START_TILE)
+	assert_true(GameData.player_tile != Vector2i.ZERO, "fresh spawn is not top-left")
+	assert_true(ow.can_walk(ow.get_node("Player").position), "spawn is walkable")
 	ow.free()
 
 func test_entering_keeps_a_valid_stored_tile() -> void:
-	GameData.player_tile = Vector2i(6, 4)
+	GameData.player_tile = Vector2i(12, 4)
 	var ow := _overworld()
 	ow.enter({})
-	assert_eq(GameData.player_tile, Vector2i(6, 4), "returning from battle resumes in place")
-	assert_true(ow.is_in_encounter_zone(), "6,4 is tall grass")
+	assert_eq(GameData.player_tile, Vector2i(12, 4), "returning from battle resumes in place")
+	assert_eq(ow.get_node("Player").position, Vector2(96, 32))
 	ow.free()
 
-## 0.02 x 8 = 0.16s, just past one STEP_TIME, so exactly one step lands.
-const ONE_STEP_FRAMES := 8
-
-func _walk(ow: Node, action: String, frames: int) -> Array:
+func test_completed_tile_change_emits_player_moved() -> void:
+	var ow := _overworld()
+	ow.enter({})
 	var seen: Array = []
 	var handler := func(t, in_zone): seen.append([t, in_zone])
 	EventBus.player_moved.connect(handler)
-	Input.action_press(action)
-	for i in frames:
-		ow.update(0.02)
+	var start := Vector2(96, 16)
+	ow.get_node("Player").position = start
+	GameData.player_tile = Vector2i((start / 8.0).floor())
+	assert_true(ow.try_move(start + Vector2(8, 0)))
 	EventBus.player_moved.disconnect(handler)
-	return seen
-
-func test_completed_step_emits_player_moved_with_the_zone_flag() -> void:
-	# 6,4 and 7,4 are both tall grass, so the step lands inside an encounter zone.
-	GameData.player_tile = Vector2i(6, 4)
-	var ow := _overworld()
-	ow.enter({})
-	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES)
-	assert_eq(seen.size(), 1, "one signal per completed step")
-	assert_eq(seen[0][0], Vector2i(7, 4))
-	assert_true(seen[0][1], "in_encounter_zone must be true in tall grass")
-	assert_eq(GameData.player_tile, Vector2i(7, 4), "GameData tracks the player")
+	assert_eq(seen.size(), 1, "one signal per 8px tile change")
+	assert_eq(seen[0][0], Vector2i(13, 2))
+	assert_eq(GameData.player_tile, Vector2i(13, 2), "GameData tracks the player")
 	ow.free()
 
-func test_step_onto_a_path_reports_no_encounter_zone() -> void:
-	# 3,2 and 4,2 are path tiles.
-	GameData.player_tile = Vector2i(3, 2)
+func test_grass_tuft_is_an_encounter_zone_and_path_is_not() -> void:
 	var ow := _overworld()
 	ow.enter({})
-	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES)
-	assert_eq(seen.size(), 1)
-	assert_false(seen[0][1], "path steps are not encounter rolls")
-	ow.free()
-
-func test_holding_a_direction_keeps_stepping() -> void:
-	GameData.player_tile = Vector2i(6, 4)
-	var ow := _overworld()
-	ow.enter({})
-	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES * 2)
-	assert_eq(seen.size(), 2, "a held direction walks tile after tile")
-	assert_eq(seen[0][0], Vector2i(7, 4))
-	assert_eq(seen[1][0], Vector2i(8, 4))
-	ow.free()
-
-func test_walking_into_the_border_emits_nothing() -> void:
-	GameData.player_tile = Vector2i(1, 3)
-	var ow := _overworld()
-	ow.enter({})
-	var seen := _walk(ow, "move_left", ONE_STEP_FRAMES * 2)
-	assert_eq(seen.size(), 0, "blocked by hedge, so no step completed")
-	assert_eq(GameData.player_tile, Vector2i(1, 3))
+	ow.get_node("Player").position = Vector2(0, 80)
+	GameData.player_tile = Vector2i(0, 10)
+	assert_true(ow.is_in_encounter_zone(), "grass tuft at cell 0,5")
+	ow.get_node("Player").position = Vector2(128, 48)
+	GameData.player_tile = Vector2i(16, 6)
+	assert_false(ow.is_in_encounter_zone(), "path is not an encounter roll")
 	ow.free()

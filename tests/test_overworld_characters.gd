@@ -1,4 +1,4 @@
-﻿extends TestCase
+extends TestCase
 ## Overworld characters: 20-row sheet, named placeable scenes, player is id 0.
 
 const OverworldCharacter := preload("res://world/characters/OverworldCharacter.gd")
@@ -71,6 +71,22 @@ func test_character_19_last_frame() -> void:
 	ch.queue_free()
 
 
+func test_player_uses_character_id_0() -> void:
+	var packed := load("res://world/OverworldState.tscn") as PackedScene
+	assert_true(packed != null, "OverworldState.tscn must load")
+	if packed == null:
+		return
+	var ow: Node = packed.instantiate()
+	tree.root.add_child(ow)
+	await tree.process_frame
+	var player := ow.get_node_or_null("Player")
+	assert_true(player != null, "Player node kept")
+	if player != null:
+		assert_eq(player.get("character_id"), 0)
+		assert_true(player is AnimatedSprite2D)
+	ow.queue_free()
+
+
 func test_named_scenes_load() -> void:
 	for i in OverworldCharacter.COUNT:
 		var path := OverworldCharacter.scene_path(i)
@@ -100,4 +116,3 @@ func _spawn_character(id: int):
 	tree.root.add_child(ch)
 	await tree.process_frame
 	return ch
-

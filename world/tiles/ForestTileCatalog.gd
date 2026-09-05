@@ -112,6 +112,13 @@ const WATER_TILES := [
 	"pond_sand_se",
 ]
 
+const ENCOUNTER_TILES := [
+	"grass_tuft_a",
+	"grass_tuft_b",
+	"grass_tuft_c",
+]
+
+
 static func has_tile(tile_name: String) -> bool:
 	return TILES.has(tile_name)
 
@@ -127,3 +134,7 @@ static func source_id(tile_name: String) -> int:
 
 static func is_water(tile_name: String) -> bool:
 	return tile_name in WATER_TILES
+
+
+static func is_encounter(tile_name: String) -> bool:
+	return tile_name in ENCOUNTER_TILES
