@@ -514,3 +514,25 @@ func test_a_battle_takes_the_theme_away() -> void:
 	EventBus.battle_escaped.emit()
 	assert_eq(_mgr().current_music(), "", "the battle track survived running away")
 	_mgr().stop_music()
+
+## The map theme plays louder than the shared music level on purpose - see MUSIC_GAIN_DB. It is
+## the track that carries the game between battles, and at -6 dB it read as background.
+func test_the_overworld_theme_plays_above_the_shared_music_level() -> void:
+	assert_true(_mgr().music_volume_db(OVERWORLD_TRACK) > _mgr().MUSIC_VOLUME_DB,
+		"the overworld trim is not being applied")
+	_mgr().stop_music()
+	_arrive_in_the_overworld()
+	for p in _music_players():
+		if p.playing:
+			assert_eq(p.volume_db, _mgr().music_volume_db(OVERWORLD_TRACK))
+	_mgr().stop_music()
+
+## Amplifying past 0 dB clips the mix: every music file here is normalised to -1 dBFS already.
+func test_no_track_is_trimmed_into_clipping() -> void:
+	for track in _mgr().MUSIC_GAIN_DB.keys():
+		assert_true(_mgr().music_volume_db(track) <= 0.0,
+			"%s would play at %.1f dB" % [track, _mgr().music_volume_db(track)])
+
+## A track with no entry keeps the shared level - the trim is an exception, not a new default.
+func test_untrimmed_tracks_keep_the_shared_level() -> void:
+	assert_eq(_mgr().music_volume_db(TRACK), _mgr().MUSIC_VOLUME_DB)

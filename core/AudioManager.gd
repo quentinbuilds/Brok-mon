@@ -39,6 +39,12 @@ const BATTLE_MUSIC := "battle"
 ## Long enough not to sound like a cut, short enough that the victory sting is not sung over.
 const BATTLE_FADE := 0.35
 
+## Per-track trim on top of MUSIC_VOLUME_DB, for a track mastered against a different target than
+## the rest. The overworld theme carries the whole game between battles and was still reading as
+## background on the board, so it plays at the ceiling; the file itself is already normalised, so
+## the last of the loudness has to come from the mix rather than from more limiting.
+const MUSIC_GAIN_DB := {"overworld": 6.0}
+
 ## The overworld theme. Driven off GameState rather than started by world/ itself: the overworld
 ## scene is built once and then hidden and unhidden, so its enter() runs on the first walk out of
 ## the title and never again - a battle handing the player back would leave the map silent.
@@ -245,6 +251,11 @@ func _on_intro_finished() -> void:
 		return
 	_start(_music_loop, _music_path(_music_name), true)
 
+## Resting level for a track: the shared music level plus that track's trim, never above 0 dB -
+## the files peak at -1 dBFS and amplifying past that only clips the mix.
+func music_volume_db(track: String) -> float:
+	return minf(MUSIC_VOLUME_DB + float(MUSIC_GAIN_DB.get(track, 0.0)), 0.0)
+
 func _start(player: AudioStreamPlayer, path: String, looping: bool) -> void:
 	var stream: AudioStream = load(path)
 	# Looping is set here rather than in the .import file so that dropping a track in works with
@@ -252,7 +263,7 @@ func _start(player: AudioStreamPlayer, path: String, looping: bool) -> void:
 	if stream is AudioStreamOggVorbis or stream is AudioStreamMP3:
 		stream.loop = looping
 	player.stream = stream
-	player.volume_db = MUSIC_VOLUME_DB
+	player.volume_db = music_volume_db(_music_name)
 	player.play()
 
 ## Resolves a track name to a file. .ogg first, per MUSIC_DIR's convention; .mp3 is accepted so a
