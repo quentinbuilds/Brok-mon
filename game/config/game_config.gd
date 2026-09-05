@@ -1,24 +1,25 @@
 extends Node
-## Overall display and asset contract for the whole team.
-## Arduino Waveshare screen is portrait 480x800.
-## Source art is authored at 200x120 and scaled up to the display.
 
-const DISPLAY_WIDTH := 480
-const DISPLAY_HEIGHT := 800
+const LOGICAL_WIDTH := 200
+const LOGICAL_HEIGHT := 120
+const LOGICAL_SIZE := Vector2i(LOGICAL_WIDTH, LOGICAL_HEIGHT)
+
+const DISPLAY_WIDTH := 800
+const DISPLAY_HEIGHT := 480
 const DISPLAY_SIZE := Vector2i(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
-const ASSET_WIDTH := 200
-const ASSET_HEIGHT := 120
-const ASSET_SIZE := Vector2i(ASSET_WIDTH, ASSET_HEIGHT)
+const PIXEL_SCALE := 4
+const TILE_SIZE := 8
+
+# Compatibility: these now describe the logical art canvas.
+const ASSET_WIDTH := LOGICAL_WIDTH
+const ASSET_HEIGHT := LOGICAL_HEIGHT
+const ASSET_SIZE := LOGICAL_SIZE
 
 const DEBUG_STATE_JUMPS := true
 
-## Uniform scale that fits a 200x120 asset onto the 480x800 display.
 func asset_fit_scale() -> float:
-	var sx := float(DISPLAY_WIDTH) / float(ASSET_WIDTH)
-	var sy := float(DISPLAY_HEIGHT) / float(ASSET_HEIGHT)
-	return minf(sx, sy)
-
+	return float(PIXEL_SCALE)
 
 func asset_to_display(asset_pos: Vector2) -> Vector2:
-	return asset_pos * asset_fit_scale()
+	return asset_pos * PIXEL_SCALE

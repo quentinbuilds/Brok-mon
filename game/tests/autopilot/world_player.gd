@@ -64,7 +64,17 @@ func _ready() -> void:
 		finish()
 		return
 
-	report("viewport", get_viewport().get_visible_rect().size)
+	report("logical_size", GameConfig.LOGICAL_SIZE)
+	report("display_size", GameConfig.DISPLAY_SIZE)
+	report("pixel_scale", GameConfig.PIXEL_SCALE)
+	if get_viewport().get_visible_rect().size != Vector2(200, 120):
+		report("error", "logical viewport must be 200x120")
+		finish()
+		return
+	if GameConfig.DISPLAY_SIZE != Vector2i(800, 480):
+		report("error", "physical display must be 800x480")
+		finish()
+		return
 	finish()
 
 
