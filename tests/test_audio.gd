@@ -534,5 +534,14 @@ func test_no_track_is_trimmed_into_clipping() -> void:
 			"%s would play at %.1f dB" % [track, _mgr().music_volume_db(track)])
 
 ## A track with no entry keeps the shared level - the trim is an exception, not a new default.
+## The battle track is the one that has to stay there: effects play over it all fight.
 func test_untrimmed_tracks_keep_the_shared_level() -> void:
 	assert_eq(_mgr().music_volume_db(TRACK), _mgr().MUSIC_VOLUME_DB)
+	assert_false(_mgr().MUSIC_GAIN_DB.has(TRACK), "the battle track was trimmed above the effects")
+
+## Every trimmed track has to actually be on disk, or the trim is describing a track that is not
+## there - which is how a renamed file quietly goes back to playing at the shared level.
+func test_every_trimmed_track_exists() -> void:
+	for track in _mgr().MUSIC_GAIN_DB.keys():
+		assert_true(_mgr().has_music(track), "MUSIC_GAIN_DB names '%s', which is not in %s" % [
+			track, _mgr().MUSIC_DIR])

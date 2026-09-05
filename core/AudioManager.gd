@@ -40,10 +40,11 @@ const BATTLE_MUSIC := "battle"
 const BATTLE_FADE := 0.35
 
 ## Per-track trim on top of MUSIC_VOLUME_DB, for a track mastered against a different target than
-## the rest. The overworld theme carries the whole game between battles and was still reading as
-## background on the board, so it plays at the ceiling; the file itself is already normalised, so
-## the last of the loudness has to come from the mix rather than from more limiting.
-const MUSIC_GAIN_DB := {"overworld": 6.0}
+## the rest. The map and title themes carry whole screens on their own and read as background at
+## the shared level, so they play at the ceiling; both files are already normalised, so the last
+## of the loudness has to come from the mix rather than from more limiting. The battle track is
+## deliberately not in here - it plays under sound effects that have to cut through it.
+const MUSIC_GAIN_DB := {"overworld": 6.0, "title": 6.0}
 
 ## The overworld theme. Driven off GameState rather than started by world/ itself: the overworld
 ## scene is built once and then hidden and unhidden, so its enter() runs on the first walk out of
