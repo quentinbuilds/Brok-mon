@@ -73,21 +73,41 @@ static func try_run(failed_attempts: int, rng: RandomNumberGenerator) -> bool:
 
 
 static func default_move(creature: Creature) -> BattleMove:
-	match String(creature.type):
+	var t := ""
+	if creature != null:
+		t = String(creature.type)
+	match t:
 		"FIRE":
-			return BattleMove.make(&"ember", "EMBER", &"FIRE", 11)
+			return MoveDex.get_move(&"ember")
 		"GRASS":
-			return BattleMove.make(&"vine_whip", "VINE WHIP", &"GRASS", 9)
+			return MoveDex.get_move(&"vine_whip")
 		"ROCK":
-			return BattleMove.make(&"rock_throw", "ROCK THROW", &"ROCK", 10)
+			return MoveDex.get_move(&"rock_throw")
 		"WATER":
-			return BattleMove.make(&"water_gun", "WATER GUN", &"WATER", 10)
+			return MoveDex.get_move(&"water_gun")
+		"ELECTRIC":
+			return MoveDex.get_move(&"static")
 		_:
-			return BattleMove.make(&"tackle", "TACKLE", &"NORMAL", 10)
+			return MoveDex.get_move(&"tackle")
 
 
-static func choose_enemy_move(enemy: Creature, _rng: RandomNumberGenerator) -> BattleMove:
-	return default_move(enemy)
+static func moves_of(creature: Creature) -> Array[BattleMove]:
+	var out: Array[BattleMove] = []
+	if creature != null:
+		for id in creature.known_move_ids:
+			var move := MoveDex.get_move(StringName(id))
+			if move != null:
+				out.append(move)
+	if out.is_empty():
+		out.append(default_move(creature))
+	return out
+
+
+static func choose_enemy_move(enemy: Creature, rng: RandomNumberGenerator) -> BattleMove:
+	var pool := moves_of(enemy)
+	if pool.size() == 1 or rng == null:
+		return pool[0]
+	return pool[rng.randi_range(0, pool.size() - 1)]
 
 
 static func hp_fraction(creature: Creature) -> float:

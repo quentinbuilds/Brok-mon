@@ -68,6 +68,9 @@ func _on_enter() -> void:
 	busy = false
 	ragebait.reset()
 	ui.rage_level = 0
+	if player.level <= 0:
+		player.level = 5
+	Learnset.ensure_moves(player)
 	ui.bind(player, enemy)
 	seq.instant = instant
 
@@ -78,9 +81,13 @@ func _on_enter() -> void:
 
 	var resuming := bool(payload.get("resume", false))
 	if not resuming:
+		enemy.level = Leveling.roll_wild_level(player.level, rng)
+		enemy.known_move_ids = PackedStringArray()
+		Learnset.ensure_moves(enemy)
 		EventBus.battle_started.emit(player, enemy)
 		_run_intro()
 	else:
+		Learnset.ensure_moves(enemy)
 		# Failed catch: wild gets a free swing, then the menu returns.
 		_enemy_turn()
 
@@ -91,6 +98,8 @@ func update(_delta: float) -> void:
 	match ui.mode:
 		BattleUI.Mode.ACTION:
 			_handle_action_menu()
+		BattleUI.Mode.FIGHT:
+			_handle_fight_menu()
 		BattleUI.Mode.BAG:
 			_handle_list(ui.bag_menu, _confirm_bag)
 		BattleUI.Mode.PARTY:
@@ -153,7 +162,7 @@ func _handle_list(menu: ListMenu, on_confirm: Callable) -> void:
 func _choose(action: int) -> void:
 	match action:
 		ActionMenu.Action.FIGHT:
-			perform_attack()
+			_open_fight()
 		ActionMenu.Action.BAG:
 			_open_bag()
 		ActionMenu.Action.PARTY:
@@ -162,6 +171,39 @@ func _choose(action: int) -> void:
 			attempt_run()
 		ActionMenu.Action.RAGE:
 			perform_ragebait()
+
+
+func _open_fight() -> void:
+	ui.fight_menu.set_moves(BattleLogic.moves_of(player))
+	ui.mode = BattleUI.Mode.FIGHT
+
+
+func _handle_fight_menu() -> void:
+	if sub != Sub.PLAYER_TURN:
+		return
+	var dir := InputManager.direction_just_pressed()
+	var moved := false
+	if dir == Vector2i.LEFT:
+		moved = ui.fight_menu.move(-1, 0)
+	elif dir == Vector2i.RIGHT:
+		moved = ui.fight_menu.move(1, 0)
+	elif dir == Vector2i.UP:
+		moved = ui.fight_menu.move(0, -1)
+	elif dir == Vector2i.DOWN:
+		moved = ui.fight_menu.move(0, 1)
+	if moved:
+		ui.audio.menu_move()
+	if InputManager.button_b_just_pressed():
+		ui.audio.cancel()
+		_open_action_menu()
+		return
+	if InputManager.button_a_just_pressed():
+		var move := ui.fight_menu.current()
+		if move == null:
+			ui.audio.denied()
+			return
+		ui.audio.confirm()
+		perform_attack(move)
 
 
 func _open_bag() -> void:
@@ -191,12 +233,13 @@ func _confirm_party(row: Dictionary) -> void:
 
 # --- Public actions (also used by tests) ------------------------------------
 
-func perform_attack() -> void:
+func perform_attack(move: BattleMove = null) -> void:
 	if busy:
 		return
 	busy = true
 	sub = Sub.RESOLVING
-	var move := BattleLogic.default_move(player)
+	if move == null:
+		move = BattleLogic.moves_of(player)[0]
 	await seq.say_auto(BattleCopy.used_move(player.name, move.name))
 	await seq.lunge(ui.player_view)
 	var result := BattleLogic.resolve_attack(
@@ -210,6 +253,7 @@ func perform_attack() -> void:
 	if enemy.is_fainted():
 		await seq.faint(ui.enemy_view)
 		await seq.say_wait(BattleCopy.faint_wild(enemy.name))
+		await _award_exp()
 		_finish(Result.WON)
 		return
 	await _enemy_turn()
@@ -338,6 +382,24 @@ func _enemy_turn() -> void:
 		return
 	busy = false
 	_open_action_menu()
+
+
+func _award_exp() -> void:
+	var report := Leveling.grant_exp(player, enemy)
+	var gained: int = int(report.get("gained", 0))
+	if gained <= 0:
+		return
+	await seq.say_wait(BattleCopy.gained_exp(player.name, gained))
+	for step in report.get("levels", []):
+		await seq.say_wait(BattleCopy.leveled_up(player.name, int(step.get("level", player.level))))
+		var learned_id := String(step.get("learned", ""))
+		if learned_id.is_empty():
+			continue
+		var replaced_id := String(step.get("replaced", ""))
+		if not replaced_id.is_empty():
+			await seq.say_wait(BattleCopy.uninstalled_move(MoveDex.display_name(StringName(replaced_id))))
+		await seq.say_wait(BattleCopy.learned_move(player.name, MoveDex.display_name(StringName(learned_id))))
+	ui.player_display_hp = float(player.hp)
 
 
 func _finish(result: int) -> void:
