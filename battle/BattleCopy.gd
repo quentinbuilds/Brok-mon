@@ -28,6 +28,10 @@ static func faint_player(player_name: String) -> String:
 	return "%s fainted! Skill issue." % player_name
 
 
+static func blacked_out(player_name: String) -> String:
+	return "%s blacked out! Rolled back to last save." % player_name
+
+
 static func run_ok() -> String:
 	return "Got away safely!"
 

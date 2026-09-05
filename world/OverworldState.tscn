@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
@@ -14,6 +14,18 @@
 [ext_resource type="Texture2D" path="res://assets/backgrounds/house_interior_map.png" id="12_interior"]
 [ext_resource type="Texture2D" path="res://assets/studio/dialogue_box.png" id="13_dialogue"]
 [ext_resource type="Script" path="res://world/Minimap.gd" id="14_minimap"]
+[ext_resource type="PackedScene" path="res://world/characters/wizard.tscn" id="np_wizard"]
+[ext_resource type="PackedScene" path="res://world/characters/skeleton.tscn" id="np_skeleton"]
+[ext_resource type="PackedScene" path="res://world/characters/goblin.tscn" id="np_goblin"]
+[ext_resource type="PackedScene" path="res://world/characters/viking.tscn" id="np_viking"]
+[ext_resource type="PackedScene" path="res://world/characters/knight.tscn" id="np_knight"]
+[ext_resource type="PackedScene" path="res://world/characters/pigtails.tscn" id="np_pigtails"]
+[ext_resource type="PackedScene" path="res://world/characters/pink_dress.tscn" id="np_pink_dress"]
+[ext_resource type="PackedScene" path="res://world/characters/grey_shirt.tscn" id="np_grey_shirt"]
+[ext_resource type="PackedScene" path="res://world/characters/vest_man.tscn" id="np_vest_man"]
+[ext_resource type="PackedScene" path="res://world/characters/mohawk.tscn" id="np_mohawk"]
+[ext_resource type="PackedScene" path="res://world/characters/rusty_hair.tscn" id="np_rusty_hair"]
+[ext_resource type="PackedScene" path="res://world/characters/maroon.tscn" id="np_maroon"]
 
 [sub_resource type="AtlasTexture" id="DialogueFrame"]
 atlas = ExtResource("13_dialogue")
@@ -60,6 +72,54 @@ position = Vector2(128, 32)
 [node name="sign" parent="." instance=ExtResource("9_sign") groups=["npc"]]
 z_index = 1
 position = Vector2(48, 64)
+
+[node name="wizard" parent="." instance=ExtResource("np_wizard") groups=["npc"]]
+z_index = 1
+position = Vector2(208, 320)
+
+[node name="skeleton" parent="." instance=ExtResource("np_skeleton") groups=["npc"]]
+z_index = 1
+position = Vector2(816, 512)
+
+[node name="goblin" parent="." instance=ExtResource("np_goblin") groups=["npc"]]
+z_index = 1
+position = Vector2(608, 480)
+
+[node name="viking" parent="." instance=ExtResource("np_viking") groups=["npc"]]
+z_index = 1
+position = Vector2(144, 624)
+
+[node name="knight" parent="." instance=ExtResource("np_knight") groups=["npc"]]
+z_index = 1
+position = Vector2(640, 656)
+
+[node name="pigtails" parent="." instance=ExtResource("np_pigtails") groups=["npc"]]
+z_index = 1
+position = Vector2(352, 704)
+
+[node name="pink_dress" parent="." instance=ExtResource("np_pink_dress") groups=["npc"]]
+z_index = 1
+position = Vector2(736, 336)
+
+[node name="grey_shirt" parent="." instance=ExtResource("np_grey_shirt") groups=["npc"]]
+z_index = 1
+position = Vector2(576, 96)
+
+[node name="vest_man" parent="." instance=ExtResource("np_vest_man") groups=["npc"]]
+z_index = 1
+position = Vector2(320, 208)
+
+[node name="mohawk" parent="." instance=ExtResource("np_mohawk") groups=["npc"]]
+z_index = 1
+position = Vector2(896, 720)
+
+[node name="rusty_hair" parent="." instance=ExtResource("np_rusty_hair") groups=["npc"]]
+z_index = 1
+position = Vector2(704, 240)
+
+[node name="maroon" parent="." instance=ExtResource("np_maroon") groups=["npc"]]
+z_index = 1
+position = Vector2(192, 448)
 
 [node name="House" type="Sprite2D" parent="."]
 z_index = 1

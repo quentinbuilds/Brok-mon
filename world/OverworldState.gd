@@ -41,6 +41,25 @@ var _talk_counts: Dictionary = {}
 const PROMPT_OFFSET := Vector2(-7, -13)
 
 
+## The overworld is built once and never freed, so this connects once. GameStateBase drives its
+## lifecycle through _notification rather than _ready, so defining _ready here is safe.
+func _ready() -> void:
+	if not EventBus.battle_lost.is_connected(_on_blacked_out):
+		EventBus.battle_lost.connect(_on_blacked_out)
+
+
+## Losing sends the player home. Core is connected to battle_lost before this node exists, so by
+## the time this runs the swap back to OVERWORLD has already happened and _on_enter has been and
+## gone -- which is why the walk home is done here rather than there. The battle holds the screen
+## black across the whole thing, so none of it is seen.
+func _on_blacked_out() -> void:
+	if not is_inside_tree():
+		return
+	_close_talk()
+	next_exterior = MapCycle.Mode.BEACH
+	_switch_map(MapCycle.Mode.DEFAULT, GrassMap.START_TILE)
+
+
 func _on_enter() -> void:
 	if _tiles.get_used_cells().is_empty():
 		_paint_map()

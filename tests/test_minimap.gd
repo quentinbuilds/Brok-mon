@@ -84,12 +84,13 @@ func test_npcs_show_as_their_own_dots() -> void:
 	world.free()
 
 
+## The beach is smaller than the window, so it is centred and framed by empty margin.
 func test_off_map_reads_as_empty() -> void:
 	var world := _overworld()
 	var map: Minimap = world.get_node("Minimap")
+	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
 	map._blink_on = false
-	map.track(Vector2i(1, 1))
-	# The default map is smaller than the window, so it is centred and framed by empty margin.
+	map.refresh()
 	assert_eq(map._image.get_pixel(1, 1), Minimap.OFF_MAP)
 	world.free()
 
@@ -147,16 +148,16 @@ func test_walking_moves_the_window() -> void:
 
 
 ## A map smaller than the window is centred rather than pinned to the player, so standing in a
-## corner does not fill the widget with void.
+## corner does not fill the widget with void. The beach is the small one.
 func test_window_frames_a_small_map_instead_of_chasing_the_player() -> void:
 	var world := _overworld()
 	var map: Minimap = world.get_node("Minimap")
-	map.track(Vector2i(1, 1))
-	var corner := map.window_origin()
-	map.track(Vector2i(GrassMap.WIDTH - 2, GrassMap.HEIGHT - 2))
-	assert_eq(map.window_origin(), corner, "whole map stays framed from either corner")
-	var expected := -(Minimap.VIEW - MapCycle.map_tiles(MapCycle.Mode.DEFAULT)) / 2
-	assert_eq(corner, expected, "centred")
+	world._switch_map(MapCycle.Mode.BEACH, MapCycle.BEACH_RETURN)
+	map.track(Vector2i(11, 1))
+	var framed := map.window_origin()
+	map.track(Vector2i(MapCycle.BEACH_WIDTH - 2, MapCycle.BEACH_HEIGHT - 2))
+	assert_eq(map.window_origin(), framed, "whole map stays framed from either corner")
+	assert_eq(framed, -(Minimap.VIEW - MapCycle.map_tiles(MapCycle.Mode.BEACH)) / 2, "centred")
 	world.free()
 
 
@@ -164,12 +165,12 @@ func test_window_frames_a_small_map_instead_of_chasing_the_player() -> void:
 func test_window_clamps_to_the_edges_of_a_large_map() -> void:
 	var world := _overworld()
 	var map: Minimap = world.get_node("Minimap")
-	# Pretend the world grew past the widget.
-	map.map_mode = MapCycle.Mode.DEFAULT
 	var big := MapCycle.map_tiles(MapCycle.Mode.DEFAULT)
-	if big.x > Minimap.VIEW.x:
-		map.track(Vector2i.ZERO)
-		assert_eq(map.window_origin().x, 0, "does not scroll past the left edge")
-		map.track(Vector2i(big.x - 1, 0))
-		assert_eq(map.window_origin().x, big.x - Minimap.VIEW.x, "stops at the right edge")
+	assert_true(big.x > Minimap.VIEW.x, "the default map outgrew the widget")
+	map.track(Vector2i.ZERO)
+	assert_eq(map.window_origin().x, 0, "does not scroll past the left edge")
+	map.track(Vector2i(big.x - 1, 0))
+	assert_eq(map.window_origin().x, big.x - Minimap.VIEW.x, "stops at the right edge")
+	map.track(Vector2i(big.x / 2, big.y / 2))
+	assert_eq(map.window_origin().x, big.x / 2 - Minimap.VIEW.x / 2, "scrolls with the player")
 	world.free()
