@@ -2,7 +2,7 @@ class_name BattleUI
 extends Control
 ## Immediate-mode battle screen. BattleState owns the rules.
 
-enum Mode { MESSAGE, ACTION, BAG, PARTY }
+enum Mode { MESSAGE, ACTION, BAG, PARTY, FIGHT }
 
 var mode: int = Mode.MESSAGE
 var player: Creature
@@ -16,6 +16,7 @@ var show_player_panel: bool = true
 var action_menu := ActionMenu.new()
 var bag_menu := ListMenu.new()
 var party_menu := ListMenu.new()
+var fight_menu := FightMenu.new()
 var message := MessageBox.new()
 
 var enemy_view: CreatureView
@@ -94,6 +95,7 @@ func _draw_enemy_panel() -> void:
 	var r := BattleConfig.ENEMY_PANEL
 	Dmg.panel(self, r)
 	Dmg.text(self, Vector2i(r.position.x + 4, r.position.y + 3), enemy.name)
+	_draw_level(r, enemy.level)
 	var bar := Rect2i(r.position.x + 4, r.position.y + 14, BattleConfig.HP_BAR_SIZE.x, BattleConfig.HP_BAR_SIZE.y)
 	var frac := enemy_display_hp / float(enemy.max_hp) if enemy.max_hp > 0 else 0.0
 	Dmg.hp_bar(self, bar, frac)
@@ -115,6 +117,7 @@ func _draw_player_panel() -> void:
 	var r := BattleConfig.PLAYER_PANEL
 	Dmg.panel(self, r)
 	Dmg.text(self, Vector2i(r.position.x + 4, r.position.y + 3), player.name)
+	_draw_level(r, player.level)
 	var bar := Rect2i(r.position.x + 4, r.position.y + 13, BattleConfig.HP_BAR_SIZE.x, BattleConfig.HP_BAR_SIZE.y)
 	var frac := player_display_hp / float(player.max_hp) if player.max_hp > 0 else 0.0
 	var flash := frac <= BattleConfig.LOW_HP_FRACTION and frac > 0.0 and _low_hp_flash_on()
@@ -128,6 +131,8 @@ func _draw_bottom_box() -> void:
 	match mode:
 		Mode.ACTION:
 			_draw_action_menu()
+		Mode.FIGHT:
+			_draw_fight_menu()
 		Mode.BAG:
 			_draw_list(bag_menu, "BAG EMPTY")
 		Mode.PARTY:
@@ -145,6 +150,31 @@ func _draw_message() -> void:
 		), lines[i])
 	if message.prompt_visible():
 		Dmg.cursor(self, Vector2i(BattleConfig.SCREEN.x - 12, BattleConfig.BOTTOM_BOX.position.y + 24))
+
+
+func _draw_level(panel: Rect2i, level: int) -> void:
+	var label := "Lv%d" % level
+	var x := panel.position.x + panel.size.x - 4 - int(Dmg.text_width(label))
+	Dmg.text(self, Vector2i(x, panel.position.y + 3), label)
+
+
+func _draw_fight_menu() -> void:
+	if fight_menu.is_empty():
+		Dmg.text(self, BattleConfig.TEXT_ORIGIN, "NO MOVES")
+		return
+	for row in BattleConfig.FIGHT_ROWS:
+		for col in BattleConfig.FIGHT_COLS:
+			var move := fight_menu.cell_at(row, col)
+			if move == null:
+				continue
+			var pos := Vector2i(
+				BattleConfig.MENU_ORIGIN.x + col * BattleConfig.FIGHT_COL_WIDTH,
+				BattleConfig.MENU_ORIGIN.y + row * BattleConfig.MENU_ROW_HEIGHT
+			)
+			Dmg.text(self, pos, move.name)
+			if fight_menu.row == row and fight_menu.col == col:
+				Dmg.cursor(self, Vector2i(pos.x - 8, pos.y + 1))
+	Dmg.text(self, Vector2i(BattleConfig.SCREEN.x - 40, BattleConfig.BOTTOM_BOX.position.y + 24), "B BACK")
 
 
 func _draw_action_menu() -> void:

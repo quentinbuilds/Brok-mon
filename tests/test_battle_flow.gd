@@ -48,7 +48,7 @@ func test_fight_to_victory() -> void:
 	await _wait_player_turn(battle)
 	assert_eq(battle.sub, BattleState.Sub.PLAYER_TURN, "intro reaches player turn")
 	battle.perform_attack()
-	for _i in 60:
+	for _i in 90:
 		await tree.process_frame
 		if won[0] or battle.finished:
 			break

@@ -19,6 +19,9 @@ func test_has_prd_fields() -> void:
 	assert_eq(c.type, &"FIRE")
 	assert_eq(c.attack, 8)
 	assert_eq(c.catch_rate, 0.35)
+	assert_eq(c.level, 5)
+	assert_eq(c.exp, 0)
+	assert_eq(c.known_move_ids.size(), 0)
 
 func test_make_instance_is_a_healed_copy() -> void:
 	var def := _definition()

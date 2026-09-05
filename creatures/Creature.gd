@@ -12,6 +12,10 @@ extends Resource
 @export var attack: int = 5
 @export var defense: int = 5
 @export_range(0.0, 1.0) var catch_rate: float = 0.5
+## Runtime progress. Definitions stay at the defaults; battle seeds moves on first use.
+@export var level: int = 5
+@export var exp: int = 0
+@export var known_move_ids: PackedStringArray = PackedStringArray()
 
 ## Returns a distinct copy at full HP, suitable for a wild encounter or a party member.
 func make_instance() -> Creature:

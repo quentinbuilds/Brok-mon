@@ -29,6 +29,23 @@ func test_party_label_not_trademark() -> void:
 	assert_eq(ActionMenu.LABELS[ActionMenu.Action.PARTY], "PARTY")
 
 
+func test_fight_menu_two_by_two() -> void:
+	var m := FightMenu.new()
+	m.set_moves([
+		MoveDex.get_move(&"tackle"),
+		MoveDex.get_move(&"ember"),
+		MoveDex.get_move(&"vine_whip"),
+		MoveDex.get_move(&"water_gun"),
+	])
+	assert_eq(m.current().id, &"tackle")
+	m.move(1, 0)
+	assert_eq(m.current().id, &"ember")
+	m.move(0, 1)
+	assert_eq(m.current().id, &"water_gun")
+	m.move(-1, 0)
+	assert_eq(m.current().id, &"vine_whip")
+
+
 func test_list_menu_window() -> void:
 	var m := ListMenu.new()
 	assert_true(m.is_empty())
