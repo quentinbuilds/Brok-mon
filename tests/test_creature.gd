@@ -36,3 +36,24 @@ func test_is_fainted() -> void:
 	assert_false(c.is_fainted())
 	c.hp = 0
 	assert_true(c.is_fainted())
+
+
+## Two creatures shipped with 16x16 programmer-art placeholders while the rest used full Studio
+## art, so a couple of them showed up in battle as green blocks. The battle stretches whatever
+## texture it is given into a square rect, so anything this small reads as a cube.
+func test_no_creature_still_has_placeholder_art() -> void:
+	var dir := DirAccess.open("res://creatures/data")
+	assert_ne(dir, null, "creature data is missing")
+	dir.list_dir_begin()
+	var file := dir.get_next()
+	var checked := 0
+	while file != "":
+		if file.ends_with(".tres"):
+			var creature: Creature = load("res://creatures/data/%s" % file)
+			assert_ne(creature.sprite, null, "%s has no sprite" % file)
+			var size := creature.sprite.get_size()
+			assert_true(size.x >= 64 and size.y >= 64,
+				"%s uses %dx%d placeholder art" % [file, int(size.x), int(size.y)])
+			checked += 1
+		file = dir.get_next()
+	assert_true(checked >= 5, "checked the whole roster, got %d" % checked)
