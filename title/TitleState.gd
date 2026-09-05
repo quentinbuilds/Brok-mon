@@ -127,7 +127,7 @@ func _set_beat(next: int) -> void:
 		Beat.LABEL:
 			_show_chrome(true)
 			if _title:
-				_title.text = "GOK-MON"
+				_title.text = "Brokémon"
 			if _prompt:
 				_prompt.text = LABEL_PROMPT
 			if AudioManager.has_sfx("menu"):
@@ -135,7 +135,7 @@ func _set_beat(next: int) -> void:
 		Beat.TITLE:
 			_show_chrome(true)
 			if _title:
-				_title.text = "GOK-MON"
+				_title.text = "Brokémon"
 			if _prompt:
 				_prompt.text = TITLE_PROMPT
 
