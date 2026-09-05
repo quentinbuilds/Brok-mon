@@ -70,8 +70,9 @@ func test_every_sfx_has_a_stream() -> void:
 func test_play_known_sfx_succeeds() -> void:
 	assert_true(_mgr().play_sfx("confirm"))
 
+## VOICES sfx players plus the two dedicated music players (intro and loop).
 func test_voice_pool_is_allocated() -> void:
-	assert_eq(_mgr().get_children().size(), _mgr().VOICES)
+	assert_eq(_mgr().get_children().size(), _mgr().VOICES + 2)
 
 ## Holds whether or not the optional assets/audio/*.wav files are present in this checkout.
 func test_overrides_are_consistent_with_disk() -> void:
@@ -113,3 +114,165 @@ func test_long_sounds_are_not_cut_while_voices_are_idle() -> void:
 			distinct += 1
 	assert_true(distinct >= mini(_mgr().VOICES, distinct), "voices reported: %d" % distinct)
 	assert_true(_mgr().VOICES >= 8, "pool too small for sampled clips: %d" % _mgr().VOICES)
+
+# --- music ---
+## Headless runs on the Dummy audio driver, so these assert the seam - resolution, the intro
+## handoff, state after stop - and never audibility. That is what audio/AudioTest.tscn is for.
+
+const TRACK := "battle"
+
+func _music_players() -> Array:
+	# The two players added after the sfx pool, in _ready order: intro then loop.
+	var kids := _mgr().get_children()
+	return [kids[_mgr().VOICES], kids[_mgr().VOICES + 1]]
+
+func test_music_players_are_outside_the_sfx_pool() -> void:
+	# A shared pool would let the ninth blip of a battle steal the music player mid-track.
+	for p in _music_players():
+		assert_false(p in _mgr()._players, "music player is in the sfx pool")
+
+func test_unknown_track_is_refused() -> void:
+	assert_false(_mgr().play_music("no_such_track_exists"))
+	assert_eq(_mgr().current_music(), "")
+
+func test_battle_track_is_on_disk() -> void:
+	assert_true(_mgr().has_music(TRACK), "assets/music/%s.ogg is missing" % TRACK)
+
+func test_battle_track_has_a_separate_intro() -> void:
+	assert_true(_mgr().has_music(TRACK + _mgr().MUSIC_INTRO_SUFFIX),
+		"the opening was supposed to be split out into %s_intro" % TRACK)
+
+func test_intro_plays_first_and_does_not_loop() -> void:
+	assert_true(_mgr().play_music(TRACK))
+	var intro: AudioStreamPlayer = _music_players()[0]
+	var body: AudioStreamPlayer = _music_players()[1]
+	assert_true(intro.stream != null, "intro did not start")
+	assert_false(intro.stream.loop, "the opening must play once, not on repeat")
+	assert_true(body.stream == null or not body.playing, "the loop started before the intro ended")
+	_mgr().stop_music()
+
+func test_body_takes_over_when_the_intro_ends_and_loops() -> void:
+	assert_true(_mgr().play_music(TRACK))
+	_mgr()._on_intro_finished()
+	var body: AudioStreamPlayer = _music_players()[1]
+	assert_true(body.stream != null, "body never started")
+	assert_true(body.stream.loop, "the body must repeat forever")
+	_mgr().stop_music()
+
+func test_the_two_pieces_are_different_audio() -> void:
+	var intro: AudioStream = load(_mgr()._music_path(TRACK + _mgr().MUSIC_INTRO_SUFFIX))
+	var body: AudioStream = load(_mgr()._music_path(TRACK))
+	assert_true(intro.get_length() > 1.0, "intro is suspiciously short: %f" % intro.get_length())
+	assert_true(body.get_length() > 1.0, "body is suspiciously short: %f" % body.get_length())
+	assert_true(absf(intro.get_length() - body.get_length()) > 0.1,
+		"intro and body are the same length - the split probably did not happen")
+
+func test_stop_during_the_intro_is_not_undone_by_the_late_finished_signal() -> void:
+	# finished fires from the audio thread; a stop that races it must still win.
+	assert_true(_mgr().play_music(TRACK))
+	_mgr().stop_music()
+	_mgr()._on_intro_finished()
+	assert_false(_mgr().is_music_playing(), "music restarted itself after stop_music()")
+	assert_eq(_mgr().current_music(), "")
+
+func test_replaying_the_current_track_does_not_restart_it() -> void:
+	assert_true(_mgr().play_music(TRACK))
+	var before: float = _music_players()[0].get_playback_position()
+	assert_true(_mgr().play_music(TRACK))
+	assert_true(_music_players()[0].get_playback_position() >= before, "track was restarted")
+	_mgr().stop_music()
+
+func test_stop_music_clears_the_name() -> void:
+	_mgr().play_music(TRACK)
+	_mgr().stop_music()
+	assert_eq(_mgr().current_music(), "")
+
+# --- mix balance ---
+## The sound test shipped once with `fahhh` peaking at -15 dB against music peaking at -3, and it
+## was simply inaudible under the battle loop. Both halves of that are asserted here.
+
+## Loudest sample in a stream, as a fraction of full scale. Only meaningful for AudioStreamWAV,
+## which is what every sampled effect is; ogg music is checked by its player volume instead.
+func _peak_fraction(s: AudioStreamWAV) -> float:
+	return float(_peak(s)) / 32768.0
+
+func test_sampled_effects_use_their_headroom() -> void:
+	# -6 dBFS = 0.5. A clip quieter than this at source cannot be rescued by a volume knob without
+	# dragging its noise floor up with it - normalise the file instead.
+	for n in _mgr().overridden_sfx():
+		var s: AudioStream = _mgr().get_sfx(n)
+		if not (s is AudioStreamWAV):
+			continue
+		assert_true(_peak_fraction(s) > 0.5,
+			"%s peaks at %.2f of full scale - it will be buried under music" % [n, _peak_fraction(s)])
+
+func test_music_is_mixed_below_effects() -> void:
+	assert_true(_mgr().MUSIC_VOLUME_DB < 0.0,
+		"music at full volume covers every effect fired over it")
+	_mgr().play_music(TRACK)
+	for p in _music_players():
+		if p.playing:
+			assert_eq(p.volume_db, _mgr().MUSIC_VOLUME_DB)
+	_mgr().stop_music()
+
+## A faded stop tweens volume down to -60 dB. If it does not put the level back afterwards the
+## next track starts inaudible - a bug that only shows up on the second battle of a session.
+func test_fade_out_restores_the_resting_level() -> void:
+	_mgr().play_music(TRACK)
+	_mgr().stop_music()
+	for p in _music_players():
+		assert_eq(p.volume_db, _mgr().MUSIC_VOLUME_DB, "resting volume not restored after stop")
+
+# --- battle music wiring ---
+## Driven purely by signals battle/ already emitted; nothing in battle/ was changed for this, so
+## these tests emit on EventBus directly rather than driving a battle.
+
+func _a_creature() -> Creature:
+	return GameData.party[0] if not GameData.party.is_empty() else null
+
+func test_battle_started_starts_the_music() -> void:
+	_mgr().stop_music()
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC)
+	_mgr().stop_music()
+
+func test_every_battle_ending_stops_the_music() -> void:
+	# A win must clear the way for BattleAudio's victory sting; the others must not leak a loop
+	# into the overworld.
+	for ending in ["won", "lost", "escaped"]:
+		EventBus.battle_started.emit(_a_creature(), _a_creature())
+		assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "music did not start before %s" % ending)
+		match ending:
+			"won": EventBus.battle_won.emit(_a_creature())
+			"lost": EventBus.battle_lost.emit()
+			"escaped": EventBus.battle_escaped.emit()
+		assert_eq(_mgr().current_music(), "", "music survived battle_%s" % ending)
+	_mgr().stop_music()
+
+func test_a_successful_catch_stops_the_music() -> void:
+	# BattleState emits nothing on Result.CAUGHT - CatchingState is what knows the encounter ended.
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	EventBus.creature_caught.emit(_a_creature())
+	assert_eq(_mgr().current_music(), "")
+
+## A failed throw resumes BATTLE without re-emitting battle_started, so the track has to have been
+## left alone throughout - restarting it mid-encounter would be very obvious.
+func test_music_plays_straight_through_a_catch_attempt() -> void:
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	EventBus.catch_started.emit(_a_creature())
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "catch_started interrupted the music")
+	EventBus.catch_failed.emit(_a_creature())
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "a failed throw stopped the music")
+	_mgr().stop_music()
+
+## Win a battle, then walk into another one before the fade finishes. The first fade owns a
+## deferred stop(); if it is not cancelled it silences the second battle a third of a second in.
+func test_a_new_battle_during_the_fade_out_is_not_silenced_by_it() -> void:
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	EventBus.battle_won.emit(_a_creature())
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	await tree.create_timer(_mgr().BATTLE_FADE + 0.2).timeout
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "the stale fade stopped the new track")
+	assert_true(_mgr().is_music_playing(), "new battle went silent when the old fade completed")
+	_mgr().stop_music()
+
