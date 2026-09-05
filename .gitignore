@@ -1,0 +1,17 @@
+# Godot
+.godot/
+*.translation
+export/
+*.tmp
+
+# Summer (keep .summer/ project memory, drop caches)
+.summer/cache/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Summer Engine local-only state (SummerGit, caches, locks)
+.summer/local/

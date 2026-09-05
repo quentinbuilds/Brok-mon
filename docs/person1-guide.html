@@ -1,0 +1,1007 @@
+<title>Gok-Mon Core Handbook</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground:      #EFF0E6;
+    --panel:       #E3E6D7;
+    --panel-2:     #F7F8F1;
+    --ink:         #14180F;
+    --ink-soft:    #4A5140;
+    --muted:       #6E7562;
+    --rule:        #C7CCB8;
+    --rule-strong: #A9B198;
+    --accent:      #3A6B1F;
+    --accent-ink:  #FFFFFF;
+    --signal:      #8BAC0F;
+    --warn:        #97591A;
+    --danger:      #9B2C2C;
+    --shadow:      rgba(20, 24, 15, 0.10);
+
+    --f-display: "Chakra Petch", "Trebuchet MS", sans-serif;
+    --f-body:    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --f-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --col: 68ch;
+    --wide: 1000px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #10130D;
+      --panel:       #191E14;
+      --panel-2:     #1F251A;
+      --ink:         #E6E9DA;
+      --ink-soft:    #B4BBA5;
+      --muted:       #8A917C;
+      --rule:        #2E3626;
+      --rule-strong: #45503A;
+      --accent:      #9BBC0F;
+      --accent-ink:  #10130D;
+      --signal:      #8BAC0F;
+      --warn:        #D89B4A;
+      --danger:      #E07A6E;
+      --shadow:      rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #10130D;
+    --panel:       #191E14;
+    --panel-2:     #1F251A;
+    --ink:         #E6E9DA;
+    --ink-soft:    #B4BBA5;
+    --muted:       #8A917C;
+    --rule:        #2E3626;
+    --rule-strong: #45503A;
+    --accent:      #9BBC0F;
+    --accent-ink:  #10130D;
+    --signal:      #8BAC0F;
+    --warn:        #D89B4A;
+    --danger:      #E07A6E;
+    --shadow:      rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  .col { max-width: var(--col); }
+
+  /* ---------- spec plate ---------- */
+
+  .plate {
+    margin-top: 40px;
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+
+  .plate-top {
+    padding: 26px 28px 22px;
+    border-bottom: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .plate-sub {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .plate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .plate-cell {
+    padding: 14px 18px;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .plate-cell:last-child { border-right: 0; }
+
+  .plate-cell dt {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .plate-cell dd {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 2px solid var(--ink);
+    padding-top: 14px;
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(22px, 3.2vw, 29px);
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0 0 6px;
+    letter-spacing: 0.005em;
+  }
+
+  p { margin: 0 0 14px; }
+  p:last-child { margin-bottom: 0; }
+
+  a { color: var(--accent); }
+
+  strong { font-weight: 600; }
+
+  code, .m {
+    font-family: var(--f-mono);
+    font-size: 0.88em;
+    background: var(--panel);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  .lede {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+
+  /* ---------- two-column own / not own ---------- */
+
+  .split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .box {
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .box.quiet {
+    border: 1px solid var(--rule-strong);
+    background: transparent;
+  }
+
+  .box ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .box li {
+    font-size: 15px;
+    padding-left: 20px;
+    position: relative;
+  }
+  .box li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 9px;
+    height: 9px;
+    background: var(--accent);
+  }
+  .box.quiet li::before {
+    background: transparent;
+    border: 1px solid var(--rule-strong);
+  }
+
+  /* ---------- diagram panels ---------- */
+
+  .figure {
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+    display: flex;
+    flex-direction: column;
+  }
+  .figure-body {
+    overflow-x: auto;
+    padding: 22px;
+  }
+  .figure svg { display: block; min-width: 560px; }
+  figcaption {
+    border-top: 1px solid var(--rule);
+    padding: 10px 22px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .node-box { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
+  .node-box-key { fill: var(--signal); stroke: var(--ink); stroke-width: 2; }
+  .node-box-soft { fill: none; stroke: var(--rule-strong); stroke-width: 2; stroke-dasharray: 5 4; }
+  .node-label {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 14px;
+    fill: var(--ink);
+  }
+  .node-label-key { fill: #14180F; }
+  .node-sub {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    fill: var(--muted);
+  }
+  .node-sub-key { fill: #2C3A12; }
+  .edge { stroke: var(--ink); stroke-width: 2; fill: none; }
+  .edge-soft { stroke: var(--rule-strong); stroke-width: 2; fill: none; }
+  .edge-label {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    fill: var(--muted);
+  }
+
+  /* ---------- steps (real sequences only) ---------- */
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+  }
+  .steps li {
+    display: grid;
+    grid-template-columns: 46px 132px 1fr;
+    gap: 14px;
+    align-items: baseline;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .steps li:last-child { border-bottom: 0; }
+  .step-n {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  .step-who {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .step-what { font-size: 15px; }
+  .step-what .ev {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--rule-strong);
+    padding: 1px 6px;
+  }
+
+  @media (max-width: 620px) {
+    .steps li { grid-template-columns: 34px 1fr; }
+    .step-who { grid-column: 2; }
+    .step-what { grid-column: 2; }
+  }
+
+  /* ---------- tables ---------- */
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 560px;
+    font-size: 14.5px;
+  }
+  th {
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--ink);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: 0; }
+  td.who {
+    font-family: var(--f-display);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td.ev-name {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  tbody tr.group-head td {
+    background: var(--panel);
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 16px;
+  }
+  .you {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: 2px;
+  }
+
+  /* ---------- api list ---------- */
+
+  .api {
+    border: 1px solid var(--rule-strong);
+    background: var(--panel);
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 6px 22px;
+    font-family: var(--f-mono);
+    font-size: 13px;
+  }
+  .api span { color: var(--ink-soft); }
+  .api b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- chip flow ---------- */
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--ink);
+    background: var(--panel-2);
+    padding: 20px;
+  }
+  .chip {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--rule-strong);
+    background: var(--panel);
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
+  .chip.hot {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  .arrow { color: var(--muted); font-size: 13px; }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    border: 2px solid var(--warn);
+    background: var(--panel-2);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .callout .eyebrow { color: var(--warn); }
+  .callout h3 { color: var(--warn); }
+
+  .rule-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .rule-list li {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 14px;
+    font-size: 15px;
+    align-items: baseline;
+  }
+  .rule-list .k {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  footer {
+    border-top: 2px solid var(--ink);
+    padding-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .quote {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(19px, 3vw, 25px);
+    line-height: 1.28;
+    letter-spacing: -0.005em;
+    max-width: 26ch;
+    text-wrap: balance;
+  }
+  .footnote { font-size: 13.5px; color: var(--muted); font-family: var(--f-mono); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="plate">
+    <div class="plate-top">
+      <div class="eyebrow">Person 1 · Core Architecture &amp; Integration</div>
+      <h1>Gok-Mon Core Handbook</h1>
+      <p class="plate-sub">What the PRD is asking you to build, why each piece exists, and what the other five developers need from you before they can start.</p>
+    </div>
+    <dl class="plate-grid">
+      <div class="plate-cell"><dt>Your role</dt><dd>Integration owner</dd></div>
+      <div class="plate-cell"><dt>Clock</dt><dd>12 hours</dd></div>
+      <div class="plate-cell"><dt>Team</dt><dd>6 developers</dd></div>
+      <div class="plate-cell"><dt>Target</dt><dd>Arduino UNO Q</dd></div>
+      <div class="plate-cell"><dt>Biome</dt><dd>Grassland only</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">The brief</div>
+      <h2>What everyone is building</h2>
+    </div>
+    <div class="col">
+      <p class="lede">A small monster-catching game in the spirit of a 1998 handheld. One grassland map. Walk around, get jumped by a creature in the tall grass, fight it, throw a Capture Orb, keep it, open a menu and look at what you caught.</p>
+      <p>It runs on an <strong>Arduino UNO Q</strong> with a Modulino joystick, a Modulino 3-button block, and a small Waveshare display, on top of Summer Engine. That hardware is the whole reason the architecture looks the way it does — a tiny screen, four directions, three buttons, and no room for anything clever.</p>
+      <p>The PRD is blunt about priorities: <strong>playability &gt; integration &gt; game feel &gt; visual polish &gt; extra features</strong>. Nothing outside that list gets built until the loop runs start to finish. It also says, twice, don't over-engineer — this is a hackathon, not a codebase you'll maintain.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Your role</div>
+      <h2>You are the plumbing, not a feature</h2>
+    </div>
+    <div class="col">
+      <p>The other five people build things a player can see: the map, the creatures, the fight, the catching screen, the menu art. You build the frame all of that plugs into — and you're the person who merges five branches into one build that actually runs on the device.</p>
+      <p>The PRD says this outright: <em>"You should NOT spend the majority of your time making graphics."</em> Five agents writing code simultaneously in one repo will collide unless the seams are decided before they start. Every hour you spend on a sprite is an hour those seams don't exist.</p>
+    </div>
+
+    <div class="split">
+      <div class="box">
+        <div class="eyebrow">You own this</div>
+        <ul>
+          <li>The game loop</li>
+          <li>The state machine and every transition between states</li>
+          <li>Input abstraction (<code>InputManager</code>)</li>
+          <li>The event bus</li>
+          <li>Shared data shapes: Player, Creature, Inventory</li>
+          <li>Global config (probabilities, speeds, caps)</li>
+          <li>Merging everyone's branches into <code>main</code></li>
+          <li>The final build that runs on the hardware</li>
+          <li>Save/reset — <em>only if time permits</em></li>
+        </ul>
+      </div>
+      <div class="box quiet">
+        <div class="eyebrow">You don't own this</div>
+        <ul>
+          <li>The grassland map and collision (Person 2)</li>
+          <li>Creature stats and encounter rolls (Person 3)</li>
+          <li>Battle logic and animation (Person 4)</li>
+          <li>Catch maths, party, inventory (Person 5)</li>
+          <li>Sprites, palette, sound, menus (Person 6)</li>
+        </ul>
+        <p style="font-size:14.5px;color:var(--muted);margin-top:4px;">Write another person's feature only when you need a stub to prove an interface works — then hand it over.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Concept 1 · The state machine</div>
+      <h2>One state at a time, and it owns the screen</h2>
+    </div>
+    <div class="col">
+      <p>At any instant the game is in exactly one state, and that state owns two things: <strong>what the buttons do</strong> and <strong>what's drawn</strong>. This is what makes a three-button controller workable — pressing Button&nbsp;1 means "start the game" on the title screen and "attack" in a fight, and the current state is what makes that unambiguous.</p>
+      <p>The rule that keeps six people out of each other's way: <strong>only the core switches states.</strong> The battle system doesn't reach over and put the game into the overworld. It announces that the battle ended, and you decide what happens next.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="figure-body">
+        <svg viewBox="0 0 660 400" role="img" aria-label="State machine: BOOT to TITLE to OVERWORLD, which branches to MENU and to BATTLE, then CATCHING, both returning to OVERWORLD.">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink)"></path>
+            </marker>
+          </defs>
+
+          <rect class="node-box" x="250" y="8" width="150" height="42"></rect>
+          <text class="node-label" x="325" y="28" text-anchor="middle">BOOT</text>
+          <text class="node-sub" x="325" y="42" text-anchor="middle">load assets</text>
+
+          <rect class="node-box" x="250" y="80" width="150" height="42"></rect>
+          <text class="node-label" x="325" y="100" text-anchor="middle">TITLE</text>
+          <text class="node-sub" x="325" y="114" text-anchor="middle">press start</text>
+
+          <rect class="node-box-key" x="250" y="160" width="150" height="42"></rect>
+          <text class="node-label node-label-key" x="325" y="180" text-anchor="middle">OVERWORLD</text>
+          <text class="node-sub node-sub-key" x="325" y="194" text-anchor="middle">the hub state</text>
+
+          <rect class="node-box" x="470" y="160" width="150" height="42"></rect>
+          <text class="node-label" x="545" y="180" text-anchor="middle">MENU</text>
+          <text class="node-sub" x="545" y="194" text-anchor="middle">party · inventory</text>
+
+          <rect class="node-box" x="250" y="248" width="150" height="42"></rect>
+          <text class="node-label" x="325" y="268" text-anchor="middle">BATTLE</text>
+          <text class="node-sub" x="325" y="282" text-anchor="middle">attack · bag · run</text>
+
+          <rect class="node-box" x="250" y="336" width="150" height="42"></rect>
+          <text class="node-label" x="325" y="356" text-anchor="middle">CATCHING</text>
+          <text class="node-sub" x="325" y="370" text-anchor="middle">throw the orb</text>
+
+          <path class="edge" d="M 325 50 L 325 74" marker-end="url(#ah)"></path>
+          <path class="edge" d="M 325 122 L 325 154" marker-end="url(#ah)"></path>
+          <text class="edge-label" x="336" y="142">button 1</text>
+
+          <path class="edge" d="M 325 202 L 325 242" marker-end="url(#ah)"></path>
+          <text class="edge-label" x="336" y="226">ENCOUNTER_TRIGGERED</text>
+
+          <path class="edge" d="M 325 290 L 325 330" marker-end="url(#ah)"></path>
+          <text class="edge-label" x="336" y="314">chose CATCH</text>
+
+          <path class="edge" d="M 400 181 L 464 181" marker-end="url(#ah)" marker-start="url(#ah)"></path>
+          <text class="edge-label" x="432" y="172" text-anchor="middle">button 3</text>
+
+          <path class="edge" d="M 250 269 L 190 269 L 190 172 L 244 172" marker-end="url(#ah)"></path>
+          <text class="edge-label" x="184" y="222" text-anchor="middle" transform="rotate(-90 184 222)">won · lost · ran</text>
+
+          <path class="edge" d="M 250 357 L 140 357 L 140 192 L 244 192" marker-end="url(#ah)"></path>
+          <text class="edge-label" x="134" y="278" text-anchor="middle" transform="rotate(-90 134 278)">caught · or back to battle</text>
+        </svg>
+      </div>
+      <figcaption>OVERWORLD is the hub — every other state eventually returns to it.</figcaption>
+    </figure>
+
+    <div class="col">
+      <h3>Every state implements the same four methods</h3>
+      <p>This is the whole contract, and it's what lets you drop someone's screen into the machine without reading their code.</p>
+    </div>
+    <div class="api">
+      <div><b>enter()</b> <span>— set up; runs once on arrival</span></div>
+      <div><b>update(delta_time)</b> <span>— one tick of logic</span></div>
+      <div><b>render()</b> <span>— draw the frame</span></div>
+      <div><b>exit()</b> <span>— tear down; runs once on leaving</span></div>
+    </div>
+    <p class="col" style="font-size:15px;color:var(--ink-soft);"><code>delta_time</code> is how long the last frame took. Systems multiply movement and animation by it so the game runs at the same speed whether the UNO Q is managing 60 frames a second or 20 — which it may well not be.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Concept 2 · Input abstraction</div>
+      <h2>Nobody's game code touches the joystick</h2>
+    </div>
+    <div class="col">
+      <p>Gameplay code never reads the Modulino directly. It asks your <code>InputManager</code> "is up held?" and gets a yes or no. Only one file in the entire repo knows a physical joystick exists.</p>
+      <p>That single rule buys you four things, and the last one is the important one on a hackathon clock:</p>
+    </div>
+    <div class="col">
+      <ul class="rule-list">
+        <li><span class="k">Speed</span><span>Everyone develops on a laptop with a keyboard on hour one, before the hardware is even wired up.</span></li>
+        <li><span class="k">Remap</span><span>Buttons feel wrong on the real device? You change one file, not five people's code.</span></li>
+        <li><span class="k">Testing</span><span>A script can feed fake input and drive the game with nobody holding it.</span></li>
+        <li><span class="k">No blocker</span><span>The PRD deliberately assigns <em>no separate hardware workstream</em> — hardware is treated as plug-and-play precisely because of this seam.</span></li>
+      </ul>
+    </div>
+
+    <figure class="figure">
+      <div class="figure-body">
+        <svg viewBox="0 0 660 262" role="img" aria-label="Three input sources — UNO Q hardware, keyboard, and a test script — all feed one InputManager, which serves the overworld, battle, and menu states.">
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink)"></path>
+            </marker>
+          </defs>
+          <rect class="node-box" x="6" y="14" width="188" height="52"></rect>
+          <text class="node-label" x="100" y="36" text-anchor="middle">UNO Q hardware</text>
+          <text class="node-sub" x="100" y="52" text-anchor="middle">Modulino joystick + 3 button</text>
+
+          <rect class="node-box-soft" x="6" y="98" width="188" height="52"></rect>
+          <text class="node-label" x="100" y="120" text-anchor="middle">Keyboard</text>
+          <text class="node-sub" x="100" y="136" text-anchor="middle">laptop development</text>
+
+          <rect class="node-box-soft" x="6" y="182" width="188" height="52"></rect>
+          <text class="node-label" x="100" y="204" text-anchor="middle">Test script</text>
+          <text class="node-sub" x="100" y="220" text-anchor="middle">automated input</text>
+
+          <rect class="node-box-key" x="256" y="14" width="148" height="220"></rect>
+          <text class="node-label node-label-key" x="330" y="108" text-anchor="middle">InputManager</text>
+          <text class="node-sub node-sub-key" x="330" y="130" text-anchor="middle">the only code that</text>
+          <text class="node-sub node-sub-key" x="330" y="145" text-anchor="middle">knows about hardware</text>
+
+          <rect class="node-box" x="466" y="14" width="188" height="52"></rect>
+          <text class="node-label" x="560" y="45" text-anchor="middle">OVERWORLD</text>
+
+          <rect class="node-box" x="466" y="98" width="188" height="52"></rect>
+          <text class="node-label" x="560" y="129" text-anchor="middle">BATTLE</text>
+
+          <rect class="node-box" x="466" y="182" width="188" height="52"></rect>
+          <text class="node-label" x="560" y="213" text-anchor="middle">MENU</text>
+
+          <path class="edge" d="M 194 40 L 250 40" marker-end="url(#ah2)"></path>
+          <path class="edge-soft" d="M 194 124 L 250 124" marker-end="url(#ah2)"></path>
+          <path class="edge-soft" d="M 194 208 L 250 208" marker-end="url(#ah2)"></path>
+
+          <path class="edge" d="M 404 40 L 460 40" marker-end="url(#ah2)"></path>
+          <path class="edge" d="M 404 124 L 460 124" marker-end="url(#ah2)"></path>
+          <path class="edge" d="M 404 208 L 460 208" marker-end="url(#ah2)"></path>
+
+          <text class="edge-label" x="222" y="88" text-anchor="middle">swap</text>
+          <text class="edge-label" x="222" y="102" text-anchor="middle">freely</text>
+        </svg>
+      </div>
+      <figcaption>Swap the left column without touching the right column. That's the entire point.</figcaption>
+    </figure>
+
+    <div class="col">
+      <h3>The API the PRD asks for</h3>
+    </div>
+    <div class="api">
+      <div><b>is_up()</b> <span>· held</span></div>
+      <div><b>button_a_pressed()</b> <span>· held</span></div>
+      <div><b>is_down()</b> <span>· held</span></div>
+      <div><b>button_b_pressed()</b> <span>· held</span></div>
+      <div><b>is_left()</b> <span>· held</span></div>
+      <div><b>button_menu_pressed()</b> <span>· held</span></div>
+      <div><b>is_right()</b> <span>· held</span></div>
+      <div><b>button_a_just_pressed()</b> <span>· edge</span></div>
+      <div><b>button_b_just_pressed()</b> <span>· edge</span></div>
+      <div><b>button_menu_just_pressed()</b> <span>· edge</span></div>
+    </div>
+    <div class="col">
+      <p style="margin-top:14px;"><strong>Held vs. just-pressed is not a detail.</strong> <code>is_down()</code> is true on every frame the stick is held — right for walking. <code>_just_pressed()</code> is true for exactly one frame, on the transition from up to down — right for menus, so a single press moves the cursor one item instead of scrolling to the bottom of the list.</p>
+      <h3 style="margin-top:8px;">The physical mapping</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Physical control</th><th>Logical input</th><th>Means</th></tr></thead>
+        <tbody>
+          <tr><td class="who">Joystick</td><td class="ev-name">UP / DOWN / LEFT / RIGHT</td><td>Move, navigate lists</td></tr>
+          <tr><td class="who">Button 1</td><td class="ev-name">CONFIRM (A)</td><td>Select, attack, advance text</td></tr>
+          <tr><td class="who">Button 2</td><td class="ev-name">BACK (B)</td><td>Cancel, go up a level</td></tr>
+          <tr><td class="who">Button 3</td><td class="ev-name">MENU</td><td>Open and close the menu</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col" style="font-size:15px;color:var(--ink-soft);">No diagonals. The PRD asks for four-direction movement unless the hardware clearly supports better — grid-locked movement is also more faithful to the era.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Concept 3 · The event bus</div>
+      <h2>Systems announce facts; they don't call each other</h2>
+    </div>
+    <div class="col">
+      <p>The PRD calls this <em>"extremely important"</em>, and it's the single thing that decides whether integration at hour ten is calm or a fire.</p>
+      <p>Without it, the world code has to import the encounter code, which imports the battle code, which imports the catching code — and one person's rename breaks four branches. With it, a system shouts a fact into the room (<code>PLAYER_MOVED</code>) and whoever cares listens. Nobody imports anybody.</p>
+      <p>Here's the chain the PRD spells out — one loop of the game, crossing four people's code, with nothing directly wired to anything:</p>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <span class="step-n">01</span>
+        <span class="step-who">Person 2 · World</span>
+        <span class="step-what">Player takes a step. World fires <span class="ev">PLAYER_MOVED</span></span>
+      </li>
+      <li>
+        <span class="step-n">02</span>
+        <span class="step-who">Person 3 · Encounters</span>
+        <span class="step-what">Hears it, checks the player is in grass, rolls the dice (5–10% per step, with a cooldown so you don't get two in a row)</span>
+      </li>
+      <li>
+        <span class="step-n">03</span>
+        <span class="step-who">Person 3 · Encounters</span>
+        <span class="step-what">Roll succeeds. Picks a wild creature and fires <span class="ev">ENCOUNTER_TRIGGERED</span></span>
+      </li>
+      <li>
+        <span class="step-n">04</span>
+        <span class="step-who">You · Core</span>
+        <span class="step-what">Hears it and switches the state machine: <code>OVERWORLD</code> → <code>BATTLE</code></span>
+      </li>
+      <li>
+        <span class="step-n">05</span>
+        <span class="step-who">Person 4 · Battle</span>
+        <span class="step-what">Battle state enters and fires <span class="ev">BATTLE_STARTED</span></span>
+      </li>
+    </ol>
+
+    <p class="col">Notice step 4. The encounter system never says "go to battle" — it says "an encounter happened." <strong>You're the only one who moves the machine.</strong></p>
+
+    <div class="col">
+      <h3>The full event list</h3>
+      <p>Publish this early and hold everyone to the exact spelling. A typo'd event name is a silent failure — nothing errors, the listener just never fires.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Event</th><th>Fired by</th><th>Who listens</th></tr></thead>
+        <tbody>
+          <tr class="group-head"><td colspan="3">Overworld</td></tr>
+          <tr><td class="ev-name">PLAYER_MOVED</td><td>World</td><td>Encounters</td></tr>
+          <tr><td class="ev-name">ENCOUNTER_TRIGGERED</td><td>Encounters</td><td>Core <span class="you">you</span></td></tr>
+          <tr class="group-head"><td colspan="3">Battle</td></tr>
+          <tr><td class="ev-name">BATTLE_STARTED</td><td>Battle</td><td>UI, audio</td></tr>
+          <tr><td class="ev-name">BATTLE_WON</td><td>Battle</td><td>Core <span class="you">you</span></td></tr>
+          <tr><td class="ev-name">BATTLE_LOST</td><td>Battle</td><td>Core <span class="you">you</span></td></tr>
+          <tr><td class="ev-name">BATTLE_ESCAPED</td><td>Battle</td><td>Core <span class="you">you</span></td></tr>
+          <tr class="group-head"><td colspan="3">Catching</td></tr>
+          <tr><td class="ev-name">CATCH_STARTED</td><td>Battle</td><td>Core <span class="you">you</span>, catching</td></tr>
+          <tr><td class="ev-name">CREATURE_CAUGHT</td><td>Catching</td><td>Core <span class="you">you</span>, party, UI</td></tr>
+          <tr><td class="ev-name">CATCH_FAILED</td><td>Catching</td><td>Core <span class="you">you</span>, battle</td></tr>
+          <tr class="group-head"><td colspan="3">Menu &amp; data</td></tr>
+          <tr><td class="ev-name">MENU_OPENED</td><td>Core <span class="you">you</span></td><td>UI, audio</td></tr>
+          <tr><td class="ev-name">MENU_CLOSED</td><td>Core <span class="you">you</span></td><td>UI, audio</td></tr>
+          <tr><td class="ev-name">INVENTORY_CHANGED</td><td>Inventory</td><td>UI</td></tr>
+          <tr><td class="ev-name">PARTY_CHANGED</td><td>Party</td><td>UI</td></tr>
+          <tr><td class="ev-name">ACTIVE_CREATURE_CHANGED</td><td>Party</td><td>UI, battle</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Concept 4 · Shared data</div>
+      <h2>Three shapes everyone agrees on</h2>
+    </div>
+    <div class="col">
+      <p>These live in your core so nobody defines a second, slightly different version. Keep the fields exactly as the PRD lists them — it's what the battle, catching, and UI developers are all coding against.</p>
+    </div>
+    <div class="split">
+      <div class="box">
+        <div class="eyebrow">Player</div>
+        <ul>
+          <li><code>position</code>, <code>direction</code></li>
+          <li><code>movement_speed</code></li>
+          <li><code>sprite</code></li>
+          <li><code>party</code> — max 3 creatures</li>
+          <li><code>inventory</code></li>
+        </ul>
+      </div>
+      <div class="box">
+        <div class="eyebrow">Creature</div>
+        <ul>
+          <li><code>id</code>, <code>name</code>, <code>type</code>, <code>sprite</code></li>
+          <li><code>max_hp</code>, <code>hp</code></li>
+          <li><code>attack</code>, <code>defense</code></li>
+          <li><code>catch_rate</code></li>
+        </ul>
+        <p style="font-size:13.5px;color:var(--muted);font-family:var(--f-mono);margin-top:2px;">e.g. 001 Emberfox · FIRE · 30 HP · atk 8 · def 5 · catch 0.35</p>
+      </div>
+      <div class="box">
+        <div class="eyebrow">Inventory</div>
+        <ul>
+          <li>Capture Orb</li>
+          <li>Potion</li>
+        </ul>
+        <p style="font-size:14.5px;color:var(--muted);margin-top:2px;">Two items is enough for the MVP. Resist adding a third.</p>
+      </div>
+    </div>
+    <p class="col" style="font-size:15px;color:var(--ink-soft);">One legal note the PRD repeats in every section: <strong>original creatures and original assets only.</strong> No Pokémon names, sprites, or sounds anywhere in the repo.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">The team</div>
+      <h2>Who is blocked on you, and on what</h2>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Person</th><th>Owns</th><th>Needs from you before they can start</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="who">1 — you</td>
+            <td>Core, integration, final build</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="who">2</td>
+            <td>Grassland map, player, movement, collision, camera, encounter zones</td>
+            <td><code>InputManager</code> and a running <code>OVERWORLD</code> state to draw into</td>
+          </tr>
+          <tr>
+            <td class="who">3</td>
+            <td>Creature data, encounter rolls, cooldown, wild creature selection</td>
+            <td>The <code>Creature</code> shape, the event bus, and the config file for probabilities</td>
+          </tr>
+          <tr>
+            <td class="who">4</td>
+            <td>Battle states, attack, damage, HP bars, action menu, run</td>
+            <td>The state interface and the battle result events to fire</td>
+          </tr>
+          <tr>
+            <td class="who">5</td>
+            <td>Catching screen, catch odds, party, inventory, active creature</td>
+            <td>A <code>CATCHING</code> state slot and the <code>Player</code>/<code>Inventory</code> shapes</td>
+          </tr>
+          <tr>
+            <td class="who">6</td>
+            <td>Palette, typography, title, HUD, menus, transitions, sound</td>
+            <td>Screens that exist and can be navigated — they polish last and touch everything</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <h3>Git rules you enforce</h3>
+      <ul class="rule-list">
+        <li><span class="k">Branches</span><span>One per system: <code>feature/core</code>, <code>feature/world</code>, <code>feature/encounters</code>, <code>feature/battle</code>, <code>feature/catching</code>, <code>feature/ui</code>.</span></li>
+        <li><span class="k">Renames</span><span>Nobody renames a shared file without telling you first. You're the integration owner — that's this.</span></li>
+        <li><span class="k">Pulls</span><span>Everyone pulls from <code>main</code> often. Long-lived branches are how a 12-hour project dies at hour 10.</span></li>
+        <li><span class="k">Merges</span><span>Merge only when the feature works. Never commit build directories.</span></li>
+        <li><span class="k">Always green</span><span>The project must run continuously through the whole hackathon. If <code>main</code> is broken, that's your emergency.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">The schedule</div>
+      <h2>Four phases, in strict order</h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <span class="step-n">P1</span>
+        <span class="step-who">First 60–90 min</span>
+        <span class="step-what"><strong>You ship the skeleton.</strong> Game loop, state machine, <code>InputManager</code>, event bus, and empty stub states so the other five have somewhere to plug in. The stated goal: <em>a player can walk around the world within 90 minutes.</em></span>
+      </li>
+      <li>
+        <span class="step-n">P2</span>
+        <span class="step-who">Core gameplay</span>
+        <span class="step-what">The loop, end to end: walk → grass → encounter → battle → attack → catch → creature added → back to the overworld. Nothing else gets built until this runs.</span>
+      </li>
+      <li>
+        <span class="step-n">P3</span>
+        <span class="step-who">Menu</span>
+        <span class="step-what">Party (with the active creature marked) and inventory (Capture Orb, Potion), navigable with three buttons.</span>
+      </li>
+      <li>
+        <span class="step-n">P4</span>
+        <span class="step-who">Polish</span>
+        <span class="step-what">Only now: transitions, animations, sound, better sprites, battle effects, the startup sequence.</span>
+      </li>
+    </ol>
+
+    <div class="callout">
+      <div class="eyebrow">Hard stop · T-minus 2 hours</div>
+      <h3>Stop adding features</h3>
+      <p style="margin:0;">No new mechanics. No new systems. <strong>No refactoring.</strong> No "one more cool idea." The last two hours are for integration, bug fixing, performance, testing on the actual device, visual polish, and preparing the demo. As integration owner this rule is yours to enforce, including on yourself.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Definition of done</div>
+      <h2>The sequence that has to work unassisted</h2>
+    </div>
+    <p class="col">Not "the systems are built" — this exact run, on the physical UNO Q with its own joystick and screen, with nobody from the team touching anything.</p>
+    <div class="flow">
+      <span class="chip">BOOT</span><span class="arrow">→</span>
+      <span class="chip">TITLE</span><span class="arrow">→</span>
+      <span class="chip">OVERWORLD</span><span class="arrow">→</span>
+      <span class="chip">move</span><span class="arrow">→</span>
+      <span class="chip">enter grass</span><span class="arrow">→</span>
+      <span class="chip hot">random encounter</span><span class="arrow">→</span>
+      <span class="chip">BATTLE</span><span class="arrow">→</span>
+      <span class="chip">attack</span><span class="arrow">→</span>
+      <span class="chip">catch</span><span class="arrow">→</span>
+      <span class="chip">catching animation</span><span class="arrow">→</span>
+      <span class="chip hot">creature caught</span><span class="arrow">→</span>
+      <span class="chip">OVERWORLD</span><span class="arrow">→</span>
+      <span class="chip">open menu</span><span class="arrow">→</span>
+      <span class="chip">view party</span><span class="arrow">→</span>
+      <span class="chip">view inventory</span><span class="arrow">→</span>
+      <span class="chip">close menu</span><span class="arrow">→</span>
+      <span class="chip">keep exploring</span>
+    </div>
+  </section>
+
+  <footer>
+    <div class="eyebrow">Quality target</div>
+    <p class="quote">A lost Game Boy game from 1998 that somehow knows it is 2026.</p>
+    <p class="footnote">Source: PRD §0–20 · gok-mon · person 1 of 6</p>
+  </footer>
+
+</div>
