@@ -46,6 +46,7 @@ func test_obstacles_block_and_ground_does_not() -> void:
 	assert_false(GrassMap.is_walkable(Vector2i(16, 5)), "rock")
 	assert_true(GrassMap.is_walkable(Vector2i(6, 4)), "tall grass")
 	assert_true(GrassMap.is_walkable(Vector2i(3, 2)), "path")
+	assert_false(GrassMap.is_walkable(Vector2i(30, 11)), "house footprint")
 
 func test_map_has_a_usable_amount_of_tall_grass() -> void:
 	var n := 0

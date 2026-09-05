@@ -20,6 +20,7 @@ const HEIGHT := 30
 
 ## Where a new game (or a stored tile that is no longer walkable) puts the player.
 const START_TILE := Vector2i(3, 3)
+const HOUSE_FOOTPRINT := Rect2i(29, 10, 3, 3)
 
 const ATLAS_COLUMN := {
 	".": 0, ":": 1, "=": 2, "T": 3, "o": 4, "~": 5, ",": 6, "#": 7,
@@ -71,6 +72,8 @@ static func glyph(tile: Vector2i) -> String:
 	return MAP[tile.y][tile.x]
 
 static func is_walkable(tile: Vector2i) -> bool:
+	if HOUSE_FOOTPRINT.has_point(tile):
+		return false
 	return glyph(tile) in WALKABLE
 
 ## True when the tile is tall grass. Mirrored by the in_encounter_zone flag on
