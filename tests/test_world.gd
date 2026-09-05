@@ -3,10 +3,24 @@ extends TestCase
 
 const GrassMap := preload("res://world/GrassMap.gd")
 const PlayerScript := preload("res://world/Player.gd")
+const BiomeSession := preload("res://world/BiomeSession.gd")
 
 const CARDINALS := [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 
+## Jungle tiles used by OverworldState wiring tests (visual tall grass 9,2 7x4).
+const JUNGLE_START := Vector2i(5, 25)
+const JUNGLE_GRASS := Vector2i(18, 4)
+const JUNGLE_GRASS_STEP := Vector2i(19, 4)
+const JUNGLE_GRASS_HOLD := Vector2i(20, 4)
+const JUNGLE_PATH := Vector2i(5, 25)
+const JUNGLE_PATH_STEP := Vector2i(6, 25)
+const JUNGLE_BORDER := Vector2i(2, 25)
+
+func before_each() -> void:
+	BiomeSession.reset_choice()
+
 func after_each() -> void:
+	BiomeSession.reset_choice()
 	for a in ["move_up", "move_down", "move_left", "move_right", "menu"]:
 		Input.action_release(a)
 
@@ -153,15 +167,15 @@ func test_entering_snaps_an_invalid_stored_tile_to_the_start() -> void:
 	GameData.player_tile = Vector2i.ZERO
 	var ow := _overworld()
 	ow.enter({})
-	assert_eq(GameData.player_tile, GrassMap.START_TILE)
+	assert_eq(GameData.player_tile, JUNGLE_START)
 	ow.free()
 
 func test_entering_keeps_a_valid_stored_tile() -> void:
-	GameData.player_tile = Vector2i(6, 4)
+	GameData.player_tile = JUNGLE_GRASS
 	var ow := _overworld()
 	ow.enter({})
-	assert_eq(GameData.player_tile, Vector2i(6, 4), "returning from battle resumes in place")
-	assert_true(ow.is_in_encounter_zone(), "6,4 is tall grass")
+	assert_eq(GameData.player_tile, JUNGLE_GRASS, "returning from battle resumes in place")
+	assert_true(ow.is_in_encounter_zone(), "18,4 is jungle tall grass")
 	ow.free()
 
 ## 0.02 x 8 = 0.16s, just past one STEP_TIME, so exactly one step lands.
@@ -178,20 +192,20 @@ func _walk(ow: Node, action: String, frames: int) -> Array:
 	return seen
 
 func test_completed_step_emits_player_moved_with_the_zone_flag() -> void:
-	# 6,4 and 7,4 are both tall grass, so the step lands inside an encounter zone.
-	GameData.player_tile = Vector2i(6, 4)
+	# 18,4 and 19,4 are both jungle tall grass, so the step lands inside an encounter zone.
+	GameData.player_tile = JUNGLE_GRASS
 	var ow := _overworld()
 	ow.enter({})
 	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES)
 	assert_eq(seen.size(), 1, "one signal per completed step")
-	assert_eq(seen[0][0], Vector2i(7, 4))
+	assert_eq(seen[0][0], JUNGLE_GRASS_STEP)
 	assert_true(seen[0][1], "in_encounter_zone must be true in tall grass")
-	assert_eq(GameData.player_tile, Vector2i(7, 4), "GameData tracks the player")
+	assert_eq(GameData.player_tile, JUNGLE_GRASS_STEP, "GameData tracks the player")
 	ow.free()
 
 func test_step_onto_a_path_reports_no_encounter_zone() -> void:
-	# 3,2 and 4,2 are path tiles.
-	GameData.player_tile = Vector2i(3, 2)
+	# 5,25 and 6,25 are jungle trail tiles.
+	GameData.player_tile = JUNGLE_PATH
 	var ow := _overworld()
 	ow.enter({})
 	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES)
@@ -200,20 +214,30 @@ func test_step_onto_a_path_reports_no_encounter_zone() -> void:
 	ow.free()
 
 func test_holding_a_direction_keeps_stepping() -> void:
-	GameData.player_tile = Vector2i(6, 4)
+	GameData.player_tile = JUNGLE_GRASS
 	var ow := _overworld()
 	ow.enter({})
 	var seen := _walk(ow, "move_right", ONE_STEP_FRAMES * 2)
 	assert_eq(seen.size(), 2, "a held direction walks tile after tile")
-	assert_eq(seen[0][0], Vector2i(7, 4))
-	assert_eq(seen[1][0], Vector2i(8, 4))
+	assert_eq(seen[0][0], JUNGLE_GRASS_STEP)
+	assert_eq(seen[1][0], JUNGLE_GRASS_HOLD)
 	ow.free()
 
 func test_walking_into_the_border_emits_nothing() -> void:
-	GameData.player_tile = Vector2i(1, 3)
+	GameData.player_tile = JUNGLE_BORDER
 	var ow := _overworld()
 	ow.enter({})
 	var seen := _walk(ow, "move_left", ONE_STEP_FRAMES * 2)
-	assert_eq(seen.size(), 0, "blocked by hedge, so no step completed")
-	assert_eq(GameData.player_tile, Vector2i(1, 3))
+	assert_eq(seen.size(), 0, "blocked by jungle border, so no step completed")
+	assert_eq(GameData.player_tile, JUNGLE_BORDER)
+	ow.free()
+
+func test_grassland_choice_keeps_person_6_start() -> void:
+	BiomeSession.choose(BiomeSession.WORLD_GRASSLAND)
+	GameData.player_tile = Vector2i.ZERO
+	var ow := _overworld()
+	ow.enter({})
+	assert_eq(GameData.player_tile, GrassMap.START_TILE)
+	assert_true(ow.get_node("Tiles").visible, "Person 6 grassland tiles stay on")
+	assert_true(GrassMap.is_walkable(Vector2i(3, 3)))
 	ow.free()

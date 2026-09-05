@@ -13,6 +13,11 @@ extends RefCounted
 ## Editing the map: keep every row exactly WIDTH characters and keep the outer ring solid
 ## "#" so the player can never walk off the map. tests/test_world.gd asserts both, plus that
 ## every walkable tile is reachable from START_TILE.
+##
+## When OverworldState binds BiomeSession, walk/encounter/camera queries use the live
+## jungle/beach maps instead of this grassland stub. Player.gd still calls these methods.
+
+const BiomeSession := preload("res://world/BiomeSession.gd")
 
 const TILE := 8
 const WIDTH := 40
@@ -71,11 +76,15 @@ static func glyph(tile: Vector2i) -> String:
 	return MAP[tile.y][tile.x]
 
 static func is_walkable(tile: Vector2i) -> bool:
+	if BiomeSession.is_active():
+		return BiomeSession.is_walkable(tile)
 	return glyph(tile) in WALKABLE
 
 ## True when the tile is tall grass. Mirrored by the in_encounter_zone flag on
 ## EventBus.player_moved so the encounter system never has to reach into this script.
 static func is_encounter_zone(tile: Vector2i) -> bool:
+	if BiomeSession.is_active():
+		return BiomeSession.is_encounter_zone(tile)
 	return glyph(tile) in ENCOUNTER
 
 static func atlas_coords(tile: Vector2i) -> Vector2i:
@@ -83,4 +92,12 @@ static func atlas_coords(tile: Vector2i) -> Vector2i:
 
 ## Map size in pixels, used to clamp the camera.
 static func pixel_size() -> Vector2i:
+	if BiomeSession.is_active():
+		return BiomeSession.pixel_size()
 	return Vector2i(WIDTH, HEIGHT) * TILE
+
+## Spawn used when the stored tile is not walkable. Biome start while the live map is bound.
+static func start_tile() -> Vector2i:
+	if BiomeSession.is_active():
+		return BiomeSession.start_tile()
+	return START_TILE
