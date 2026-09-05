@@ -27,8 +27,8 @@ Replace the stub's visuals and logic; keep the contract listed in its script hea
 ## Screen
 
 200 x 120 internal viewport, integer-scaled 4x to the 800 x 480 Waveshare panel.
-Nearest-neighbour filtering. 8 px tiles give a 25 x 15 tile view. An 8 px font is 32 px tall on
-the real screen, so it stays readable.
+Nearest-neighbour filtering. The Studio overworld uses 16 px tiles (about a 13 x 8 tile view);
+an 8 px font is 32 px tall on the real screen, so it stays readable.
 
 ## Autoloads (load order)
 

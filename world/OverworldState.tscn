@@ -28,15 +28,15 @@ character_id = 0
 
 [node name="elder" parent="." instance=ExtResource("7_elder") groups=["npc"]]
 z_index = 1
-position = Vector2(40, 24)
+position = Vector2(80, 48)
 
 [node name="youth" parent="." instance=ExtResource("8_youth") groups=["npc"]]
 z_index = 1
-position = Vector2(64, 16)
+position = Vector2(128, 32)
 
 [node name="sign" parent="." instance=ExtResource("9_sign") groups=["npc"]]
 z_index = 1
-position = Vector2(24, 40)
+position = Vector2(48, 64)
 
 [node name="Camera" type="Camera2D" parent="."]
 
