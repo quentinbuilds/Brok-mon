@@ -4,7 +4,7 @@ extends TestCase
 ##   AudioManager - the contract only (names, playability, override bookkeeping), because any
 ##                  effect may legitimately be replaced by a file in assets/audio/.
 
-const EXPECTED := ["bump", "cancel", "confirm", "menu"]
+const EXPECTED := ["bump", "cancel", "confirm", "menu", "sigh"]
 
 func _mgr():
 	return tree.root.get_node("AudioManager")

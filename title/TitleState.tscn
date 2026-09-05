@@ -56,3 +56,27 @@ horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_colors/font_color = Color(0.11, 0.11, 0.17, 1)
 theme_override_font_sizes/font_size = 10
+
+[node name="LinePanel" type="ColorRect" parent="."]
+visible = false
+offset_left = 8.0
+offset_top = 40.0
+offset_right = 192.0
+offset_bottom = 74.0
+color = Color(0.047, 0.055, 0.09, 0.86)
+
+[node name="Line" type="Label" parent="."]
+visible = false
+offset_left = 8.0
+offset_top = 42.0
+offset_right = 192.0
+offset_bottom = 72.0
+text = "AH SHIT,
+HERE WE GO AGAIN"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 0.953, 0.769, 1)
+theme_override_colors/font_shadow_color = Color(0.11, 0.11, 0.17, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 12

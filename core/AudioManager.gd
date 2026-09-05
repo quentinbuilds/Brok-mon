@@ -241,6 +241,9 @@ func _build_library() -> void:
 	_sfx["menu"] = GBSynth.arp([587.0, 880.0], 0.028, GBSynth.DUTY_12_5, 0.25)
 	# Noise-channel tick, for footsteps and bumps.
 	_sfx["bump"] = GBSynth.noise(0.05, 12, 0.2)
+	# Two notes falling instead of rising: the "confirm" blip played backwards, near enough.
+	# Used when leaving the title, under "ah shit, here we go again".
+	_sfx["sigh"] = GBSynth.arp([740.0, 466.0], 0.11, GBSynth.DUTY_25, 0.5)
 	_apply_overrides()
 
 ## A real recording beats a synth blip once someone has authored one, so let a file win.
