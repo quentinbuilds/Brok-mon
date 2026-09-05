@@ -1,3 +1,26 @@
+# Godot
+.godot/
+*.translation
+export/
+*.tmp
+*.godot.bak
+*.bak
+
+# Summer (keep .summer/ project memory, drop caches)
+.summer/cache/
+.summer/local/
 .superpowers/
 gok-mon-(4.6)/
-*.godot.bak
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Export artifacts
+build/
+
+# Raw audio downloads; converted wavs in assets/audio/ are committed
+audio/*.mp3
+audio/*.mp3.import
