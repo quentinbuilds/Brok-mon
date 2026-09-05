@@ -44,6 +44,9 @@ const FIGHT_COLS := 2
 const FIGHT_ROWS := 2
 const FIGHT_COL_WIDTH := 90
 
+## Iris time when the player blacks out. Slower than a normal transition: losing should land.
+const BLACKOUT_FADE := 0.8
+
 const TEXT_CHARS_PER_SEC := 35.0
 const TEXT_CHARS_PER_SEC_FAST := 140.0
 const MESSAGE_HOLD := 0.35

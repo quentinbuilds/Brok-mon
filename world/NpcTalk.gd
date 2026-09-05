@@ -13,6 +13,20 @@ const LINES := {
 	"viking": "I ragebaited a\nboss once.",
 	"knight": "My armor is\nmostly comments.",
 	"explorer": "The map is 25\ntiles wide. Peak.",
+	"pigtails": "Named my creature
+after the router.",
+	"pink_dress": "This dress has no
+pockets either.",
+	"grey_shirt": "I'm the tutorial.
+Nobody reads me.",
+	"vest_man": "Crops failed. I
+blamed patch notes.",
+	"mohawk": "Not lost. Just
+exploring hard.",
+	"rusty_hair": "An hour in tall
+grass. Nothing.",
+	"maroon": "I peaked at Lv.5
+and I'm fine.",
 }
 
 ## Extra lines, played in order on repeat visits. LINES stays the one an NPC opens with, so a
@@ -63,6 +77,48 @@ const VARIATIONS := {
 		"Mapped the whole\nisland. Twice.\nStill lost.",
 		"I found a beach.\nIt found me back.",
 		"North is wherever\nI'm facing. Trust.",
+	],
+	"pigtails": [
+		"My creature beats
+yours. Objectively.",
+		"Dad says the world
+got bigger. Cope.",
+	],
+	"pink_dress": [
+		"I walked here.
+All of it. On foot.",
+		"The flowers are
+load bearing.",
+	],
+	"grey_shirt": [
+		"Press A. That is
+the whole tutorial.",
+		"You know how to
+walk. Go on then.",
+	],
+	"vest_man": [
+		"These fields were
+hand authored.",
+		"Nothing grows here
+but encounters.",
+	],
+	"mohawk": [
+		"Ran to the edge.
+It was a hedge.",
+		"The border is
+solid. I checked.",
+	],
+	"rusty_hair": [
+		"Rate is eight
+percent. I counted.",
+		"Still nothing.
+I will wait.",
+	],
+	"maroon": [
+		"Lost every fight.
+Blacked out. Fine.",
+		"Waking up at home
+is basically a win.",
 	],
 }
 
