@@ -27,6 +27,11 @@ const READ_TIME := 1.1
 
 const IRIS_TIME := 0.55
 
+## The title theme, started on entry and faded out under the iris so the overworld opens on its
+## own silence. Absent in a checkout without assets/music/, which is not an error here - the
+## screen still boots, glitches and leaves, it just does it quietly.
+const MUSIC := "title"
+
 @onready var _trainer: Sprite2D = $Trainer
 @onready var _title: Label = $Title
 @onready var _prompt: Label = $Prompt
@@ -46,6 +51,7 @@ func _on_enter() -> void:
 	_set_beat(Beat.BOOT)
 	if AudioManager.has_sfx("confirm"):
 		AudioManager.play_sfx("confirm")
+	_start_music()
 
 
 func update(delta: float) -> void:
@@ -76,6 +82,9 @@ func _start() -> void:
 	_line.visible = true
 	_line_panel.visible = true
 	await _hold(READ_TIME)
+	# Fade with the iris rather than at the handover: the theme is 94 s of music that has been
+	# playing since boot, and cutting it dead on the transition is the most audible way to end it.
+	AudioManager.stop_music(0.0 if _skipped else IRIS_TIME)
 	# Close onto the trainer rather than the middle of the screen: it is the only thing on the
 	# title that will still be there, in a manner of speaking, after the cut.
 	await Transition.close(_trainer.position, 0.0 if _skipped else IRIS_TIME)
@@ -88,12 +97,18 @@ func _start() -> void:
 		_line.visible = false
 		_line_panel.visible = false
 		_set_beat(Beat.TITLE)
+		_start_music()
 		return
 	GameData.reset()
 	GameState.transition_to(GameState.State.OVERWORLD)
 	# Not awaited on purpose: transition_to() queues this node for deletion, and awaiting past
 	# that point resumes inside a freed object. The autoload finishes the reveal on its own.
 	Transition.open(0.0 if _skipped else IRIS_TIME)
+
+
+func _start_music() -> void:
+	if AudioManager.has_music(MUSIC):
+		AudioManager.play_music(MUSIC)
 
 
 ## A wait that a skip can cut short, checked per frame rather than as one long timer.

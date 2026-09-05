@@ -121,6 +121,33 @@ func test_the_sequence_ends_in_the_overworld_with_the_screen_clear() -> void:
 	assert_false(_rect().visible, "the cover is still drawn over the overworld")
 	_teardown(main)
 
+## The theme runs from the moment the title appears - it is the first thing anyone hears.
+func test_the_title_plays_its_theme() -> void:
+	var main := await _boot_main()
+	var mgr = tree.root.get_node("AudioManager")
+	assert_true(mgr.has_music(TitleState.MUSIC), "assets/music/title.ogg is missing")
+	assert_eq(mgr.current_music(), TitleState.MUSIC, "the title came up silent")
+	_teardown(main)
+	mgr.stop_music()
+
+## And it must be gone by the time the overworld is on screen: music outlives state scenes, so a
+## theme left running here plays over the whole game.
+func test_the_theme_does_not_follow_the_player_into_the_overworld() -> void:
+	var main := await _boot_main()
+	var gs = tree.root.get_node("GameState")
+	var mgr = tree.root.get_node("AudioManager")
+	var title = gs._overlay
+	title._skipped = true
+	title._start()
+	for _i in 240:
+		await tree.process_frame
+		if gs.current == gs.State.OVERWORLD:
+			break
+	assert_eq(gs.current, gs.State.OVERWORLD, "never reached the overworld")
+	assert_eq(mgr.current_music(), "", "the title theme is still playing in the overworld")
+	_teardown(main)
+	mgr.stop_music()
+
 ## Returning to the title while covered must not inherit the black screen.
 func test_entering_the_title_clears_a_leftover_cover() -> void:
 	await _t().close(Vector2(100, 60), 0.0)
