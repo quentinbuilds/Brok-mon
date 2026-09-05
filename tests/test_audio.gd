@@ -456,3 +456,61 @@ func test_a_real_battle_reports_the_fainting_side_correctly() -> void:
 
 	host.queue_free()
 	await tree.process_frame
+
+# --- overworld music ---
+## Driven off GameState.state_changed rather than by world/, because the overworld scene is built
+## once and then hidden and unhidden: its enter() never runs again after the first one.
+
+const OVERWORLD_TRACK := "overworld"
+
+func _arrive_in_the_overworld() -> void:
+	GameState.state_changed.emit(GameState.State.BATTLE, GameState.State.OVERWORLD)
+
+func test_overworld_track_is_on_disk() -> void:
+	assert_true(_mgr().has_music(OVERWORLD_TRACK), "assets/music/overworld.ogg is missing")
+
+func test_arriving_in_the_overworld_starts_the_theme() -> void:
+	_mgr().stop_music()
+	_arrive_in_the_overworld()
+	assert_eq(_mgr().current_music(), OVERWORLD_TRACK, "the map came up silent")
+	_mgr().stop_music()
+
+## Walking around must not restart the track every time the player opens the menu and closes it.
+func test_arriving_again_does_not_restart_the_theme() -> void:
+	_mgr().stop_music()
+	_arrive_in_the_overworld()
+	var players := _music_players()
+	var before := [players[0].get_playback_position(), players[1].get_playback_position()]
+	_arrive_in_the_overworld()
+	assert_eq(_mgr().current_music(), OVERWORLD_TRACK)
+	for i in 2:
+		if players[i].playing:
+			assert_true(players[i].get_playback_position() >= before[i], "the theme restarted")
+	_mgr().stop_music()
+
+## The ordering bug this guards: GameState and AudioManager both react to battle_won, and
+## GameState is the autoload connected first - so the overworld theme is already playing by the
+## time the battle-end handler runs here. Stopping unconditionally would fade THAT out and leave
+## the map silent for the rest of the session.
+func test_winning_a_battle_gives_the_overworld_its_theme_back() -> void:
+	_mgr().stop_music()
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "the battle track never started")
+	# The real order: the transition lands first, then the battle-end handler.
+	_arrive_in_the_overworld()
+	EventBus.battle_won.emit(_a_creature())
+	assert_eq(_mgr().current_music(), OVERWORLD_TRACK, "the map was left silent after a battle")
+	await tree.create_timer(_mgr().BATTLE_FADE + 0.1).timeout
+	assert_eq(_mgr().current_music(), OVERWORLD_TRACK, "a stale battle fade stopped the map theme")
+	assert_true(_mgr().is_music_playing(), "the overworld theme was faded out from under the map")
+	_mgr().stop_music()
+
+## Leaving the map for a battle still hands the music over - the guard must not make the battle
+## track unstoppable in the other direction either.
+func test_a_battle_takes_the_theme_away() -> void:
+	_arrive_in_the_overworld()
+	EventBus.battle_started.emit(_a_creature(), _a_creature())
+	assert_eq(_mgr().current_music(), _mgr().BATTLE_MUSIC, "the overworld theme played over a battle")
+	EventBus.battle_escaped.emit()
+	assert_eq(_mgr().current_music(), "", "the battle track survived running away")
+	_mgr().stop_music()

@@ -39,6 +39,11 @@ const BATTLE_MUSIC := "battle"
 ## Long enough not to sound like a cut, short enough that the victory sting is not sung over.
 const BATTLE_FADE := 0.35
 
+## The overworld theme. Driven off GameState rather than started by world/ itself: the overworld
+## scene is built once and then hidden and unhidden, so its enter() runs on the first walk out of
+## the title and never again - a battle handing the player back would leave the map silent.
+const OVERWORLD_MUSIC := "overworld"
+
 ## Played when the player's creature takes a hit. A trimmed cut of the same recording as "fahhh":
 ## the full 2.3 s clip is mostly a decaying room tail, and at one hit per turn those tails pile up
 ## on each other and smother the fight. "hurt" is the 0.85 s that actually carries the joke.
@@ -78,6 +83,7 @@ func _ready() -> void:
 	add_child(_music_loop)
 	_music_intro.finished.connect(_on_intro_finished)
 	_connect_music_to_battle()
+	_connect_music_to_the_overworld()
 	# Only the player getting hit is worth a sound. Firing on the enemy's turn too would mean two
 	# screams per exchange, which stops being funny by the second battle.
 	EventBus.damage_dealt.connect(func(amount: int, to_player: bool) -> void:
@@ -100,12 +106,30 @@ func _ready() -> void:
 ## full-volume loop.
 func _connect_music_to_battle() -> void:
 	EventBus.battle_started.connect(func(_p, _w): play_music(BATTLE_MUSIC))
-	EventBus.battle_won.connect(func(_w): stop_music(BATTLE_FADE))
-	EventBus.battle_lost.connect(func(): stop_music(BATTLE_FADE))
-	EventBus.battle_escaped.connect(func(): stop_music(BATTLE_FADE))
+	EventBus.battle_won.connect(func(_w): _stop_battle_music())
+	EventBus.battle_lost.connect(func(): _stop_battle_music())
+	EventBus.battle_escaped.connect(func(): _stop_battle_music())
 	# Catching is a detour out of BATTLE that may or may not come back; only a successful catch
 	# ends the encounter, and CatchingState is what knows that.
-	EventBus.creature_caught.connect(func(_w): stop_music(BATTLE_FADE))
+	EventBus.creature_caught.connect(func(_w): _stop_battle_music())
+
+## Only stops the music if the battle track is still the one playing. GameState reacts to these
+## same signals and is connected first, so by the time this runs the overworld theme is usually
+## already back - an unconditional stop would fade THAT out and leave the map silent for the rest
+## of the session.
+func _stop_battle_music() -> void:
+	if _music_name == BATTLE_MUSIC:
+		stop_music(BATTLE_FADE)
+
+## Every arrival in OVERWORLD, from wherever: out of the title, back from a battle, out of the
+## menu. play_music() is a no-op on the track already playing, so the menu and a failed catch
+## do not restart the theme - only a state that actually took the music away does.
+##
+## GameState is an autoload declared before this one, so it exists by the time _ready() runs here.
+func _connect_music_to_the_overworld() -> void:
+	GameState.state_changed.connect(func(_from: int, to: int) -> void:
+		if to == GameState.State.OVERWORLD and has_music(OVERWORLD_MUSIC):
+			play_music(OVERWORLD_MUSIC))
 
 func has_sfx(sfx_name: String) -> bool:
 	return _sfx.has(sfx_name)
