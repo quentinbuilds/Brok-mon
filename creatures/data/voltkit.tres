@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1")
 id = 5
-name = "Voltkit"
+name = "Rizzzmoth"
 sprite = ExtResource("2")
 type = &"ELECTRIC"
 max_hp = 18

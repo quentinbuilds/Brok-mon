@@ -97,7 +97,7 @@ statlines are the rare ones so that finding them feels like something.
 | Pebblit | ROCK | 30 | 4 | 9 | 0.40 | 25 | hard-edged block |
 | Aquafin | WATER | 26 | 6 | 5 | 0.35 | 20 | finned fish |
 | Emberfox | FIRE | 24 | 8 | 4 | 0.30 | 15 | pointed ears, narrow muzzle |
-| Voltkit | ELECTRIC | 18 | 9 | 3 | 0.25 | 5 | quadruped, tail swept up |
+| Rizzzmoth | ELECTRIC | 18 | 9 | 3 | 0.25 | 5 | quadruped, tail swept up |
 
 All names, stats and sprites are original. Sprites are 16x16 in the same four shades as the
 overworld: the game is monochrome-green by design, so a creature is told apart by silhouette

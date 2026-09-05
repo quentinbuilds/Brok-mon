@@ -102,7 +102,7 @@ func test_rarity_ordering_follows_the_weights() -> void:
 	for i in 4000:
 		var n: String = pool.generate_wild_creature(rng).name
 		counts[n] = counts.get(n, 0) + 1
-	assert_true(counts.get("Mossbug", 0) > counts.get("Voltkit", 0),
+	assert_true(counts.get("Mossbug", 0) > counts.get("Rizzzmoth", 0),
 		"the common creature should outnumber the rare one: %s" % str(counts))
 
 # --- the roll ---
