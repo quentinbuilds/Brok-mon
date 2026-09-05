@@ -23,14 +23,36 @@ const INTERIOR_BLOCKED := {
 	Vector2i(11, 9): true, Vector2i(12, 9): true,
 }
 
-const BEACH_BLOCKED := {
-	Vector2i(5, 2): true, Vector2i(6, 2): true,
-	Vector2i(5, 3): true, Vector2i(6, 3): true,
-	Vector2i(5, 8): true, Vector2i(6, 8): true,
-	Vector2i(14, 3): true, Vector2i(15, 3): true, Vector2i(16, 3): true,
-	Vector2i(14, 4): true, Vector2i(15, 4): true, Vector2i(16, 4): true,
-	Vector2i(14, 5): true, Vector2i(15, 5): true, Vector2i(16, 5): true,
-}
+## Beach walkability, one character per 16 px tile of the scaled background.
+##   "." dry land the player may stand on    "~" sea, wet sand, pond or scenery
+##
+## The beach is presentation art, not a tileset, so there are no glyphs to query the way
+## GrassMap has. This mask was traced off assets/backgrounds/beach_map.png at the scale the
+## sprite actually renders (source pixel = tile * 64) and then reduced to the single region
+## reachable from BEACH_RETURN, so the palm islet on the left stays scenery instead of a
+## place the player can be stranded. tests/test_collision.gd re-checks both properties.
+##
+## Row 0 is the Studio palette swatch bar baked into the top of the source image. It is never
+## walkable and camera_top() keeps it off screen.
+const BEACH_WIDTH := 20
+const BEACH_HEIGHT := 11
+
+const BEACH_MAP := [
+	"~~~~~~~~~~~~~~~~~~~~",
+	"~~~~~~~~..~......~~~",
+	"~~~~~............~~~",
+	"~~~~~............~~~",
+	"~~~~~........~~.~~~~",
+	"~~~~~~~~.........~~~",
+	"~~~~~~~~.........~~~",
+	"~~~~~~~~~~.......~~~",
+	"~~~~~~~~~~........~.",
+	"~~~~~~~~~~..........",
+	"~~~~~~~~~~~.~~~~~~~.",
+]
+
+## Screen rows hidden behind the camera's top limit, so the swatch bar never shows.
+const BEACH_TOP_MARGIN := 16
 
 static func is_walkable(mode: Mode, tile: Vector2i) -> bool:
 	match mode:
@@ -41,18 +63,31 @@ static func is_walkable(mode: Mode, tile: Vector2i) -> bool:
 			return tile.x >= 6 and tile.x <= 13 and tile.y >= 3 and tile.y <= 10 \
 				and not INTERIOR_BLOCKED.has(tile)
 		Mode.BEACH:
-			return tile.x >= 5 and tile.x <= 17 and tile.y >= 2 and tile.y <= 9 \
-				and (tile == BEACH_DOOR or not BEACH_BLOCKED.has(tile))
+			return beach_glyph(tile) == "."
 	return false
 
+
+## Out-of-bounds reads as sea, so callers never need their own bounds check.
+static func beach_glyph(tile: Vector2i) -> String:
+	if tile.x < 0 or tile.y < 0 or tile.x >= BEACH_WIDTH or tile.y >= BEACH_HEIGHT:
+		return "~"
+	return BEACH_MAP[tile.y][tile.x]
+
+## Encounters only ever roll on a tile the player can stand on, so the zone is intersected
+## with the walk mask rather than trusted on its own.
 static func is_encounter_zone(mode: Mode, tile: Vector2i) -> bool:
 	if mode == Mode.DEFAULT:
 		return GrassMap.is_encounter_zone(tile)
 	if mode == Mode.BEACH:
-		return tile.y >= 7 and tile.x >= 10 and tile.x <= 13
+		return tile.y >= 7 and tile.x >= 10 and tile.x <= 13 and is_walkable(mode, tile)
 	return false
 
 static func pixel_size(mode: Mode) -> Vector2i:
 	if mode == Mode.DEFAULT:
 		return GrassMap.pixel_size()
 	return Vector2i(320, 180)
+
+## Topmost pixel row the camera may show. Non-zero only on the beach, whose source image
+## carries the Studio palette swatch bar across its first few rows.
+static func camera_top(mode: Mode) -> int:
+	return BEACH_TOP_MARGIN if mode == Mode.BEACH else 0
