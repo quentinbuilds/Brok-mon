@@ -14,7 +14,10 @@ enum Beat { BOOT, LABEL, TITLE }
 
 const BOOT_SECS := 0.7
 const LABEL_SECS := 1.1
-const LABEL_PROMPT := "(C)1998 QUENTIN SOFT\nLICENSED BY NOBODY"
+
+## The LABEL beat used to carry a two-line copyright gag. Two lines at font size 10 did not fit
+## the 20 px prompt label and spilled out of its panel, and the joke was not worth the layout,
+## so the beat now just brings the logo up on its own before the prompt joins it.
 const TITLE_PROMPT := "PRESS A TO START"
 
 ## How long the line sits on screen before the iris starts closing.
@@ -129,7 +132,8 @@ func _set_beat(next: int) -> void:
 			if _title:
 				_title.text = "Brokémon"
 			if _prompt:
-				_prompt.text = LABEL_PROMPT
+				_prompt.text = ""
+			_show_prompt(false)
 			if AudioManager.has_sfx("menu"):
 				AudioManager.play_sfx("menu")
 		Beat.TITLE:
@@ -138,6 +142,7 @@ func _set_beat(next: int) -> void:
 				_title.text = "Brokémon"
 			if _prompt:
 				_prompt.text = TITLE_PROMPT
+			_show_prompt(true)
 
 
 func _show_chrome(on: bool) -> void:
@@ -145,6 +150,11 @@ func _show_chrome(on: bool) -> void:
 		_trainer.visible = on
 	if _title:
 		_title.visible = on
+	_show_prompt(on)
+
+
+## The prompt and the panel behind it travel together; an empty panel is just a cream bar.
+func _show_prompt(on: bool) -> void:
 	if _prompt:
 		_prompt.visible = on
 	if _prompt_panel:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://assets/backgrounds/beach_map.png" id="11_beach"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/house_interior_map.png" id="12_interior"]
 [ext_resource type="Texture2D" path="res://assets/studio/dialogue_box.png" id="13_dialogue"]
+[ext_resource type="Script" path="res://world/Minimap.gd" id="14_minimap"]
 
 [sub_resource type="AtlasTexture" id="DialogueFrame"]
 atlas = ExtResource("13_dialogue")
@@ -94,6 +95,9 @@ vertical_alignment = 1
 [node name="Camera" type="Camera2D" parent="."]
 
 [node name="EncounterSystem" parent="." instance=ExtResource("5")]
+
+[node name="Minimap" type="CanvasLayer" parent="."]
+script = ExtResource("14_minimap")
 
 [node name="TalkHud" type="CanvasLayer" parent="."]
 layer = 20

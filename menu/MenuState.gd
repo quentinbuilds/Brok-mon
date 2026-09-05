@@ -6,7 +6,29 @@ enum Page { MAIN, PARTY, INVENTORY }
 const MAIN_LABELS := ["PARTY", "INVENTORY", "SAVE", "CLOSE"]
 const SAVE_LINE := "Save the game from who? You? Huh dumbass"
 const PANEL_COLOR := Color("78a8ad")
-const ARROW_POSITIONS := [Vector2(3, 25), Vector2(95, 25), Vector2(3, 66), Vector2(95, 66)]
+const ARROW_POSITIONS := [Vector2(4, 25), Vector2(96, 25), Vector2(4, 66), Vector2(96, 66)]
+
+## Studio palette, drawn rather than blitted. The backdrop used to be the whole
+## battle_menu.png mockup, which has a gold selection arrow, four button labels and a green
+## highlight painted into it; the panels covered the buttons, but the baked arrow sat outside
+## the grid and read as a second cursor permanently stuck beside PARTY.
+const FRAME_COLOR := Color(0.965, 0.894, 0.678, 1)
+const FRAME_BORDER := Color(0.06, 0.11, 0.2, 1)
+
+const DIALOGUE_SHEET := "res://assets/studio/dialogue_box.png"
+
+## The Studio sheets carry a palette swatch bar across their first rows. Crop past it so the
+## bar is not part of the frame everywhere the art is used.
+const DIALOGUE_REGION := Rect2(0, 14, 1242, 577)
+
+
+## The clean cream frame, without the swatch bar. Shared by the modal here and by the scene's
+## Backdrop, which used to be the whole battle_menu mockup -- arrow, labels and all.
+static func dialogue_frame() -> AtlasTexture:
+	var frame := AtlasTexture.new()
+	frame.atlas = load(DIALOGUE_SHEET)
+	frame.region = DIALOGUE_REGION
+	return frame
 
 @onready var _main_page: Control = $MainPage
 @onready var _detail_page: Panel = $DetailPage
@@ -199,14 +221,16 @@ func _build_cursor() -> void:
 	_cursor.name = "SelectionArrow"
 	_cursor.size = Vector2(9, 12)
 	_cursor.z_index = 20
-	var shadow := Polygon2D.new()
-	shadow.position = Vector2(1, 1)
-	shadow.polygon = PackedVector2Array([Vector2(0, 0), Vector2(0, 10), Vector2(8, 5)])
-	shadow.color = Color("102044")
-	_cursor.add_child(shadow)
+	# Navy on the cream frame, not cream: the arrow used to be the same colour as the panel it
+	# sits on and all you could see was its one-pixel outline.
+	var halo := Polygon2D.new()
+	halo.position = Vector2(1, 1)
+	halo.polygon = PackedVector2Array([Vector2(0, 0), Vector2(0, 10), Vector2(8, 5)])
+	halo.color = Color("ffe8a0")
+	_cursor.add_child(halo)
 	var face := Polygon2D.new()
 	face.polygon = PackedVector2Array([Vector2(0, 1), Vector2(0, 9), Vector2(7, 5)])
-	face.color = Color("ffe8a0")
+	face.color = Color("102044")
 	_cursor.add_child(face)
 	add_child(_cursor)
 
@@ -242,7 +266,8 @@ func _build_dialog() -> void:
 	var texture := TextureRect.new()
 	texture.position = Vector2(3, 22)
 	texture.size = Vector2(194, 92)
-	texture.texture = load("res://assets/studio/dialogue_box.png")
+	texture.texture = dialogue_frame()
+	texture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	texture.stretch_mode = TextureRect.STRETCH_SCALE
 	_dialog.add_child(texture)

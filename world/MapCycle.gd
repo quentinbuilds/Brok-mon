@@ -87,6 +87,16 @@ static func pixel_size(mode: Mode) -> Vector2i:
 		return GrassMap.pixel_size()
 	return Vector2i(320, 180)
 
+## Size of a map in tiles, for anything that needs to frame the whole thing.
+static func map_tiles(mode: Mode) -> Vector2i:
+	match mode:
+		Mode.BEACH:
+			return Vector2i(BEACH_WIDTH, BEACH_HEIGHT)
+		Mode.INTERIOR:
+			return Vector2i(14, 11)
+	return Vector2i(GrassMap.WIDTH, GrassMap.HEIGHT)
+
+
 ## Topmost pixel row the camera may show. Non-zero only on the beach, whose source image
 ## carries the Studio palette swatch bar across its first few rows.
 static func camera_top(mode: Mode) -> int:
