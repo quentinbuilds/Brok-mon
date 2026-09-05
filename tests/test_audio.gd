@@ -4,7 +4,7 @@ extends TestCase
 ##   AudioManager - the contract only (names, playability, override bookkeeping), because any
 ##                  effect may legitimately be replaced by a file in assets/audio/.
 
-const EXPECTED := ["bump", "cancel", "confirm", "menu"]
+const EXPECTED := ["bump", "cancel", "confirm", "menu", "sigh"]
 
 func _mgr():
 	return tree.root.get_node("AudioManager")
@@ -366,6 +366,93 @@ func test_a_real_battle_reports_the_hit_sides_correctly() -> void:
 	# The side flag has to match reality, not just be present on both.
 	assert_true(mine.hp < hp_before, "player took no damage, so the to_player hit is meaningless")
 	assert_eq(to_player[0][0], hp_before - mine.hp, "reported amount does not match HP lost")
+
+	host.queue_free()
+	await tree.process_frame
+
+# --- faint hook ---
+## EventBus.creature_fainted is emitted by TurnSequencer.faint() for both sides; as with the
+## damage hook, which side makes a noise is decided here, in audio, not in battle/.
+
+func _faint_players() -> int:
+	var n := 0
+	for p in _mgr()._players:
+		if p.playing and p.stream == _mgr().get_sfx(_mgr().FAINT_SFX):
+			n += 1
+	return n
+
+func test_faint_sfx_exists() -> void:
+	assert_true(_mgr().has_sfx(_mgr().FAINT_SFX), "assets/audio/bruh.wav is missing")
+
+## It plays over the faint animation and the "X fainted!" line that follows it, so it has to be
+## short enough to be out of the way by the time the player is reading, and long enough to land.
+func test_faint_sfx_is_a_one_liner() -> void:
+	var s: AudioStream = _mgr().get_sfx(_mgr().FAINT_SFX)
+	assert_true(s.get_length() < 2.0, "bruh is %.2f s - it runs into the message" % s.get_length())
+	assert_true(s.get_length() > 0.3, "bruh is %.2f s - too short to read" % s.get_length())
+
+func test_player_faint_plays_the_sound() -> void:
+	var before := _faint_players()
+	EventBus.creature_fainted.emit(true)
+	assert_true(_faint_players() > before, "no faint sound when the player's creature dropped")
+
+## The wild creature going down is the win. A "bruh" over it reads as mockery of the wrong side.
+func test_enemy_faint_is_silent() -> void:
+	for p in _mgr()._players:
+		p.stop()
+	EventBus.creature_fainted.emit(false)
+	assert_eq(_faint_players(), 0, "the faint sound fired when the ENEMY dropped")
+
+## As with the damage hook, the part that can actually be wrong is TurnSequencer's
+## `view == ui.player_view`. Drive a real battle the player cannot win and cannot survive.
+func test_a_real_battle_reports_the_fainting_side_correctly() -> void:
+	var host := Node.new()
+	tree.root.add_child(host)
+	var battle := BattleState.new()
+	battle.instant = true
+	battle.rng.seed = 7
+	battle.services.inventory = BattleServices.NullInventory.new()
+	battle.services.party = BattleServices.NullParty.new()
+	host.add_child(battle)
+	await tree.process_frame
+
+	# One HP and no punch: the player cannot kill the wild creature before the first hit lands.
+	var mine := Creature.new()
+	mine.name = "HERO"; mine.max_hp = 40; mine.hp = 1; mine.attack = 1; mine.defense = 1
+	mine.catch_rate = 0.5; mine.type = &"NORMAL"
+	var wild := Creature.new()
+	wild.name = "BUG"; wild.max_hp = 200; wild.hp = 200; wild.attack = 40; wild.defense = 40
+	wild.catch_rate = 0.5; wild.type = &"NORMAL"
+	GameData.party = [mine]
+	GameData.active_index = 0
+	(battle.services.party as BattleServices.NullParty).party = [mine]
+
+	var faints: Array = []
+	var probe := func(to_player: bool) -> void: faints.append(to_player)
+	EventBus.creature_fainted.connect(probe)
+
+	battle.enter({"wild": wild})
+	for _i in 45:
+		await tree.process_frame
+		if battle.sub == BattleState.Sub.PLAYER_TURN:
+			break
+	# The enemy may miss, which just costs another exchange; attack until somebody drops.
+	for _turn in 8:
+		if battle.finished:
+			break
+		if battle.sub == BattleState.Sub.PLAYER_TURN and not battle.busy:
+			battle.perform_attack()
+		for _i in 90:
+			await tree.process_frame
+			if battle.finished or (battle.sub == BattleState.Sub.PLAYER_TURN and not battle.busy):
+				break
+	EventBus.creature_fainted.disconnect(probe)
+
+	assert_true(battle.finished, "the battle never ended")
+	assert_true(mine.is_fainted(), "the player's creature was supposed to drop")
+	assert_false(wild.is_fainted(), "the wild creature was not supposed to drop")
+	assert_eq(faints.size(), 1, "expected exactly one faint, got %d" % faints.size())
+	assert_true(faints[0], "the player's creature fainted but it was reported as the enemy's")
 
 	host.queue_free()
 	await tree.process_frame

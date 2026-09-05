@@ -1,8 +1,9 @@
 extends GameStateBase
+class_name OverworldState
 ## Overworld: ForestMap (16x16 art) on an 8px movement grid.
 ## Player is the Person 6 walker (OverworldCharacter). Grid-step like Player.gd;
 ## walkability is ForestMap water + NPC rects, not GrassMap glyphs.
-## Keep: menu key opens MENU; emit EventBus.player_moved when the tile changes.
+## A talks to a nearby node in group "npc" (NpcTalk lines). Menu still opens MENU.
 
 const TILE := 8
 const SPRITE := 16
@@ -13,7 +14,10 @@ const STEP_TIME := 0.14
 @onready var _player = $Player
 @onready var _map: TileMapLayer = $ForestMap
 @onready var _camera: Camera2D = $Player/Camera2D
+@onready var _talk: Label = get_node_or_null("TalkHud/TalkBox")
+@onready var _talk_panel: ColorRect = get_node_or_null("TalkHud/Panel")
 
+var talking: bool = false
 var _stepping := false
 var _step_from := Vector2.ZERO
 var _step_to := Vector2.ZERO
@@ -31,6 +35,7 @@ func _on_enter() -> void:
 	_stepping = false
 	if _player.has_method("apply_move_dir"):
 		_player.apply_move_dir(Vector2i.ZERO)
+	_close_talk()
 
 func _apply_camera_limits() -> void:
 	if _camera == null:
@@ -69,9 +74,18 @@ func _can_spawn_at(tile: Vector2i) -> bool:
 	return can_walk(pos)
 
 func update(delta: float) -> void:
+	if talking:
+		if InputManager.button_a_just_pressed() \
+				or InputManager.button_b_just_pressed() \
+				or InputManager.button_menu_just_pressed():
+			_close_talk()
+		return
 	if InputManager.button_menu_just_pressed():
 		GameState.transition_to(GameState.State.MENU)
 		return
+	if InputManager.button_a_just_pressed():
+		if try_talk():
+			return
 	if _stepping:
 		_advance_step(delta)
 		_sync_walker()
@@ -80,6 +94,34 @@ func update(delta: float) -> void:
 	if dir != Vector2i.ZERO:
 		_try_grid_step(dir)
 	_sync_walker()
+
+func try_talk() -> bool:
+	if not is_inside_tree() or _player == null:
+		return false
+	var npc := NpcTalk.nearest(_player.position, get_tree().get_nodes_in_group(NPC_GROUP))
+	if npc == null:
+		return false
+	_open_talk(NpcTalk.line_for_node(npc))
+	return true
+
+
+func _open_talk(text: String) -> void:
+	talking = true
+	if _talk:
+		_talk.text = text
+		_talk.visible = true
+	if _talk_panel:
+		_talk_panel.visible = true
+
+
+func _close_talk() -> void:
+	talking = false
+	if _talk:
+		_talk.visible = false
+		_talk.text = ""
+	if _talk_panel:
+		_talk_panel.visible = false
+
 
 func _sync_walker() -> void:
 	if _player == null or not _player.has_method("apply_move_dir"):

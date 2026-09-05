@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://biftfma3408t8"
-path="res://.godot/imported/Wizard1.png-7f4001f7b98dc725f19c30b0990ea8a9.ctex"
+path="res://.godot/imported/Wizard1.png-b1ad1429b76936ae6b924443f9e39e8b.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://world/characters/portraits/Wizard1.png"
-dest_files=["res://.godot/imported/Wizard1.png-7f4001f7b98dc725f19c30b0990ea8a9.ctex"]
+dest_files=["res://.godot/imported/Wizard1.png-b1ad1429b76936ae6b924443f9e39e8b.ctex"]
 
 [params]
 

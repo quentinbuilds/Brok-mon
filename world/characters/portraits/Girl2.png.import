@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl5enu7s3o2r6"
-path="res://.godot/imported/Girl2.png-0522fcb81f1cb7fa1f79e9ce0c2dc87d.ctex"
+path="res://.godot/imported/Girl2.png-82dc155924299b38997591e205bf3066.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://world/characters/portraits/Girl2.png"
-dest_files=["res://.godot/imported/Girl2.png-0522fcb81f1cb7fa1f79e9ce0c2dc87d.ctex"]
+dest_files=["res://.godot/imported/Girl2.png-82dc155924299b38997591e205bf3066.ctex"]
 
 [params]
 

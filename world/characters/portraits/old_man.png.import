@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cdanie5ex3xe6"
-path="res://.godot/imported/old_man.png-2e71c11a777e146ae81a5a7d08dd4d74.ctex"
+path="res://.godot/imported/old_man.png-fe42b603fda1d862a8bb0dd06b41d834.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://world/characters/portraits/old_man.png"
-dest_files=["res://.godot/imported/old_man.png-2e71c11a777e146ae81a5a7d08dd4d74.ctex"]
+dest_files=["res://.godot/imported/old_man.png-fe42b603fda1d862a8bb0dd06b41d834.ctex"]
 
 [params]
 

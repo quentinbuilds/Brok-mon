@@ -36,3 +36,26 @@ position = Vector2(8, 88)
 position = Vector2(216, 40)
 
 [node name="EncounterSystem" parent="." instance=ExtResource("7_enc")]
+
+[node name="TalkHud" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="Panel" type="ColorRect" parent="TalkHud"]
+visible = false
+offset_left = 8.0
+offset_top = 86.0
+offset_right = 192.0
+offset_bottom = 116.0
+color = Color(0.957, 0.863, 0.647, 0.94)
+
+[node name="TalkBox" type="Label" parent="TalkHud"]
+visible = false
+offset_left = 12.0
+offset_top = 88.0
+offset_right = 188.0
+offset_bottom = 114.0
+theme_override_colors/font_color = Color(0.11, 0.11, 0.17, 1)
+theme_override_font_sizes/font_size = 8
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1

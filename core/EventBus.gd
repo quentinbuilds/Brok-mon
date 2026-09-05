@@ -18,6 +18,10 @@ signal battle_escaped()
 ## moment. amount may be 0 (a hit that did nothing) - consumers decide whether they care.
 signal damage_dealt(amount: int, to_player: bool)
 
+## Emitted by TurnSequencer.faint() when a creature drops, for both sides, before the faint
+## animation plays. Same shape as damage_dealt so consumers filter the same way.
+signal creature_fainted(to_player: bool)
+
 # Catching. creature_caught -> OVERWORLD, catch_failed -> back to BATTLE.
 signal catch_started(wild: Creature)
 signal creature_caught(wild: Creature)
