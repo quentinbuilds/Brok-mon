@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brokémon — BrokéStudio</title>
+  <meta name="description" content="A 200×120 monster-catching game from BrokéStudio. Five original creatures. Arduino UNO Q.">
+  <link rel="icon" href="assets/walker-idle.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="boot-bar">
+    <span>BROKÉSTUDIO</span>
+    <span class="tabs" aria-hidden="true"></span>
+    <span>EST. 1998 · LICENSED BY NOBODY</span>
+  </header>
+
+  <nav class="site-nav">
+    <a href="index.html" class="on">CART</a>
+    <a href="brokedex.html">BROKEDEX</a>
+    <a href="play.html">MANUAL</a>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="cart-label">
+        <p class="eyebrow">GAME BOY COLOR · UNO Q CART</p>
+        <h1>Brokémon</h1>
+        <p class="studio-mark">A BROKÉSTUDIO ORIGINAL</p>
+        <p class="tag">Gotta catch 'em all.<br>After the compile finishes.</p>
+      </div>
+
+      <div class="gb">
+        <div class="gb-bezel">
+          <div class="gb-lens">
+            <div class="gb-screen" id="screen" role="button" tabindex="0" aria-label="Press A to start">
+              <div class="screen-map"></div>
+              <div class="screen-shade"></div>
+              <i class="walker-sprite screen-walker" aria-hidden="true"></i>
+              <div class="screen-ui">
+                <p class="screen-title">Brokémon</p>
+                <div class="screen-prompt blink">PRESS A TO START</div>
+              </div>
+              <div class="screen-line hidden" id="line">AH SHIT,<br>HERE WE GO AGAIN</div>
+              <div class="crt"></div>
+            </div>
+          </div>
+          <div class="gb-brand">
+            <span>BROKÉSTUDIO</span>
+            <small>COLOR</small>
+          </div>
+          <div class="gb-btns">
+            <div class="dpad" aria-hidden="true"><i></i></div>
+            <div class="selects"><span></span><span></span></div>
+            <div class="ab">
+              <button type="button" class="face-btn" id="btn-b">B</button>
+              <button type="button" class="face-btn a" id="btn-a">A</button>
+            </div>
+          </div>
+          <div class="speaker" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <p class="hint" id="hint">A starts the bit. M toggles the BrokéStudio theme.</p>
+      <button type="button" class="music" id="music">♪ THEME OFF</button>
+    </section>
+
+    <section class="panel">
+      <h2><span>01</span> What even is this</h2>
+      <div class="window dialogue">
+        <div class="window-tabs" aria-hidden="true"></div>
+        <p>A top-down monster-catcher crammed into a <strong>200×120</strong> viewport, integer-scaled onto an 800×480 Waveshare panel, running on an <strong>Arduino UNO Q</strong> because somebody at the hackathon said "Game Boy" and BrokéStudio said yes.</p>
+        <p>That bearded guy in the cap is the actual player. 16×16 pixels. Person 6 named him cap_beard. He walks. Tall grass jumps him. He debates a wild Mossbug. He opens the menu. He remembers this was supposed to ship in twelve hours.</p>
+        <p class="end">▼</p>
+      </div>
+      <div class="cta-row">
+        <a class="music" href="brokedex.html">OPEN BROKEDEX ▶</a>
+        <a class="music" href="play.html">READ MANUAL ▶</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="window">
+    <p class="studio-mark">BROKÉSTUDIO</p>
+    <p>Not affiliated with the electric-mouse company, the Italian plumber company, or anyone who has a lawyer on retainer.</p>
+    <p><a href="https://github.com/quentinbuilds/Brokemon">github.com/quentinbuilds/Brokemon</a></p>
+    <p>©1998 BrokéStudio · Licensed by nobody · Made in a hackathon</p>
+  </footer>
+
+  <audio id="theme" src="assets/title.ogg" loop preload="none"></audio>
+  <script src="script.js"></script>
+</body>
+</html>
