@@ -276,3 +276,96 @@ func test_a_new_battle_during_the_fade_out_is_not_silenced_by_it() -> void:
 	assert_true(_mgr().is_music_playing(), "new battle went silent when the old fade completed")
 	_mgr().stop_music()
 
+# --- damage hook ---
+## EventBus.damage_dealt is emitted by TurnSequencer.impact() for both sides; the decision about
+## which side makes a noise lives here, in audio, not in battle/.
+
+func _hurt_players() -> int:
+	var n := 0
+	for p in _mgr()._players:
+		if p.playing and p.stream == _mgr().get_sfx(_mgr().HURT_SFX):
+			n += 1
+	return n
+
+func test_hurt_sfx_exists() -> void:
+	assert_true(_mgr().has_sfx(_mgr().HURT_SFX), "assets/audio/hurt.wav is missing")
+
+## The whole point of the separate file: one hit per turn, so a 2.3 s clip would still be ringing
+## when the next one lands. Anything under ~1 s is clear of that.
+func test_hurt_is_short_enough_not_to_stack() -> void:
+	var s: AudioStream = _mgr().get_sfx(_mgr().HURT_SFX)
+	assert_true(s.get_length() < 1.0, "hurt is %.2f s - it will overlap the next hit" % s.get_length())
+	assert_true(s.get_length() > 0.3, "hurt is %.2f s - too short to read" % s.get_length())
+
+func test_player_damage_plays_the_sound() -> void:
+	var before := _hurt_players()
+	EventBus.damage_dealt.emit(7, true)
+	assert_true(_hurt_players() > before, "no hurt sound when the player was hit")
+
+## Both sides call impact(), so an unfiltered connection would scream on the enemy's turn too.
+func test_enemy_damage_is_silent() -> void:
+	for p in _mgr()._players:
+		p.stop()
+	EventBus.damage_dealt.emit(7, false)
+	assert_eq(_hurt_players(), 0, "the hurt sound fired when the ENEMY took damage")
+
+## impact() runs on hits that did nothing; a scream there reads as a bug to the player.
+func test_zero_damage_is_silent() -> void:
+	for p in _mgr()._players:
+		p.stop()
+	EventBus.damage_dealt.emit(0, true)
+	assert_eq(_hurt_players(), 0, "the hurt sound fired on a hit that dealt no damage")
+
+## Everything above emits damage_dealt by hand. This drives a real battle instead, because the
+## part that can actually be wrong is TurnSequencer's `view == ui.player_view` - get that backwards
+## and the game screams on the enemy's turn and stays silent when you are the one being hit.
+func test_a_real_battle_reports_the_hit_sides_correctly() -> void:
+	var host := Node.new()
+	tree.root.add_child(host)
+	var battle := BattleState.new()
+	battle.instant = true
+	battle.rng.seed = 7
+	battle.services.inventory = BattleServices.NullInventory.new()
+	battle.services.party = BattleServices.NullParty.new()
+	host.add_child(battle)
+	await tree.process_frame
+
+	# Evenly matched and tanky, so nobody dies on the first exchange and both sides land a hit.
+	var mine := Creature.new()
+	mine.name = "HERO"; mine.max_hp = 60; mine.hp = 60; mine.attack = 5; mine.defense = 5
+	mine.catch_rate = 0.5; mine.type = &"NORMAL"
+	var wild := Creature.new()
+	wild.name = "BUG"; wild.max_hp = 60; wild.hp = 60; wild.attack = 5; wild.defense = 5
+	wild.catch_rate = 0.5; wild.type = &"NORMAL"
+	GameData.party = [mine]
+	GameData.active_index = 0
+	(battle.services.party as BattleServices.NullParty).party = [mine]
+
+	var hits: Array = []
+	var probe := func(amount: int, to_player: bool) -> void: hits.append([amount, to_player])
+	EventBus.damage_dealt.connect(probe)
+
+	battle.enter({"wild": wild})
+	for _i in 45:
+		await tree.process_frame
+		if battle.sub == BattleState.Sub.PLAYER_TURN:
+			break
+	var hp_before: int = mine.hp
+	battle.perform_attack()
+	for _i in 90:
+		await tree.process_frame
+		if hits.size() >= 2 or battle.finished:
+			break
+	EventBus.damage_dealt.disconnect(probe)
+
+	assert_true(hits.size() >= 2, "expected a hit on each side, got %d" % hits.size())
+	var to_enemy := hits.filter(func(h): return not h[1])
+	var to_player := hits.filter(func(h): return h[1])
+	assert_true(to_enemy.size() > 0, "the player's own attack never reported a hit on the enemy")
+	assert_true(to_player.size() > 0, "the enemy's attack never reported a hit on the player")
+	# The side flag has to match reality, not just be present on both.
+	assert_true(mine.hp < hp_before, "player took no damage, so the to_player hit is meaningless")
+	assert_eq(to_player[0][0], hp_before - mine.hp, "reported amount does not match HP lost")
+
+	host.queue_free()
+	await tree.process_frame
