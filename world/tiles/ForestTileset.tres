@@ -1,0 +1,199 @@
+[gd_resource type="TileSet" load_steps=17 format=3 uid="uid://fqqc5l8l0y5zi"]
+
+[ext_resource type="Texture2D" uid="uid://cpvwvdoehr8ew" path="res://assets/tiles/grass_middle.png" id="1_tex"]
+[ext_resource type="Texture2D" uid="uid://cnre1uaxin5pe" path="res://assets/tiles/path.png" id="2_tex"]
+[ext_resource type="Texture2D" uid="uid://exfionxv4714" path="res://assets/tiles/path_middle.png" id="3_tex"]
+[ext_resource type="Texture2D" uid="uid://cgl01aogqo0sq" path="res://assets/tiles/water_middle.png" id="4_tex"]
+[ext_resource type="Texture2D" uid="uid://clmwjoh1fvjlg" path="res://assets/tiles/water.png" id="5_tex"]
+[ext_resource type="Texture2D" uid="uid://bcqepjpi2y12p" path="res://assets/tiles/farmland.png" id="6_tex"]
+[ext_resource type="Texture2D" uid="uid://b7em13s15s7rx" path="res://assets/tiles/forest.png" id="7_tex"]
+[ext_resource type="Texture2D" uid="uid://dwr7syo7q1gc6" path="res://assets/tiles/beach.png" id="8_tex"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_grass"]
+texture = ExtResource("1_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "grass"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_path"]
+texture = ExtResource("2_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "path_nw"
+1:0/0 = 0
+1:0/0/custom_data_0 = "path_n"
+2:0/0 = 0
+2:0/0/custom_data_0 = "path_ne"
+0:1/0 = 0
+0:1/0/custom_data_0 = "path_w"
+1:1/0 = 0
+1:1/0/custom_data_0 = "path"
+2:1/0 = 0
+2:1/0/custom_data_0 = "path_e"
+0:2/0 = 0
+0:2/0/custom_data_0 = "path_sw"
+1:2/0 = 0
+1:2/0/custom_data_0 = "path_s"
+2:2/0 = 0
+2:2/0/custom_data_0 = "path_se"
+0:3/0 = 0
+0:3/0/custom_data_0 = "path_grass_nw"
+1:3/0 = 0
+1:3/0/custom_data_0 = "path_grass_ne"
+0:4/0 = 0
+0:4/0/custom_data_0 = "path_grass_sw"
+1:4/0 = 0
+1:4/0/custom_data_0 = "path_grass_se"
+0:5/0 = 0
+0:5/0/custom_data_0 = "path_pebbles_a"
+1:5/0 = 0
+1:5/0/custom_data_0 = "path_pebbles_b"
+2:5/0 = 0
+2:5/0/custom_data_0 = "path_pebbles_c"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pathmid"]
+texture = ExtResource("3_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "path"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_watermid"]
+texture = ExtResource("4_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "water"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_water"]
+texture = ExtResource("5_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "pond_nw"
+1:0/0 = 0
+1:0/0/custom_data_0 = "pond_n"
+2:0/0 = 0
+2:0/0/custom_data_0 = "pond_ne"
+0:1/0 = 0
+0:1/0/custom_data_0 = "pond_w"
+1:1/0 = 0
+1:1/0/custom_data_0 = "water"
+2:1/0 = 0
+2:1/0/custom_data_0 = "pond_e"
+0:2/0 = 0
+0:2/0/custom_data_0 = "pond_sw"
+1:2/0 = 0
+1:2/0/custom_data_0 = "pond_s"
+2:2/0 = 0
+2:2/0/custom_data_0 = "pond_se"
+0:3/0 = 0
+0:3/0/custom_data_0 = "island_nw"
+1:3/0 = 0
+1:3/0/custom_data_0 = "island_ne"
+0:4/0 = 0
+0:4/0/custom_data_0 = "island_sw"
+1:4/0 = 0
+1:4/0/custom_data_0 = "island_se"
+0:5/0 = 0
+0:5/0/custom_data_0 = "water_ripple_a"
+1:5/0 = 0
+1:5/0/custom_data_0 = "water_ripple_b"
+2:5/0 = 0
+2:5/0/custom_data_0 = "water_ripple_c"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_farm"]
+texture = ExtResource("6_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "farm_nw"
+1:0/0 = 0
+1:0/0/custom_data_0 = "farm_n"
+2:0/0 = 0
+2:0/0/custom_data_0 = "farm_ne"
+0:1/0 = 0
+0:1/0/custom_data_0 = "farm_w"
+1:1/0 = 0
+1:1/0/custom_data_0 = "farmland"
+2:1/0 = 0
+2:1/0/custom_data_0 = "farm_e"
+0:2/0 = 0
+0:2/0/custom_data_0 = "farm_sw"
+1:2/0 = 0
+1:2/0/custom_data_0 = "farm_s"
+2:2/0 = 0
+2:2/0/custom_data_0 = "farm_se"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_forest"]
+texture = ExtResource("7_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "forest_nw"
+1:0/0 = 0
+1:0/0/custom_data_0 = "forest_n"
+2:0/0 = 0
+2:0/0/custom_data_0 = "forest_ne"
+0:1/0 = 0
+0:1/0/custom_data_0 = "forest_w"
+2:1/0 = 0
+2:1/0/custom_data_0 = "forest_e"
+0:2/0 = 0
+0:2/0/custom_data_0 = "forest_sw"
+1:2/0 = 0
+1:2/0/custom_data_0 = "forest_s"
+2:2/0 = 0
+2:2/0/custom_data_0 = "forest_se"
+0:3/0 = 0
+0:3/0/custom_data_0 = "tree_nw"
+1:3/0 = 0
+1:3/0/custom_data_0 = "tree_ne"
+0:4/0 = 0
+0:4/0/custom_data_0 = "tree_sw"
+1:4/0 = 0
+1:4/0/custom_data_0 = "tree_se"
+0:5/0 = 0
+0:5/0/custom_data_0 = "grass_tuft_a"
+1:5/0 = 0
+1:5/0/custom_data_0 = "grass_tuft_b"
+2:5/0 = 0
+2:5/0/custom_data_0 = "grass_tuft_c"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_beach"]
+texture = ExtResource("8_tex")
+texture_region_size = Vector2i(16, 16)
+0:0/0 = 0
+0:0/0/custom_data_0 = "beach_island_nw"
+1:0/0 = 0
+1:0/0/custom_data_0 = "beach_island_n"
+2:0/0 = 0
+2:0/0/custom_data_0 = "beach_island_ne"
+3:0/0 = 0
+3:0/0/custom_data_0 = "pond_sand_nw"
+4:0/0 = 0
+4:0/0/custom_data_0 = "pond_sand_ne"
+0:1/0 = 0
+0:1/0/custom_data_0 = "beach_island_w"
+1:1/0 = 0
+1:1/0/custom_data_0 = "beach_sand"
+2:1/0 = 0
+2:1/0/custom_data_0 = "beach_island_e"
+3:1/0 = 0
+3:1/0/custom_data_0 = "pond_sand_sw"
+4:1/0 = 0
+4:1/0/custom_data_0 = "pond_sand_se"
+0:2/0 = 0
+0:2/0/custom_data_0 = "beach_island_sw"
+1:2/0 = 0
+1:2/0/custom_data_0 = "beach_island_s"
+2:2/0 = 0
+2:2/0/custom_data_0 = "beach_island_se"
+
+[resource]
+tile_size = Vector2i(16, 16)
+custom_data_layer_0/name = "name"
+custom_data_layer_0/type = 4
+sources/0 = SubResource("TileSetAtlasSource_grass")
+sources/1 = SubResource("TileSetAtlasSource_path")
+sources/2 = SubResource("TileSetAtlasSource_pathmid")
+sources/3 = SubResource("TileSetAtlasSource_watermid")
+sources/4 = SubResource("TileSetAtlasSource_water")
+sources/5 = SubResource("TileSetAtlasSource_farm")
+sources/6 = SubResource("TileSetAtlasSource_forest")
+sources/7 = SubResource("TileSetAtlasSource_beach")
