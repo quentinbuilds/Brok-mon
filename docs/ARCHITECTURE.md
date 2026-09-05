@@ -72,7 +72,7 @@ set_active(index)                emits active_creature_changed
 get_inventory() get_item_count(item)
 add_item(item, n) use_item(item) -> bool     emit inventory_changed
 ```
-Item ids: `GameData.ITEM_CAPTURE_ORB`, `GameData.ITEM_POTION`.
+Item ids: `GameData.ITEM_CAPTURE_ORB`, `GameData.ITEM_POTION`, `GameData.ITEM_REVIVE`.
 
 ### GameState
 ```
@@ -90,7 +90,7 @@ TITLE -> OVERWORLD
 OVERWORLD -> BATTLE | MENU
 BATTLE -> CATCHING | OVERWORLD
 CATCHING -> OVERWORLD | BATTLE
-MENU -> OVERWORLD
+MENU -> OVERWORLD | SOUND_TEST | TITLE
 ```
 Core reacts to events so subsystems never call each other:
 

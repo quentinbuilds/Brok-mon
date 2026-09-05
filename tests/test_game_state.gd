@@ -162,3 +162,15 @@ func test_overworld_stays_frozen_under_the_sound_test() -> void:
 	_go([S.TITLE, S.OVERWORLD, S.MENU, S.SOUND_TEST])
 	assert_eq(world.get_child_count(), 1, "overworld kept alive")
 	assert_eq(world.get_child(0).process_mode, Node.PROCESS_MODE_DISABLED)
+
+
+func test_menu_can_return_to_title_and_drops_the_overworld() -> void:
+	var S := GameState.State
+	_go([S.TITLE, S.OVERWORLD, S.MENU])
+	var old_ow := world.get_child(0)
+	assert_true(_gs().transition_to(S.TITLE), "EXIT is MENU -> TITLE")
+	assert_eq(_gs().current, S.TITLE)
+	assert_eq(world.get_child_count(), 0, "overworld freed so a new game can start")
+	_go([S.OVERWORLD])
+	assert_eq(world.get_child_count(), 1)
+	assert_ne(world.get_child(0), old_ow, "title starts a fresh overworld")

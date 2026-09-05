@@ -5,6 +5,7 @@ extends Node
 
 const ITEM_CAPTURE_ORB := &"capture_orb"
 const ITEM_POTION := &"potion"
+const ITEM_REVIVE := &"revive"
 
 var party: Array[Creature] = []
 var active_index: int = 0
@@ -22,6 +23,7 @@ func reset() -> void:
 	inventory = {
 		ITEM_CAPTURE_ORB: GameConfig.START_CAPTURE_ORBS,
 		ITEM_POTION: GameConfig.START_POTIONS,
+		ITEM_REVIVE: GameConfig.START_REVIVES,
 	}
 	var starter := load(GameConfig.STARTER_PATH) as Creature
 	if starter:

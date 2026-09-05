@@ -6,6 +6,8 @@ extends RefCounted
 const PARTY_SIZE := 3
 const START_CAPTURE_ORBS := 5
 const START_POTIONS := 3
+const START_REVIVES := 2
+const POTION_HEAL := 20
 const STARTER_PATH := "res://creatures/data/placeholder_starter.tres"
 
 ## Encounters (Person 3). Chance per valid movement step, and steps of cooldown after a battle.

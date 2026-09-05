@@ -37,6 +37,7 @@ func test_reset_gives_starter_and_items() -> void:
 	assert_ne(_data().get_active_creature(), null)
 	assert_eq(_data().get_item_count(&"capture_orb"), GameConfig.START_CAPTURE_ORBS)
 	assert_eq(_data().get_item_count(&"potion"), GameConfig.START_POTIONS)
+	assert_eq(_data().get_item_count(&"revive"), GameConfig.START_REVIVES)
 
 func test_party_cap_enforced() -> void:
 	for i in range(GameConfig.PARTY_SIZE - 1):

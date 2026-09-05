@@ -17,7 +17,7 @@ const LEGAL := {
 	State.OVERWORLD: [State.BATTLE, State.MENU],
 	State.BATTLE: [State.CATCHING, State.OVERWORLD],
 	State.CATCHING: [State.OVERWORLD, State.BATTLE],
-	State.MENU: [State.OVERWORLD, State.SOUND_TEST],
+	State.MENU: [State.OVERWORLD, State.SOUND_TEST, State.TITLE],
 	State.SOUND_TEST: [State.MENU],
 }
 
@@ -94,6 +94,8 @@ func transition_to(to: State, payload: Dictionary = {}) -> bool:
 		_overlay.queue_free()
 		_overlay = null
 
+	if to == State.TITLE:
+		_free_overworld()
 	if to == State.OVERWORLD:
 		if not is_instance_valid(_overworld):
 			_overworld = _instantiate(to)
@@ -119,6 +121,16 @@ func _process(delta: float) -> void:
 		_overlay.update(delta)
 	elif current == State.OVERWORLD and is_instance_valid(_overworld):
 		_overworld.update(delta)
+
+func _free_overworld() -> void:
+	if not is_instance_valid(_overworld):
+		return
+	_overworld.exit()
+	if _overworld.get_parent() != null:
+		_overworld.get_parent().remove_child(_overworld)
+	_overworld.queue_free()
+	_overworld = null
+
 
 func _instantiate(state: State) -> GameStateBase:
 	var scene := load(SCENES[state]) as PackedScene
