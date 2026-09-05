@@ -1,6 +1,7 @@
 extends GameStateBase
 ## Placeholder menu listing party and inventory. Person 6 replaces the UI.
 ## Keep: emit menu_opened / menu_closed; B or menu key closes back to OVERWORLD.
+## A opens the SOUND_TEST screen (dev tool for checking audio on real hardware).
 
 @onready var _label: Label = $Label
 
@@ -12,7 +13,9 @@ func exit() -> void:
 	EventBus.menu_closed.emit()
 
 func update(_delta: float) -> void:
-	if InputManager.button_b_just_pressed() or InputManager.button_menu_just_pressed():
+	if InputManager.button_a_just_pressed():
+		GameState.transition_to(GameState.State.SOUND_TEST)
+	elif InputManager.button_b_just_pressed() or InputManager.button_menu_just_pressed():
 		GameState.transition_to(GameState.State.OVERWORLD)
 
 func _refresh() -> void:
@@ -25,5 +28,5 @@ func _refresh() -> void:
 	for item in GameData.inventory:
 		lines.append("  %s x %d" % [item, GameData.inventory[item]])
 	lines.append("")
-	lines.append("B: close")
+	lines.append("A: sound test   B: close")
 	_label.text = "\n".join(lines)

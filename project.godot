@@ -21,6 +21,7 @@ EventBus="*res://core/EventBus.gd"
 InputManager="*res://core/InputManager.gd"
 GameData="*res://core/GameData.gd"
 GameState="*res://core/GameState.gd"
+AudioManager="*res://core/AudioManager.gd"
 
 [display]
 
