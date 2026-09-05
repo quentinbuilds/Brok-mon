@@ -15,13 +15,13 @@ const TILE_ATLAS := "res://assets/tiles/beach_auto_water.png"
 const PROP_ATLAS := "res://assets/tiles/beach_objects.png"
 
 const SRC_WATER := Rect2(32, 16, 16, 16)
-const SRC_SAND := Rect2(128, 112, 16, 16)
-const SRC_BOARDWALK := Rect2(16, 0, 16, 16)
-const SRC_DUNE := Rect2(0, 64, 16, 16)
-const SRC_ROCK := Rect2(176, 80, 16, 16)
-const SRC_PALM := Rect2(0, 64, 48, 64)
-const SRC_DOCK := Rect2(16, 0, 48, 32)
-const SRC_SHELTER := Rect2(32, 0, 48, 32)
+const SRC_SAND := Rect2(16, 0, 16, 16)
+const SRC_BOARDWALK := Rect2(144, 16, 16, 16)
+const SRC_DUNE := Rect2(16, 0, 16, 16)
+const SRC_ROCK := Rect2(16, 0, 16, 16)
+const SRC_PALM := Rect2(16, 64, 32, 48)
+const SRC_TUFT := Rect2(176, 64, 16, 16)
+const SRC_ROCK_PROP := Rect2(176, 80, 16, 16)
 
 
 static func build() -> Dictionary:
@@ -140,19 +140,27 @@ static func _apply_collision(
 
 
 static func _props_back() -> Array:
-	return [
-		_prop(Vector2i(18, 10), SRC_SHELTER, Vector2(48, 32), Vector2(0, -8)),
-		_prop(Vector2i(0, 14), SRC_DOCK, Vector2(48, 32), Vector2(0, -8)),
-		_prop(Vector2i(28, 8), SRC_ROCK, Vector2(16, 16), Vector2.ZERO),
-		_prop(Vector2i(36, 18), SRC_ROCK, Vector2(16, 16), Vector2.ZERO),
+	var props := [
+		_prop(Vector2i(18, 10), SRC_PALM, Vector2(32, 48), Vector2(8, -24)),
+		_prop(Vector2i(22, 10), SRC_PALM, Vector2(32, 48), Vector2(0, -24)),
+		_prop(Vector2i(28, 8), SRC_ROCK_PROP, Vector2(16, 16), Vector2.ZERO),
+		_prop(Vector2i(30, 8), SRC_ROCK_PROP, Vector2(16, 16), Vector2.ZERO),
+		_prop(Vector2i(36, 18), SRC_ROCK_PROP, Vector2(16, 16), Vector2.ZERO),
+		_prop(Vector2i(38, 8), SRC_ROCK_PROP, Vector2(16, 16), Vector2.ZERO),
 	]
+	for visual in [Rect2i(3, 10, 5, 3), Rect2i(10, 11, 7, 3)]:
+		for y in range(visual.position.y, visual.end.y):
+			for x in range(visual.position.x, visual.end.x):
+				if (x + y) % 2 == 0:
+					props.append(_prop(Vector2i(x * 2, y * 2), SRC_TUFT, Vector2(16, 16), Vector2.ZERO))
+	return props
 
 
 static func _props_front() -> Array:
 	return [
-		_prop(Vector2i(8, 18), SRC_PALM, Vector2(48, 64), Vector2(-8, -40)),
-		_prop(Vector2i(22, 20), SRC_PALM, Vector2(48, 64), Vector2(-8, -40)),
-		_prop(Vector2i(34, 10), SRC_PALM, Vector2(48, 64), Vector2(-8, -40)),
+		_prop(Vector2i(8, 18), SRC_PALM, Vector2(32, 48), Vector2(-8, -32)),
+		_prop(Vector2i(22, 20), SRC_PALM, Vector2(32, 48), Vector2(-8, -32)),
+		_prop(Vector2i(34, 10), SRC_PALM, Vector2(32, 48), Vector2(-8, -32)),
 	]
 
 

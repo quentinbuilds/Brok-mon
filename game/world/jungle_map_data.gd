@@ -14,19 +14,17 @@ enum Ground { LAWN, PATH, TALL_GRASS, WATER }
 const TILE_ATLAS := "res://assets/tiles/jungle_auto_ground.png"
 const FOLIAGE_ATLAS := "res://assets/tiles/jungle_auto_water.png"
 const PROP_ATLAS := "res://assets/tiles/jungle_objects.png"
-const STRUCTURE_ATLAS := "res://assets/tiles/jungle_extra.png"
 const WATER_ATLAS := "res://assets/tiles/beach_auto_water.png"
 
 const SRC_LAWN := Rect2(16, 80, 16, 16)
 const SRC_PATH := Rect2(80, 0, 16, 16)
 const SRC_GRASS := Rect2(0, 48, 16, 16)
 const SRC_WATER := Rect2(32, 16, 16, 16)
-const SRC_TREE := Rect2(160, 0, 48, 80)
+const SRC_TREE := Rect2(176, 16, 32, 48)
 const SRC_BUSH := Rect2(80, 96, 32, 32)
 const SRC_ROCK := Rect2(16, 64, 16, 16)
-const SRC_STATION := Rect2(0, 192, 48, 32)
-const SRC_STATION_ROOF := Rect2(96, 96, 32, 24)
-const SRC_BRIDGE := Rect2(16, 0, 32, 16)
+const SRC_STATION := Rect2(208, 0, 48, 32)
+const SRC_STATION_ROOF := Rect2(80, 96, 32, 32)
 
 
 static func build() -> Dictionary:
@@ -147,10 +145,11 @@ static func _props_back() -> Array:
 			var bridge_opening := x >= 46 and y >= 14 and y <= 17
 			if on_border and not bridge_opening:
 				props.append(_prop(Vector2i(x, y), SRC_TREE, Vector2(32, 48), Vector2(-8, -24)))
-	props.append(_prop(Vector2i(14, 16), SRC_STATION, Vector2(64, 48), Vector2(0, -8), STRUCTURE_ATLAS))
+	props.append(_prop(Vector2i(14, 16), SRC_STATION, Vector2(48, 32), Vector2(8, 0)))
+	props.append(_prop(Vector2i(12, 16), SRC_TREE, Vector2(32, 48), Vector2(-8, -24)))
+	props.append(_prop(Vector2i(20, 16), SRC_TREE, Vector2(32, 48), Vector2(-8, -24)))
 	props.append(_prop(Vector2i(32, 12), SRC_ROCK, Vector2(16, 16), Vector2.ZERO))
 	props.append(_prop(Vector2i(36, 12), SRC_ROCK, Vector2(16, 16), Vector2.ZERO))
-	props.append(_prop(Vector2i(46, 14), SRC_BRIDGE, Vector2(32, 16), Vector2.ZERO))
 	props.append(_prop(Vector2i(30, 6), SRC_BUSH, Vector2(32, 32), Vector2(-8, -8)))
 	props.append(_prop(Vector2i(8, 8), SRC_BUSH, Vector2(32, 32), Vector2(-8, -8)))
 	return props
@@ -158,9 +157,9 @@ static func _props_back() -> Array:
 
 static func _props_front() -> Array:
 	return [
-		_prop(Vector2i(14, 16), SRC_STATION_ROOF, Vector2(32, 24), Vector2(16, -16)),
-		_prop(Vector2i(40, 4), SRC_TREE, Vector2(24, 32), Vector2(-4, -16)),
-		_prop(Vector2i(20, 4), SRC_TREE, Vector2(24, 32), Vector2(-4, -16)),
+		_prop(Vector2i(16, 14), SRC_STATION_ROOF, Vector2(32, 32), Vector2(0, -16)),
+		_prop(Vector2i(40, 4), SRC_TREE, Vector2(32, 48), Vector2(-8, -24)),
+		_prop(Vector2i(20, 4), SRC_TREE, Vector2(32, 48), Vector2(-8, -24)),
 	]
 
 
