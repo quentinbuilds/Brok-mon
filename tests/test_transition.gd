@@ -130,8 +130,8 @@ func test_the_title_plays_its_theme() -> void:
 	_teardown(main)
 	mgr.stop_music()
 
-## And it must be gone by the time the overworld is on screen: music outlives state scenes, so a
-## theme left running here plays over the whole game.
+## And it must be handed over by the time the overworld is on screen: music outlives state scenes,
+## so a title theme left running there would play over the whole game.
 func test_the_theme_does_not_follow_the_player_into_the_overworld() -> void:
 	var main := await _boot_main()
 	var gs = tree.root.get_node("GameState")
@@ -144,7 +144,8 @@ func test_the_theme_does_not_follow_the_player_into_the_overworld() -> void:
 		if gs.current == gs.State.OVERWORLD:
 			break
 	assert_eq(gs.current, gs.State.OVERWORLD, "never reached the overworld")
-	assert_eq(mgr.current_music(), "", "the title theme is still playing in the overworld")
+	assert_ne(mgr.current_music(), TitleState.MUSIC, "the title theme followed the player out")
+	assert_eq(mgr.current_music(), "overworld", "the map did not pick up its own theme")
 	_teardown(main)
 	mgr.stop_music()
 

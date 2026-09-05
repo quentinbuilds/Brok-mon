@@ -25,13 +25,15 @@ func test_boot_advances_to_label_then_title() -> void:
 	await tree.process_frame
 
 
-func test_title_glitch_mentions_consent() -> void:
+## The prompt says one thing and keeps saying it. It used to flicker to a second line every couple
+## of seconds; that read as a rendering fault rather than a joke, so it is gone.
+func test_the_prompt_does_not_change_once_the_title_settles() -> void:
 	var title := _title()
 	await tree.process_frame
 	title.enter({})
 	title._set_beat(TitleState.Beat.TITLE)
-	title._elapsed = 0.0
-	title.update(0.05)
-	assert_true(title.get_node("Prompt").text.contains("CONSENT"))
+	for _i in 20:
+		title.update(0.25)
+		assert_eq(title.get_node("Prompt").text, TitleState.TITLE_PROMPT, "the prompt changed")
 	title.queue_free()
 	await tree.process_frame
