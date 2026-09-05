@@ -15,9 +15,43 @@ offset_left = 2.0
 offset_top = 2.0
 offset_right = 198.0
 offset_bottom = 14.0
-text = "joystick: move   C: menu"
+theme_override_font_sizes/font_size = 8
+text = "A: talk   C: menu"
+
+[node name="sign" type="ColorRect" parent="." groups=["npc"]]
+offset_left = 72.0
+offset_top = 8.0
+offset_right = 80.0
+offset_bottom = 16.0
+color = Color(0.42, 0.28, 0.1, 1)
+
+[node name="elder" type="ColorRect" parent="." groups=["npc"]]
+offset_left = 168.0
+offset_top = 48.0
+offset_right = 176.0
+offset_bottom = 56.0
+color = Color(0.2, 0.2, 0.28, 1)
+
+[node name="youth" type="ColorRect" parent="." groups=["npc"]]
+offset_left = 16.0
+offset_top = 88.0
+offset_right = 24.0
+offset_bottom = 96.0
+color = Color(0.55, 0.22, 0.18, 1)
 
 [node name="Player" type="ColorRect" parent="."]
 offset_right = 8.0
 offset_bottom = 8.0
 color = Color(0.06, 0.22, 0.06, 1)
+
+[node name="TalkBox" type="Label" parent="."]
+visible = false
+offset_left = 4.0
+offset_top = 86.0
+offset_right = 196.0
+offset_bottom = 118.0
+theme_override_colors/font_color = Color(0.058824, 0.219608, 0.058824, 1)
+theme_override_font_sizes/font_size = 8
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1

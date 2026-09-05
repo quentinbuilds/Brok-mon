@@ -1,32 +1,75 @@
 extends GameStateBase
-## Placeholder catching screen. Person 5 replaces this. Contract to keep:
+class_name CatchingState
+## Catching screen with handshake copy. Person 5 owns real odds later.
 ##   payload["wild"]: Creature
+##   payload["catch_multiplier"]: float (from Ragebait; optional)
 ##   success -> GameData.add_to_party(wild); EventBus.creature_caught.emit(wild)
 ##   failure -> EventBus.catch_failed.emit(wild)
 ##   honour GameConfig.debug_force_catch (1 success, -1 fail), then reset it to 0.
-## Stub: A = succeed, B = fail.
+##   A = succeed, B = fail (works during the handshake).
+
+const BEAT_SECS := 0.45
+const BEAT_LAST := 3
 
 @onready var _label: Label = $Label
+
+var _wild: Creature
+var _multiplier := 1.0
+var _beat := 0
+var _elapsed := 0.0
+var _resolved := false
+
 
 func debug_payload() -> Dictionary:
 	return {"wild": (load(GameConfig.DEBUG_WILD_PATH) as Creature).make_instance()}
 
-func _on_enter() -> void:
-	var wild: Creature = payload.get("wild")
-	_label.text = "CATCHING %s\n\nA: success   B: fail" % (wild.name if wild else "?")
-	EventBus.catch_started.emit(wild)
 
-func update(_delta: float) -> void:
-	var wild: Creature = payload.get("wild")
+func _on_enter() -> void:
+	_wild = payload.get("wild") as Creature
+	_multiplier = float(payload.get("catch_multiplier", 1.0))
+	_beat = 0
+	_elapsed = 0.0
+	_resolved = false
+	_refresh()
+	EventBus.catch_started.emit(_wild)
+
+
+func update(delta: float) -> void:
+	if _resolved:
+		return
 	var forced := GameConfig.debug_force_catch
 	var success := forced == 1 or (forced == 0 and InputManager.button_a_just_pressed())
 	var failure := forced == -1 or (forced == 0 and InputManager.button_b_just_pressed())
-	if not (success or failure):
+	if success or failure:
+		_resolve(success)
 		return
+	_elapsed += delta
+	if _beat < BEAT_LAST and _elapsed >= BEAT_SECS:
+		_beat += 1
+		_elapsed = 0.0
+		_refresh()
+
+
+func _refresh() -> void:
+	if _label == null:
+		return
+	var name := _wild.name if _wild else "?"
+	_label.text = CatchCopy.beat_text(_beat, name)
+
+
+func _resolve(success: bool) -> void:
+	_resolved = true
 	GameConfig.debug_force_catch = 0
 	if success:
-		if not GameData.add_to_party(wild):
-			print("party full; %s released" % wild.name)
-		EventBus.creature_caught.emit(wild)
+		var added := GameData.add_to_party(_wild)
+		if _label:
+			if added:
+				_label.text = CatchCopy.success()
+			else:
+				_label.text = CatchCopy.party_full(_wild.name if _wild else "?")
+				print("party full; %s released" % (_wild.name if _wild else "?"))
+		EventBus.creature_caught.emit(_wild)
 	else:
-		EventBus.catch_failed.emit(wild)
+		if _label:
+			_label.text = CatchCopy.failure(_multiplier)
+		EventBus.catch_failed.emit(_wild)

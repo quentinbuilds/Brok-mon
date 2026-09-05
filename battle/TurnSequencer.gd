@@ -69,7 +69,7 @@ func intro(enemy_name: String) -> void:
 	ui.player_view.slide_in(Vector2(-70, 0))
 	ui.show_player_panel = true
 	await _wait(BattleConfig.SLIDE_IN_TIME)
-	await say_auto("Wild %s appeared!" % enemy_name)
+	await say_auto(BattleCopy.intro(enemy_name))
 
 
 func lunge(view: CreatureView) -> void:
