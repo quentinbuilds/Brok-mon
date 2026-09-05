@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player.png" id="3"]
 [ext_resource type="Script" path="res://world/Player.gd" id="4"]
 [ext_resource type="PackedScene" path="res://encounters/EncounterSystem.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://world/characters/cap_beard.tscn" id="6_walker"]
 
 [node name="OverworldState" type="Node2D"]
 script = ExtResource("1")
@@ -16,6 +17,11 @@ tile_set = ExtResource("2")
 z_index = 1
 texture = ExtResource("3")
 script = ExtResource("4")
+
+[node name="Walker" parent="Player" instance=ExtResource("6_walker")]
+z_index = 1
+position = Vector2(-4, -8)
+character_id = 0
 
 [node name="Camera" type="Camera2D" parent="."]
 
