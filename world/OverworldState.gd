@@ -24,6 +24,11 @@ var map_mode: MapCycle.Mode = MapCycle.Mode.DEFAULT
 var next_exterior: MapCycle.Mode = MapCycle.Mode.BEACH
 var _map_transition_locked: bool = false
 
+## Tiles standing NPCs occupy, refreshed whenever the presentation changes. The overworld has
+## no physics bodies -- collision is a glyph lookup -- so an NPC is made solid by removing its
+## tile from the walk query rather than by giving it a collider.
+var _npc_tiles: Dictionary = {}
+
 
 func _on_enter() -> void:
 	if _tiles.get_used_cells().is_empty():
@@ -164,7 +169,24 @@ func _spawn_for_mode(mode: MapCycle.Mode) -> Vector2i:
 
 
 func _is_active_tile_walkable(tile: Vector2i) -> bool:
+	if _npc_tiles.has(tile):
+		return false
 	return MapCycle.is_walkable(map_mode, tile)
+
+
+## The tile an NPC stands on, from its top-left position. NPC art is one tile wide, so this is
+## the whole of its footprint.
+static func tile_of(node: Node2D) -> Vector2i:
+	return Vector2i((node.position / float(GrassMap.TILE)).floor())
+
+
+## Only NPCs currently on screen block movement; the map cycle hides them away from the
+## default map, and a hidden NPC has no business stopping the player on a different island.
+func _refresh_npc_tiles() -> void:
+	_npc_tiles.clear()
+	for npc in get_tree().get_nodes_in_group(NPC_GROUP):
+		if npc is Node2D and (npc as CanvasItem).visible:
+			_npc_tiles[tile_of(npc as Node2D)] = true
 
 
 func _apply_map_presentation() -> void:
@@ -177,6 +199,7 @@ func _apply_map_presentation() -> void:
 	for npc in get_tree().get_nodes_in_group(NPC_GROUP):
 		if npc is CanvasItem:
 			npc.visible = on_default
+	_refresh_npc_tiles()
 	_setup_camera()
 
 
@@ -191,7 +214,7 @@ func _setup_camera() -> void:
 	# Limits stop the camera showing anything outside the map on a 200x120 viewport.
 	var size := MapCycle.pixel_size(map_mode)
 	_camera.limit_left = 0
-	_camera.limit_top = 0
+	_camera.limit_top = MapCycle.camera_top(map_mode)
 	_camera.limit_right = size.x
 	_camera.limit_bottom = size.y
 
