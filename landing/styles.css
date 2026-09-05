@@ -53,44 +53,73 @@ img { image-rendering: pixelated; image-rendering: crisp-edges; }
   box-shadow: inset 0 0 160px 40px rgb(0 0 0 / 0.45);
 }
 
-.boot-bar {
+.topbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  padding: 10px 18px;
+  min-height: 52px;
+  padding: 0 22px;
   background: var(--panel);
-  color: var(--shadow);
-  font-family: "Press Start 2P", monospace;
-  font-size: 8px;
-  letter-spacing: 0.6px;
   border-bottom: 4px solid var(--ink);
   box-shadow: inset 0 -3px 0 var(--panel-edge);
 }
+.logo {
+  flex: 0 0 auto;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
 .site-nav {
   display: flex;
-  justify-content: center;
-  gap: 0;
-  background: #1c1c2b;
-  border-bottom: 4px solid var(--ink);
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
 }
 .site-nav a {
-  flex: 1;
-  max-width: 200px;
-  padding: 12px 6px;
-  text-align: center;
+  position: relative;
+  padding: 8px 12px 10px;
+  color: #5a4a72;
   text-decoration: none;
-  color: var(--cream);
   font-family: "Press Start 2P", monospace;
-  font-size: 7px;
-  letter-spacing: 0.4px;
-  border-right: 2px solid #111;
+  font-size: 8px;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  transition: color 0.16s ease;
 }
-.site-nav a:hover,
-.site-nav a.on {
+.site-nav a::before {
+  content: "▶";
+  position: absolute;
+  left: -2px;
+  top: 8px;
+  font-size: 6px;
+  color: var(--gold);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 3px;
   background: var(--gold);
-  color: var(--ink);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.18s ease;
 }
+.site-nav a:hover { color: var(--ink); }
+.site-nav a.on { color: var(--ink); }
+.site-nav a:hover::before,
+.site-nav a.on::before { opacity: 1; transform: translateX(0); }
+.site-nav a:hover::after,
+.site-nav a.on::after { transform: scaleX(1); }
 
 .tabs,
 .window-tabs {
@@ -157,23 +186,41 @@ h1 {
 }
 
 .gb { display: flex; justify-content: center; }
-.gb-bezel {
-  width: min(100%, 380px);
-  padding: 22px 20px 16px;
+.gb-shell {
+  width: min(100%, 340px);
+  padding: 16px 18px 14px;
+  image-rendering: auto;
   background:
-    linear-gradient(180deg, #8a79a8 0%, var(--grape) 18%, var(--grape-dk) 100%);
-  border: 5px solid #241c32;
-  border-radius: 18px 18px 42px 42px;
+    linear-gradient(180deg, #7d6c9c 0 8%, #67568a 8% 72%, #534470 72%);
+  border: 3px solid #2a2138;
+  border-radius: 14px 14px 46px 46px;
   box-shadow:
-    inset 0 3px 0 #b6a6d0,
-    inset 0 -8px 0 #2c243c,
-    10px 12px 0 #05060a;
+    inset 0 2px 0 #b4a4cc,
+    inset 0 -10px 0 #3d3358,
+    0 14px 0 #0a0810;
 }
-.gb-lens {
-  padding: 10px 10px 8px;
-  background: var(--lens);
-  border: 4px solid #12161e;
-  border-radius: 8px 8px 18px 8px;
+.gb-power {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px 4px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 5px;
+  letter-spacing: 1px;
+  color: #cfc4e4;
+}
+.gb-power i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6adf7a;
+  box-shadow: 0 0 6px #6adf7a;
+}
+.gb-well {
+  padding: 12px 12px 14px;
+  background: #14181d;
+  border-radius: 6px 6px 22px 6px;
+  box-shadow: inset 0 0 0 2px #0b0d10;
 }
 .gb-screen {
   position: relative;
@@ -252,30 +299,30 @@ h1 {
 .crt {
   position: absolute;
   inset: 0;
-  box-shadow: inset 0 0 36px rgb(0 0 0 / 0.4);
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.08), transparent 42%);
+  box-shadow: inset 0 0 28px rgb(0 0 0 / 0.45);
   pointer-events: none;
 }
 
-.gb-brand {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+.gb-wordmark {
   margin: 10px 2px 12px;
   font-family: "Press Start 2P", monospace;
-  font-size: 7px;
-  letter-spacing: 1.5px;
-  color: #efe6c8;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #efe8ff;
+  text-align: left;
 }
-.gb-brand small {
+.gb-wordmark small {
   font-size: 6px;
+  letter-spacing: 1px;
   color: #f4d35e;
 }
 
-.gb-btns {
-  display: flex;
-  justify-content: space-between;
+.gb-controls {
+  display: grid;
+  grid-template-columns: 72px 1fr 72px;
   align-items: center;
-  padding: 0 4px 8px;
+  padding: 0 2px 6px;
 }
 .dpad {
   width: 68px;
@@ -286,55 +333,83 @@ h1 {
 .dpad::before {
   content: "";
   position: absolute;
-  background: #1a1624;
-  border: 2px solid #0d0a12;
-  box-shadow: inset 1px 1px 0 #3a3348;
+  background: #2a2438;
+  border: 2px solid #16121f;
+  box-shadow: inset 1px 1px 0 #4a425c;
 }
-.dpad i { left: 24px; top: 4px; width: 18px; height: 60px; border-radius: 3px; }
-.dpad::before { left: 4px; top: 24px; width: 60px; height: 18px; border-radius: 3px; }
+.dpad i { left: 25px; top: 6px; width: 16px; height: 56px; border-radius: 3px; }
+.dpad::before { left: 6px; top: 25px; width: 56px; height: 16px; border-radius: 3px; }
+.dpad::after {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 27px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #221c2e;
+}
 
 .selects {
   display: flex;
+  justify-content: center;
+  gap: 10px;
+  transform: rotate(-22deg);
+}
+.selects span {
+  width: 26px;
+  height: 7px;
+  border-radius: 8px;
+  background: #2a2438;
+  border: 2px solid #16121f;
+}
+.selects em {
+  display: block;
+  margin-top: 8px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 4px;
+  font-style: normal;
+  letter-spacing: 0.4px;
+  color: #cfc4e4;
+  transform: rotate(22deg);
+}
+
+.ab {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
   transform: rotate(-18deg);
 }
-.selects span {
-  width: 22px;
-  height: 6px;
-  border-radius: 6px;
-  background: #2a2438;
-  border: 2px solid #120e18;
-}
-
-.ab { display: flex; gap: 12px; transform: rotate(-12deg); }
 .face-btn {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 3px solid #1a1014;
-  background: radial-gradient(circle at 30% 28%, #e08994, #b44c5c);
-  color: #2a1014;
+  border: 2px solid #2a1830;
+  background: radial-gradient(circle at 32% 28%, #8a6aa0, #5a3d6e);
+  color: #efe8ff;
   font-family: "Press Start 2P", monospace;
-  font-size: 9px;
+  font-size: 8px;
   cursor: pointer;
-  box-shadow: 2px 3px 0 #1a1014;
+  box-shadow: 1px 2px 0 #2a1830;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
-.face-btn.a {
-  background: radial-gradient(circle at 30% 28%, #8eb8e4, #4d7eb0);
-  color: #10202e;
-}
+.face-btn.a { margin-top: -10px; }
 .face-btn:active { transform: translate(1px, 2px); box-shadow: none; }
 
 .speaker {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin: 4px 8px 0 auto;
+  width: 46%;
+  transform: rotate(-18deg);
+}
+.speaker i {
+  width: 5px;
   height: 18px;
-  margin: 0 28px 2px auto;
-  width: 42%;
-  background: repeating-linear-gradient(
-    135deg,
-    #2a2438 0 3px,
-    transparent 3px 7px
-  );
-  opacity: 0.7;
+  border-radius: 6px;
+  background: #3d3358;
+  box-shadow: inset 0 0 0 1px #2a2138;
 }
 
 .hint {
@@ -653,6 +728,13 @@ footer.window {
 }
 footer a { color: #6c5b8a; }
 footer p { margin: 0 0 8px; }
+.legal-links {
+  margin-top: 10px !important;
+  font-size: 16px;
+  letter-spacing: 0.4px;
+}
+.legal-links a { text-decoration: none; }
+.legal-links a:hover { color: var(--ink); }
 
 @keyframes bob {
   from { transform: translateY(0); }
@@ -674,8 +756,16 @@ footer p { margin: 0 0 8px; }
   100% { left: 72%; }
 }
 
-@media (max-width: 700px) {
-  .boot-bar { font-size: 6px; }
+@media (max-width: 720px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px 0;
+    gap: 0;
+  }
+  .logo { padding-bottom: 6px; }
+  .site-nav { justify-content: space-between; }
+  .site-nav a { flex: 1; text-align: center; padding: 10px 6px 12px; }
   .tiny-row,
   .mon,
   .mon.tiny,

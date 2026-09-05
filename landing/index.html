@@ -15,30 +15,28 @@
   <div class="scanlines" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
 
-  <header class="boot-bar">
-    <span>BROKÉSTUDIO</span>
-    <span class="tabs" aria-hidden="true"></span>
-    <span>EST. 1998 · LICENSED BY NOBODY</span>
+  <header class="topbar">
+    <a class="logo" href="index.html">BROKÉSTUDIO</a>
+    <nav class="site-nav">
+      <a href="index.html" class="on">CART</a>
+      <a href="brokedex.html">BROKEDEX</a>
+      <a href="play.html">MANUAL</a>
+    </nav>
   </header>
-
-  <nav class="site-nav">
-    <a href="index.html" class="on">CART</a>
-    <a href="brokedex.html">BROKEDEX</a>
-    <a href="play.html">MANUAL</a>
-  </nav>
 
   <main>
     <section class="hero">
       <div class="cart-label">
         <p class="eyebrow">GAME BOY COLOR · UNO Q CART</p>
         <h1>Brokémon</h1>
-        <p class="studio-mark">A BROKÉSTUDIO ORIGINAL</p>
-        <p class="tag">Gotta catch 'em all.<br>After the compile finishes.</p>
+        <p class="studio-mark">BROKÉMON ORIGINAL</p>
+        <p class="tag">Gotta catch 'em all.<br>Walk into the grass. That's the plot.</p>
       </div>
 
       <div class="gb">
-        <div class="gb-bezel">
-          <div class="gb-lens">
+        <div class="gb-shell">
+          <div class="gb-power"><i></i><span>POWER</span></div>
+          <div class="gb-well">
             <div class="gb-screen" id="screen" role="button" tabindex="0" aria-label="Press A to start">
               <div class="screen-map"></div>
               <div class="screen-shade"></div>
@@ -51,19 +49,19 @@
               <div class="crt"></div>
             </div>
           </div>
-          <div class="gb-brand">
-            <span>BROKÉSTUDIO</span>
-            <small>COLOR</small>
-          </div>
-          <div class="gb-btns">
+          <p class="gb-wordmark">BROKÉ <small>COLOR</small></p>
+          <div class="gb-controls">
             <div class="dpad" aria-hidden="true"><i></i></div>
-            <div class="selects"><span></span><span></span></div>
+            <div class="selects">
+              <span><em>SELECT</em></span>
+              <span><em>START</em></span>
+            </div>
             <div class="ab">
-              <button type="button" class="face-btn" id="btn-b">B</button>
-              <button type="button" class="face-btn a" id="btn-a">A</button>
+              <button type="button" class="face-btn" id="btn-b" aria-label="B">B</button>
+              <button type="button" class="face-btn a" id="btn-a" aria-label="A">A</button>
             </div>
           </div>
-          <div class="speaker" aria-hidden="true"></div>
+          <div class="speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
       </div>
 
@@ -91,6 +89,7 @@
     <p>Not affiliated with the electric-mouse company, the Italian plumber company, or anyone who has a lawyer on retainer.</p>
     <p><a href="https://github.com/quentinbuilds/Brokemon">github.com/quentinbuilds/Brokemon</a></p>
     <p>©1998 BrokéStudio · Licensed by nobody · Made in a hackathon</p>
+    <p class="legal-links"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
   </footer>
 
   <audio id="theme" src="assets/title.ogg" loop preload="none"></audio>
