@@ -6,18 +6,26 @@ The final display contract is **800×480 physical**, **200×120 logical**, and
 `GameConfig.PIXEL_SCALE == 4`. World movement uses an **8px logical grid step**.
 The jungle map is 50×30 tiles (400×240 logical pixels), so the camera can follow.
 
-The original pixel-art atlases are loaded from:
+Licensed 16×16 atlases are loaded from:
 
-- `res://assets/tiles/jungle_tiles.png`
-- `res://assets/sprites/jungle_props.png`
+- `res://assets/tiles/jungle_auto_ground.png`
+- `res://assets/tiles/jungle_auto_water.png`
+- `res://assets/tiles/jungle_objects.png`
+- `res://assets/tiles/jungle_extra.png`
+- `res://assets/tiles/beach_auto_water.png`
+- `res://assets/tiles/beach_objects.png`
 - `res://assets/sprites/player.png`
+
+The jungle is the starting world. Walking the east log-bridge fades into the
+beach boardwalk. Walking west off that boardwalk fades back to the jungle.
 
 ## Files
 
-- [`game/world/world_map.gd`](../game/world/world_map.gd) — tiles, draw, collision, encounter zones, named regions
+- [`game/world/world_map.gd`](../game/world/world_map.gd) — tiles, draw, collision, encounter zones, named regions, map id
 - [`game/world/jungle_map_data.gd`](../game/world/jungle_map_data.gd) — deterministic 50×30 jungle layout
-- [`game/world/player_actor.gd`](../game/world/player_actor.gd) — 24px actor, facing, 8px grid steps
-- [`game/states/overworld.gd`](../game/states/overworld.gd) — hosts map + camera + HUD, keeps the menu key
+- [`game/world/beach_map_data.gd`](../game/world/beach_map_data.gd) — deterministic 50×30 beach layout
+- [`game/world/player_actor.gd`](../game/world/player_actor.gd) — 16×20 sprite, 8×8 foot collision, facing, 8px grid steps
+- [`game/states/overworld.gd`](../game/states/overworld.gd) — hosts map + camera + HUD + fade transitions
 
 ## Tile legend
 
@@ -28,14 +36,17 @@ The original pixel-art atlases are loaded from:
 | 2 | tall grass | yes | **yes** |
 | 3 | water | no | no |
 
-Trees, rocks, hut walls and doors, fossil shrines, future-biome exit markers,
-and water are blocked independently of the visual tile ID. The two research
-houses are scenery only: their visible doors are intentionally blocked and
-cannot be entered.
+Trees, rocks, field-station and dock-shelter doors, water, and ocean cells are
+blocked independently of the visual tile ID. Buildings are scenery only: their
+visible doors stay blocked and cannot be entered. Beach dune grass is the
+beach encounter zone.
 
 ## Collision
 
-`WorldMap.can_stand(world_pos, body)` tests the player's body corners against blocked tiles. The player cannot leave the map.
+`WorldMap.can_stand(world_pos, body)` tests the player's 8×8 lower-foot
+collision footprint against blocked tiles. The 16×20 visual sprite can overlap
+neighboring scenery without blocking a legal one-tile path. The player cannot
+leave the map.
 
 ## Jungle regions
 

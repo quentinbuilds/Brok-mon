@@ -3,6 +3,7 @@ extends RefCounted
 const PARTY_MAX := 3
 
 var position: Vector2 = Vector2.ZERO
+var map_id: StringName = &"jungle"
 var movement_speed: float = 80.0
 var direction: Vector2 = Vector2.DOWN
 var party: Array = []

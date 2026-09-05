@@ -1,11 +1,8 @@
 extends Node2D
-## Expedition Trail map. Visual IDs never determine collision or encounters.
+## Active map façade. Visual IDs never determine collision or encounters.
 
-const MapData = preload("res://world/jungle_map_data.gd")
-const TILE := MapData.TILE
-const COLS := MapData.WIDTH
-const ROWS := MapData.HEIGHT
-const PLAYER_BODY := Vector2(24, 24)
+const Registry = preload("res://world/map_registry.gd")
+const PLAYER_BODY := Vector2(8, 8)
 
 var ground_layer: Node2D
 var encounter_layer: Node2D
@@ -18,160 +15,210 @@ var door_tiles: Dictionary = {}
 var tiles: Array = []
 var props: Array = []
 var spawn_tile := Vector2i(5, 25)
-var tile_atlas: Texture2D = preload("res://assets/tiles/jungle_tiles.png")
-var prop_atlas: Texture2D = preload("res://assets/sprites/jungle_props.png")
+var tile_atlas: Texture2D
+var prop_atlas: Texture2D
+var _map_id: StringName = &""
+var _data: Dictionary = {}
+var _transitions: Array = []
+var _ground_regions: Dictionary = {}
+var _ground_from_props: Dictionary = {}
+var _ground_atlas_overrides: Dictionary = {}
+var _encounter_label := "TALL GRASS"
+var _nav_tile := 8
+var _visual_tile := 16
+var _cols := 50
+var _rows := 30
 
 
 class AtlasLayer extends Node2D:
 	enum Kind { GROUND, ENCOUNTERS, PROPS_BACK, PROPS_FRONT }
 
 	var kind: Kind
-	var ground: Array
-	var props: Array
-	var tile_texture: Texture2D
-	var prop_texture: Texture2D
+	var host: Node2D
 
-	func setup(
-			layer_kind: Kind,
-			ground_data: Array,
-			prop_data: Array,
-			ground_atlas: Texture2D,
-			props_atlas: Texture2D) -> void:
+	func setup(layer_kind: Kind, owner_map: Node2D) -> void:
 		kind = layer_kind
-		ground = ground_data
-		props = prop_data
-		tile_texture = ground_atlas
-		prop_texture = props_atlas
+		host = owner_map
 		texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		queue_redraw()
 
 	func _draw() -> void:
-		for y in MapData.HEIGHT:
-			for x in MapData.WIDTH:
-				var tile := Vector2i(x, y)
-				match kind:
-					Kind.GROUND:
-						_draw_ground(tile, ground[y][x])
-					Kind.ENCOUNTERS:
-						if ground[y][x] == MapData.Ground.TALL_GRASS:
-							_draw_atlas(tile_texture, tile, Rect2(16, 16, 8, 8))
-					Kind.PROPS_BACK:
-						_draw_prop_back(tile, props[y][x])
-					Kind.PROPS_FRONT:
-						_draw_prop_front(tile, props[y][x])
-
-	func _draw_ground(tile: Vector2i, ground_id: int) -> void:
-		var alternate := (tile.x + tile.y) % 2
-		var source := Rect2(0, 0, 8, 8)
-		match ground_id:
-			MapData.Ground.LAWN:
-				source = Rect2(alternate * 8, 0, 8, 8)
-			MapData.Ground.PATH:
-				source = Rect2(16 + alternate * 8, 0, 8, 8)
-			MapData.Ground.TALL_GRASS:
-				source = Rect2(32 + alternate * 8, 0, 8, 8)
-			MapData.Ground.WATER:
-				source = Rect2(48 + alternate * 8, 0, 8, 8)
-		_draw_atlas(tile_texture, tile, source)
-
-	func _draw_prop_back(tile: Vector2i, prop_id: int) -> void:
-		var source := Rect2()
-		match prop_id:
-			MapData.Prop.TREE:
-				_draw_atlas(
-					tile_texture, tile,
-					Rect2(((tile.x + tile.y) % 2) * 8, 8, 8, 8))
-				return
-			MapData.Prop.FERN:
-				source = Rect2(0, 0, 16, 16)
-			MapData.Prop.CYCAD:
-				source = Rect2(16, 0, 16, 16)
-			MapData.Prop.PALM:
-				source = Rect2(16, 0, 16, 24)
-			MapData.Prop.ROCK:
-				source = Rect2(58, 10, 14, 16)
-			MapData.Prop.BONE:
-				source = Rect2(72, 12, 16, 12)
-			MapData.Prop.FOOTPRINT:
-				source = Rect2(90, 10, 10, 14)
-			MapData.Prop.EGGSHELL:
-				source = Rect2(102, 8, 14, 16)
-			MapData.Prop.HUT_WALL:
-				if tile in [Vector2i(14, 17), Vector2i(22, 17)]:
-					var destination := Rect2(
-						Vector2(tile * MapData.TILE) - Vector2(0, 8), Vector2(32, 32))
-					draw_texture_rect_region(
-						prop_texture, destination, Rect2(0, 32, 32, 32))
-				return
-			MapData.Prop.HUT_DOOR:
-				return
-			MapData.Prop.FOSSIL_SHRINE:
-				var destination := Rect2(
-					Vector2(tile * MapData.TILE) - Vector2(8, 16), Vector2(24, 24))
-				draw_texture_rect_region(
-					prop_texture, destination, Rect2(56, 32, 32, 32))
-				return
-			MapData.Prop.EXIT_MARKER:
-				source = Rect2(88, 40, 16, 16)
-			_:
-				return
-		var destination := Rect2(Vector2(tile * MapData.TILE), Vector2(8, 8))
-		draw_texture_rect_region(prop_texture, destination, source)
-
-	func _draw_prop_front(tile: Vector2i, prop_id: int) -> void:
-		if prop_id == MapData.Prop.TREE and (tile.x + tile.y * 3) % 4 == 0:
-			var destination := Rect2(
-				Vector2(tile * MapData.TILE) + Vector2(-4, -8), Vector2(16, 16))
-			draw_texture_rect_region(
-				prop_texture, destination, Rect2(32, 0, 32, 24))
-		elif prop_id == MapData.Prop.PALM:
-			var destination := Rect2(
-				Vector2(tile * MapData.TILE) + Vector2(0, -8), Vector2(8, 16))
-			draw_texture_rect_region(
-				prop_texture, destination, Rect2(16, 0, 16, 24))
-
-	func _draw_atlas(texture: Texture2D, tile: Vector2i, source: Rect2) -> void:
-		var destination := Rect2(Vector2(tile * MapData.TILE), Vector2(8, 8))
-		draw_texture_rect_region(texture, destination, source)
+		if host == null:
+			return
+		match kind:
+			Kind.GROUND:
+				host.draw_ground(self)
+			Kind.ENCOUNTERS:
+				host.draw_encounters(self)
+			Kind.PROPS_BACK:
+				host.draw_props(self, host._data.get("props_back", []))
+			Kind.PROPS_FRONT:
+				host.draw_props(self, host._data.get("props_front", []))
 
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var data := MapData.build()
-	tiles = data.ground
-	props = data.props
-	blocked = data.blocked
-	encounter_tiles = data.encounters
-	regions = data.regions
-	door_tiles = data.doors
-	spawn_tile = regions.player_start
-
-	ground_layer = _make_layer(
-		"GroundLayer", AtlasLayer.Kind.GROUND, -20, tiles, props)
-	encounter_layer = _make_layer(
-		"EncounterLayer", AtlasLayer.Kind.ENCOUNTERS, -15, tiles, props)
-	props_back = _make_layer(
-		"PropsBack", AtlasLayer.Kind.PROPS_BACK, -5, tiles, props)
-	props_front = _make_layer(
-		"PropsFront", AtlasLayer.Kind.PROPS_FRONT, 20, tiles, props)
+	if _map_id == &"":
+		setup(Game.player.map_id)
 
 
-func _make_layer(
-		layer_name: String,
-		kind: AtlasLayer.Kind,
-		layer_z: int,
-		ground_data: Array,
-		prop_data: Array) -> AtlasLayer:
+func setup(map_id: StringName) -> void:
+	_clear_layers()
+	var requested := map_id
+	_data = Registry.definition(requested)
+	if _data.is_empty():
+		push_error("Unknown map_id '%s'; falling back to jungle" % requested)
+		requested = &"jungle"
+		_data = Registry.definition(requested)
+	if _data.is_empty():
+		push_error("Jungle map definition is missing")
+		return
+	_map_id = _data.id
+	_nav_tile = int(_data.get("navigation_tile_size", 8))
+	_visual_tile = int(_data.get("visual_tile_size", 16))
+	_cols = int(_data.get("width", 50))
+	_rows = int(_data.get("height", 30))
+	tiles = _data.ground
+	blocked = _data.blocked
+	encounter_tiles = _data.encounters
+	regions = _data.regions
+	door_tiles = _data.doors
+	_transitions = _data.get("transitions", [])
+	var assets: Dictionary = _data.get("assets", {})
+	_ground_regions = assets.get("ground_regions", {})
+	_encounter_label = str(assets.get("encounter_label", "TALL GRASS"))
+	tile_atlas = _load_atlas(str(assets.get("tile_atlas", "")))
+	prop_atlas = _load_atlas(str(assets.get("prop_atlas", "")))
+	_ground_from_props.clear()
+	for ground_id in assets.get("prop_ground_ids", []):
+		_ground_from_props[int(ground_id)] = true
+	_ground_atlas_overrides = {}
+	var overrides: Dictionary = assets.get("ground_atlases", {})
+	for ground_id in overrides.keys():
+		_ground_atlas_overrides[int(ground_id)] = _load_atlas(str(overrides[ground_id]))
+	var spawn_name: StringName = _data.get("spawn_region", &"player_start")
+	if regions.has(spawn_name):
+		spawn_tile = regions[spawn_name]
+	elif regions.has("player_start"):
+		spawn_tile = regions.player_start
+	if not is_inside_tree():
+		return
+	_build_layers()
+
+
+func _load_atlas(path: String) -> Texture2D:
+	if path.is_empty() or not ResourceLoader.exists(path):
+		push_error("Missing required runtime atlas: %s" % path)
+		return null
+	return load(path) as Texture2D
+
+
+func _clear_layers() -> void:
+	for layer in [ground_layer, encounter_layer, props_back, props_front]:
+		if layer != null and is_instance_valid(layer):
+			layer.queue_free()
+	ground_layer = null
+	encounter_layer = null
+	props_back = null
+	props_front = null
+
+
+func _build_layers() -> void:
+	ground_layer = _make_layer("GroundLayer", AtlasLayer.Kind.GROUND, -20)
+	encounter_layer = _make_layer("EncounterLayer", AtlasLayer.Kind.ENCOUNTERS, -15)
+	props_back = _make_layer("PropsBack", AtlasLayer.Kind.PROPS_BACK, -5)
+	props_front = _make_layer("PropsFront", AtlasLayer.Kind.PROPS_FRONT, 20)
+
+
+func _make_layer(layer_name: String, kind: AtlasLayer.Kind, layer_z: int) -> AtlasLayer:
 	var layer := AtlasLayer.new()
 	layer.name = layer_name
 	layer.z_index = layer_z
-	layer.setup(kind, ground_data, prop_data, tile_atlas, prop_atlas)
+	layer.setup(kind, self)
 	add_child(layer)
 	return layer
 
 
+func draw_ground(layer: AtlasLayer) -> void:
+	if tile_atlas == null and prop_atlas == null:
+		return
+	var visual_cols := _cols * _nav_tile / _visual_tile
+	var visual_rows := _rows * _nav_tile / _visual_tile
+	for vy in visual_rows:
+		for vx in visual_cols:
+			var nav := Vector2i(vx * 2, vy * 2)
+			if nav.y >= tiles.size() or nav.x >= (tiles[nav.y] as Array).size():
+				continue
+			var ground_id: int = tiles[nav.y][nav.x]
+			if not _ground_regions.has(ground_id):
+				continue
+			var texture := _texture_for_ground(ground_id)
+			if texture == null:
+				continue
+			var destination := Rect2(Vector2(vx * _visual_tile, vy * _visual_tile), Vector2(_visual_tile, _visual_tile))
+			layer.draw_texture_rect_region(texture, destination, _ground_regions[ground_id])
+
+
+func _texture_for_ground(ground_id: int) -> Texture2D:
+	if _ground_atlas_overrides.has(ground_id):
+		return _ground_atlas_overrides[ground_id]
+	if _ground_from_props.has(ground_id):
+		return prop_atlas
+	return tile_atlas
+
+
+func draw_encounters(layer: AtlasLayer) -> void:
+	if tile_atlas == null and prop_atlas == null:
+		return
+	var visual_cols := _cols * _nav_tile / _visual_tile
+	var visual_rows := _rows * _nav_tile / _visual_tile
+	for vy in visual_rows:
+		for vx in visual_cols:
+			var nav := Vector2i(vx * 2, vy * 2)
+			if not encounter_tiles.has(nav):
+				continue
+			var ground_id: int = tiles[nav.y][nav.x]
+			if not _ground_regions.has(ground_id):
+				continue
+			var texture := _texture_for_ground(ground_id)
+			if texture == null:
+				continue
+			var destination := Rect2(Vector2(vx * _visual_tile, vy * _visual_tile), Vector2(_visual_tile, _visual_tile))
+			layer.draw_texture_rect_region(texture, destination, _ground_regions[ground_id])
+
+
+func draw_props(layer: AtlasLayer, records: Array) -> void:
+	for record in records:
+		var texture := prop_atlas
+		if record.has("atlas"):
+			texture = _load_atlas(str(record.atlas))
+		if texture == null:
+			continue
+		var cell: Vector2i = record.cell
+		var destination := Rect2(
+			Vector2(cell * _nav_tile) + record.offset,
+			record.size)
+		layer.draw_texture_rect_region(texture, destination, record.source)
+
+
+func map_id() -> StringName:
+	return _map_id
+
+
+func encounter_label() -> String:
+	return _encounter_label
+
+
+func transition_at(tile: Vector2i) -> Dictionary:
+	for record in _transitions:
+		var rect: Rect2i = record.source_rect
+		if rect.has_point(tile):
+			return record
+	return {}
+
+
 func map_size_px() -> Vector2:
-	return Vector2(COLS * TILE, ROWS * TILE)
+	return Vector2(_cols * _nav_tile, _rows * _nav_tile)
 
 
 func spawn_position() -> Vector2:
@@ -179,20 +226,20 @@ func spawn_position() -> Vector2:
 
 
 func world_to_tile(world_pos: Vector2) -> Vector2i:
-	return Vector2i(floori(world_pos.x / TILE), floori(world_pos.y / TILE))
+	return Vector2i(floori(world_pos.x / _nav_tile), floori(world_pos.y / _nav_tile))
 
 
 func tile_center(tile: Vector2i) -> Vector2:
-	return Vector2(tile * TILE) + Vector2(TILE, TILE) * 0.5
+	return Vector2(tile * _nav_tile) + Vector2(_nav_tile, _nav_tile) * 0.5
 
 
 func in_bounds_tile(tile: Vector2i) -> bool:
-	return tile.x >= 0 and tile.y >= 0 and tile.x < COLS and tile.y < ROWS
+	return tile.x >= 0 and tile.y >= 0 and tile.x < _cols and tile.y < _rows
 
 
 func tile_at(tile: Vector2i) -> int:
 	if not in_bounds_tile(tile):
-		return MapData.Ground.WATER
+		return 0
 	return tiles[tile.y][tile.x]
 
 

@@ -1,7 +1,7 @@
 extends Node2D
 ## Overworld actor. Reads InputManager only. Emits Events.player_moved.
 
-const BODY := Vector2(24, 24)
+const BODY := Vector2(8, 8)
 const STEP_PIXELS := 8.0
 const STEP_SECONDS := 0.10
 const HOLD_DELAY := 0.18
@@ -15,6 +15,7 @@ var _moving: bool = false
 var _held_time := 0.0
 var _last_direction := Vector2.ZERO
 var _frame: int = 0
+var _movement_enabled: bool = true
 
 
 func setup(world_map: Node, start: Vector2) -> void:
@@ -41,8 +42,15 @@ func is_in_encounter_zone() -> bool:
 	return world.is_encounter_zone(position + BODY * 0.5)
 
 
+func set_movement_enabled(enabled: bool) -> void:
+	_movement_enabled = enabled
+	if not enabled:
+		_held_time = 0.0
+		_last_direction = Vector2.ZERO
+
+
 func try_step(direction: Vector2) -> bool:
-	if _moving:
+	if _moving or not _movement_enabled:
 		return false
 	Game.player.direction = direction
 	var target := position + direction * STEP_PIXELS
@@ -71,6 +79,8 @@ func tick(delta: float) -> void:
 			Events.player_moved.emit(position)
 			queue_redraw()
 		return
+	if not _movement_enabled:
+		return
 	var direction := InputManager.move_vector()
 	if direction == Vector2.ZERO:
 		_held_time = 0.0
@@ -96,5 +106,5 @@ func _draw() -> void:
 	elif direction == Vector2.RIGHT:
 		column = 3
 	var source := Rect2(column * 16, _frame * 20, 16, 20)
-	var destination := Rect2(Vector2(4, 4), Vector2(16, 20))
+	var destination := Rect2(Vector2(-4, -12), Vector2(16, 20))
 	draw_texture_rect_region(player_atlas, destination, source)

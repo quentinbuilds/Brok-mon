@@ -26,21 +26,30 @@ func _ready() -> void:
 
 	if (
 			world.tile_atlas == null
-			or world.tile_atlas.resource_path != "res://assets/tiles/jungle_tiles.png"
+			or world.tile_atlas.resource_path != "res://assets/tiles/jungle_auto_ground.png"
 			or world.prop_atlas == null
-			or world.prop_atlas.resource_path != "res://assets/sprites/jungle_props.png"
+			or world.prop_atlas.resource_path != "res://assets/tiles/jungle_objects.png"
 	):
 		report("error", "jungle atlases must use imported Texture2D resources")
 		finish()
 		return
 
+	if not world.has_method("map_id") or world.map_id() != &"jungle":
+		report("error", "world must expose map_id jungle by default")
+		finish()
+		return
+	if Game.player.map_id != &"jungle":
+		report("error", "session map_id must default to jungle")
+		finish()
+		return
 	if world.map_size_px() != Vector2(400, 240):
 		report("error", "jungle map must be 50x30 8px tiles")
 		finish()
 		return
 	for region_name in [
-		"player_start", "research_outpost", "fossil_clearing", "pond",
-		"north_meadow", "south_meadow", "west_thicket",
+		"player_start", "research_outpost", "field_station_door", "fossil_clearing",
+		"pond", "north_meadow", "south_meadow", "west_thicket",
+		"beach_checkpoint", "beach_checkpoint_return",
 		"volcanic_exit", "snow_exit", "desert_exit", "forest_exit"
 	]:
 		if world.region_position(region_name) == Vector2.ZERO:
@@ -51,6 +60,35 @@ func _ready() -> void:
 	report("map_size", world.map_size_px())
 	report("spawn", world.spawn_position())
 	save_frame("00_jungle_spawn")
+
+	# A legal one-tile corridor must not be rejected by blocked diagonal neighbors.
+	var corridor_tile := Vector2i(10, 20)
+	var corridor_start := corridor_tile + Vector2i.LEFT
+	var corridor_diagonals := [
+		corridor_tile + Vector2i(-1, -1),
+		corridor_tile + Vector2i(1, -1),
+		corridor_tile + Vector2i(-1, 1),
+		corridor_tile + Vector2i(1, 1),
+	]
+	var blocked_before: Dictionary = world.blocked.duplicate()
+	world.blocked.erase(corridor_tile)
+	world.blocked.erase(corridor_start)
+	for tile in corridor_diagonals:
+		world.blocked[tile] = true
+	actor.position = world.tile_center(corridor_start) - actor.BODY * 0.5
+	Game.player.position = actor.position
+	if not actor.try_step(Vector2.RIGHT):
+		report("error", "one-tile corridor rejected because diagonal neighbors are blocked")
+		finish()
+		return
+	for _i in 12:
+		await get_tree().physics_frame
+	if actor.current_tile() != corridor_tile:
+		report("error", "one-tile corridor step did not enter its legal destination")
+		finish()
+		return
+	report("one_tile_corridor", true)
+	world.blocked = blocked_before
 
 	var reentrant_start: Vector2 = actor.position
 	if not actor.try_step(Vector2.RIGHT):
@@ -102,15 +140,15 @@ func _ready() -> void:
 		finish()
 		return
 
-	# Known research-hut fixture: the south approach attempts to enter door (17, 19).
-	var hut_door := Vector2i(17, 19)
+	# Field-station door is south-facing and blocked.
+	var hut_door := Vector2i(17, 21)
 	if not world.is_house_door(hut_door) or not world.is_blocked_tile(hut_door):
-		report("error", "known research hut door must be marked and blocked")
+		report("error", "known field-station door must be marked and blocked")
 		finish()
 		return
-	_place_actor_on_tile(actor, world, Vector2i(17, 21))
+	_place_actor_on_tile(actor, world, Vector2i(17, 22))
 	await settle(3)
-	save_frame("01_research_huts")
+	save_frame("01_jungle_station")
 	var hut_start: Vector2 = actor.position
 	var hut_events: int = move_events[0]
 	if actor.try_step(Vector2.UP):
@@ -130,12 +168,12 @@ func _ready() -> void:
 	report("hut_door_blocked", true)
 
 	# Known pond fixture: approaching the water from the south must not start a step.
-	_place_actor_on_tile(actor, world, Vector2i(42, 12))
+	_place_actor_on_tile(actor, world, Vector2i(42, 14))
 	await settle(3)
 	save_frame("04_pond")
 	var water_start: Vector2 = actor.position
 	var water_events: int = move_events[0]
-	if not world.is_blocked_tile(Vector2i(42, 10)):
+	if not world.is_blocked_tile(Vector2i(42, 13)):
 		report("error", "known pond water tile must be blocked")
 		finish()
 		return
@@ -150,7 +188,7 @@ func _ready() -> void:
 	report("water_blocked", true)
 
 	# A lawn-to-grass step must change the encounter-zone state false -> true.
-	_place_actor_on_tile(actor, world, Vector2i(14, 24))
+	_place_actor_on_tile(actor, world, Vector2i(13, 24))
 	if actor.is_in_encounter_zone():
 		report("error", "lawn fixture unexpectedly starts in tall grass")
 		finish()
@@ -171,7 +209,7 @@ func _ready() -> void:
 	report("lawn_to_grass", true)
 
 	# A tall-grass-to-path step must change the encounter-zone state true -> false.
-	_place_actor_on_tile(actor, world, Vector2i(23, 7))
+	_place_actor_on_tile(actor, world, Vector2i(31, 8))
 	if not actor.is_in_encounter_zone():
 		report("error", "north-meadow fixture must start in tall grass")
 		finish()
@@ -190,7 +228,7 @@ func _ready() -> void:
 	report("grass_to_path", true)
 
 	# The central trail is walkable, safe, and preserves the 8px step contract.
-	_place_actor_on_tile(actor, world, Vector2i(25, 9))
+	_place_actor_on_tile(actor, world, Vector2i(5, 19))
 	var path_start: Vector2 = actor.position
 	if not world.can_stand(path_start) or actor.is_in_encounter_zone():
 		report("error", "known path fixture must be walkable and encounter-safe")
@@ -212,7 +250,8 @@ func _ready() -> void:
 		return
 	report("path_safe", true)
 
-	_place_actor_at(actor, world.region_position("fossil_clearing") - Vector2(12, 12))
+	_place_actor_at(
+		actor, world.region_position("fossil_clearing") - actor.BODY * 0.5)
 	await settle(3)
 	save_frame("02_fossil_clearing")
 
@@ -238,6 +277,55 @@ func _ready() -> void:
 		return
 	report("menu_round_trip", true)
 
+	_place_actor_on_tile(actor, world, Vector2i(47, 15))
+	await settle(2)
+	save_frame("02_jungle_bridge")
+	if not actor.try_step(Vector2.RIGHT):
+		report("error", "east bridge step did not start")
+		finish()
+		return
+	for _i in 20:
+		await get_tree().physics_frame
+	await get_tree().create_timer(0.45).timeout
+	world = _find_world()
+	actor = _find_actor(world)
+	if world == null or actor == null or Game.player.map_id != &"beach" or world.map_id() != &"beach":
+		report("error", "east bridge must fade into the beach")
+		finish()
+		return
+	if actor.current_tile() != Vector2i(4, 15):
+		report("error", "beach arrival must be boardwalk_arrival")
+		finish()
+		return
+	save_frame("03_beach_arrival")
+	_place_actor_at(actor, world.region_position("dock_shelter") - actor.BODY * 0.5)
+	await settle(2)
+	save_frame("04_beach_shelter")
+	_place_actor_at(actor, world.region_position("south_dunes") - actor.BODY * 0.5)
+	await settle(2)
+	save_frame("05_beach_dunes")
+	report("beach_arrival", true)
+
+	_place_actor_on_tile(actor, world, Vector2i(2, 15))
+	if not actor.try_step(Vector2.LEFT):
+		report("error", "beach return step did not start")
+		finish()
+		return
+	for _i in 20:
+		await get_tree().physics_frame
+	await get_tree().create_timer(0.45).timeout
+	world = _find_world()
+	actor = _find_actor(world)
+	if world == null or actor == null or Game.player.map_id != &"jungle":
+		report("error", "boardwalk must fade back into the jungle")
+		finish()
+		return
+	if actor.current_tile() != Vector2i(46, 15):
+		report("error", "jungle return must be beach_checkpoint_return")
+		finish()
+		return
+	report("reciprocal_transition", true)
+
 	report("logical_size", GameConfig.LOGICAL_SIZE)
 	report("display_size", GameConfig.DISPLAY_SIZE)
 	report("pixel_scale", GameConfig.PIXEL_SCALE)
@@ -257,7 +345,7 @@ func _ready() -> void:
 
 
 func _place_actor_on_tile(actor: Node, world: Node, tile: Vector2i) -> void:
-	_place_actor_at(actor, world.tile_center(tile) - Vector2(12, 12))
+	_place_actor_at(actor, world.tile_center(tile) - actor.BODY * 0.5)
 
 
 func _place_actor_at(actor: Node, position: Vector2) -> void:
