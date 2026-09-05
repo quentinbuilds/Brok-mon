@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://world/characters/elder.tscn" id="7_elder"]
 [ext_resource type="PackedScene" path="res://world/characters/youth.tscn" id="8_youth"]
 [ext_resource type="PackedScene" path="res://world/characters/explorer.tscn" id="9_sign"]
+[ext_resource type="Texture2D" path="res://assets/props/house.png" id="10_house"]
 
 [node name="OverworldState" type="Node2D"]
 script = ExtResource("1")
@@ -37,6 +38,12 @@ position = Vector2(128, 32)
 [node name="sign" parent="." instance=ExtResource("9_sign") groups=["npc"]]
 z_index = 1
 position = Vector2(48, 64)
+
+[node name="House" type="Sprite2D" parent="."]
+z_index = 1
+position = Vector2(464, 112)
+texture = ExtResource("10_house")
+centered = false
 
 [node name="Camera" type="Camera2D" parent="."]
 

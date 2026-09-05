@@ -158,6 +158,8 @@ func _refresh_inventory() -> void:
 	_detail_body.visible = false
 	_set_option(0, "CAPTURE ORB             x%02d" % GameData.get_item_count(GameData.ITEM_CAPTURE_ORB))
 	_set_option(1, "POTION                  x%02d" % GameData.get_item_count(GameData.ITEM_POTION))
+	(_option_panels[0].get_node("Icon") as TextureRect).texture = load("res://assets/ui/capture_orb.png")
+	(_option_panels[1].get_node("Icon") as TextureRect).texture = load("res://assets/ui/potion.png")
 	_cursor_target = Vector2(9, 32 + inventory_selection * 34)
 
 func _show_inventory_dialog() -> void:
@@ -173,7 +175,11 @@ func _show_dialog(text: String) -> void:
 func _set_option(index: int, text: String) -> void:
 	var panel := _option_panels[index]
 	panel.visible = true
-	(panel.get_node("Label") as Label).text = text
+	var label := panel.get_node("Label") as Label
+	var icon := panel.get_node("Icon") as TextureRect
+	label.text = text
+	icon.visible = page == Page.INVENTORY
+	label.position.x = 23 if icon.visible else 7
 	if page == Page.PARTY:
 		panel.position = Vector2(18, 22 + index * 25)
 		panel.size = Vector2(164, 23)
@@ -218,6 +224,14 @@ func _build_option_panels() -> void:
 		label.add_theme_color_override("font_color", Color("ffe8a0"))
 		label.add_theme_font_size_override("font_size", 7)
 		panel.add_child(label)
+		var icon := TextureRect.new()
+		icon.name = "Icon"
+		icon.position = Vector2(3, 6)
+		icon.size = Vector2(16, 16)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.visible = false
+		panel.add_child(icon)
 		_detail_page.add_child(panel)
 		_option_panels.append(panel)
 

@@ -50,6 +50,8 @@ func test_inventory_page_shows_existing_counts() -> void:
 	assert_true(first.contains("CAPTURE ORB"))
 	assert_true(first.contains("x%02d" % GameData.get_item_count(GameData.ITEM_CAPTURE_ORB)))
 	assert_true(second.contains("POTION"))
+	assert_eq(menu.get_node("DetailPage/Option0/Icon").texture.resource_path, "res://assets/ui/capture_orb.png")
+	assert_eq(menu.get_node("DetailPage/Option1/Icon").texture.resource_path, "res://assets/ui/potion.png")
 
 func test_selection_uses_visible_arrow_without_green_highlight() -> void:
 	var arrow: Control = menu.get_node("SelectionArrow")

@@ -30,6 +30,20 @@ const RAGE_STAT_MULT_MAX := 3.0
 
 const POTION_HEAL := 20
 
+const MAX_MOVES := 4
+const MAX_LEVEL := 15
+const EXP_BASE := 8
+const EXP_PER_LEVEL := 2
+const EXP_YIELD_BASE := 12
+const EXP_YIELD_PER_LEVEL := 2
+const HP_PER_LEVEL := 2
+const ATK_PER_LEVEL := 1
+const DEF_PER_EVEN_LEVEL := 1
+
+const FIGHT_COLS := 2
+const FIGHT_ROWS := 2
+const FIGHT_COL_WIDTH := 90
+
 const TEXT_CHARS_PER_SEC := 35.0
 const TEXT_CHARS_PER_SEC_FAST := 140.0
 const MESSAGE_HOLD := 0.35
