@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://world/OverworldState.gd" id="1"]
 [ext_resource type="TileSet" path="res://world/overworld_tileset.tres" id="2"]
@@ -12,6 +12,24 @@
 [ext_resource type="Texture2D" path="res://assets/props/house.png" id="10_house"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/beach_map.png" id="11_beach"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/house_interior_map.png" id="12_interior"]
+[ext_resource type="Texture2D" path="res://assets/studio/dialogue_box.png" id="13_dialogue"]
+[ext_resource type="Script" path="res://world/Minimap.gd" id="14_minimap"]
+[ext_resource type="PackedScene" path="res://world/characters/wizard.tscn" id="np_wizard"]
+[ext_resource type="PackedScene" path="res://world/characters/skeleton.tscn" id="np_skeleton"]
+[ext_resource type="PackedScene" path="res://world/characters/goblin.tscn" id="np_goblin"]
+[ext_resource type="PackedScene" path="res://world/characters/viking.tscn" id="np_viking"]
+[ext_resource type="PackedScene" path="res://world/characters/knight.tscn" id="np_knight"]
+[ext_resource type="PackedScene" path="res://world/characters/pigtails.tscn" id="np_pigtails"]
+[ext_resource type="PackedScene" path="res://world/characters/pink_dress.tscn" id="np_pink_dress"]
+[ext_resource type="PackedScene" path="res://world/characters/grey_shirt.tscn" id="np_grey_shirt"]
+[ext_resource type="PackedScene" path="res://world/characters/vest_man.tscn" id="np_vest_man"]
+[ext_resource type="PackedScene" path="res://world/characters/mohawk.tscn" id="np_mohawk"]
+[ext_resource type="PackedScene" path="res://world/characters/rusty_hair.tscn" id="np_rusty_hair"]
+[ext_resource type="PackedScene" path="res://world/characters/maroon.tscn" id="np_maroon"]
+
+[sub_resource type="AtlasTexture" id="DialogueFrame"]
+atlas = ExtResource("13_dialogue")
+region = Rect2(0, 14, 1242, 577)
 
 [node name="OverworldState" type="Node2D"]
 script = ExtResource("1")
@@ -55,6 +73,54 @@ position = Vector2(128, 32)
 z_index = 1
 position = Vector2(48, 64)
 
+[node name="wizard" parent="." instance=ExtResource("np_wizard") groups=["npc"]]
+z_index = 1
+position = Vector2(208, 320)
+
+[node name="skeleton" parent="." instance=ExtResource("np_skeleton") groups=["npc"]]
+z_index = 1
+position = Vector2(816, 512)
+
+[node name="goblin" parent="." instance=ExtResource("np_goblin") groups=["npc"]]
+z_index = 1
+position = Vector2(608, 480)
+
+[node name="viking" parent="." instance=ExtResource("np_viking") groups=["npc"]]
+z_index = 1
+position = Vector2(144, 624)
+
+[node name="knight" parent="." instance=ExtResource("np_knight") groups=["npc"]]
+z_index = 1
+position = Vector2(640, 656)
+
+[node name="pigtails" parent="." instance=ExtResource("np_pigtails") groups=["npc"]]
+z_index = 1
+position = Vector2(352, 704)
+
+[node name="pink_dress" parent="." instance=ExtResource("np_pink_dress") groups=["npc"]]
+z_index = 1
+position = Vector2(736, 336)
+
+[node name="grey_shirt" parent="." instance=ExtResource("np_grey_shirt") groups=["npc"]]
+z_index = 1
+position = Vector2(576, 96)
+
+[node name="vest_man" parent="." instance=ExtResource("np_vest_man") groups=["npc"]]
+z_index = 1
+position = Vector2(320, 208)
+
+[node name="mohawk" parent="." instance=ExtResource("np_mohawk") groups=["npc"]]
+z_index = 1
+position = Vector2(896, 720)
+
+[node name="rusty_hair" parent="." instance=ExtResource("np_rusty_hair") groups=["npc"]]
+z_index = 1
+position = Vector2(704, 240)
+
+[node name="maroon" parent="." instance=ExtResource("np_maroon") groups=["npc"]]
+z_index = 1
+position = Vector2(192, 448)
+
 [node name="House" type="Sprite2D" parent="."]
 z_index = 1
 position = Vector2(464, 112)
@@ -68,29 +134,64 @@ position = Vector2(224, 48)
 texture = ExtResource("10_house")
 centered = false
 
+[node name="InteractPrompt" type="Node2D" parent="."]
+visible = false
+z_index = 3
+
+[node name="Panel" type="ColorRect" parent="InteractPrompt"]
+offset_right = 30.0
+offset_bottom = 11.0
+color = Color(0.11, 0.11, 0.17, 0.88)
+
+[node name="Label" type="Label" parent="InteractPrompt"]
+offset_right = 30.0
+offset_bottom = 11.0
+theme_override_colors/font_color = Color(1, 0.91, 0.63, 1)
+theme_override_font_sizes/font_size = 7
+text = "A TALK"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Camera" type="Camera2D" parent="."]
 
 [node name="EncounterSystem" parent="." instance=ExtResource("5")]
 
+[node name="Minimap" type="CanvasLayer" parent="."]
+script = ExtResource("14_minimap")
+
 [node name="TalkHud" type="CanvasLayer" parent="."]
 layer = 20
 
-[node name="Panel" type="ColorRect" parent="TalkHud"]
+[node name="Panel" type="TextureRect" parent="TalkHud"]
 visible = false
-offset_left = 8.0
-offset_top = 86.0
-offset_right = 192.0
-offset_bottom = 116.0
-color = Color(0.957, 0.863, 0.647, 0.94)
+texture_filter = 1
+offset_left = 4.0
+offset_top = 78.0
+offset_right = 196.0
+offset_bottom = 118.0
+texture = SubResource("DialogueFrame")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Portrait" type="TextureRect" parent="TalkHud"]
+visible = false
+texture_filter = 1
+offset_left = 9.0
+offset_top = 82.0
+offset_right = 41.0
+offset_bottom = 114.0
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TalkBox" type="Label" parent="TalkHud"]
 visible = false
-offset_left = 12.0
-offset_top = 88.0
-offset_right = 188.0
+offset_left = 46.0
+offset_top = 83.0
+offset_right = 191.0
 offset_bottom = 114.0
 theme_override_colors/font_color = Color(0.11, 0.11, 0.17, 1)
 theme_override_font_sizes/font_size = 8
 text = ""
+autowrap_mode = 3
 horizontal_alignment = 0
 vertical_alignment = 1

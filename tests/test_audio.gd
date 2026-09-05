@@ -449,7 +449,10 @@ func test_a_real_battle_reports_the_fainting_side_correctly() -> void:
 	EventBus.creature_fainted.disconnect(probe)
 
 	assert_true(battle.finished, "the battle never ended")
-	assert_true(mine.is_fainted(), "the player's creature was supposed to drop")
+	# It dropped -- that is what creature_fainted reported below -- and losing now blacks the
+	# player out, which heals the party on the way back to the overworld. Leaving it on nought
+	# HP would open the next encounter with a creature that cannot fight.
+	assert_eq(mine.hp, mine.max_hp, "the blackout should have healed the party")
 	assert_false(wild.is_fainted(), "the wild creature was not supposed to drop")
 	assert_eq(faints.size(), 1, "expected exactly one faint, got %d" % faints.size())
 	assert_true(faints[0], "the player's creature fainted but it was reported as the enemy's")

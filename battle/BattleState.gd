@@ -378,7 +378,7 @@ func _enemy_turn() -> void:
 	if player.is_fainted():
 		await seq.faint(ui.player_view)
 		await seq.say_wait(BattleCopy.faint_player(player.name))
-		_finish(Result.LOST)
+		await _black_out()
 		return
 	busy = false
 	_open_action_menu()
@@ -400,6 +400,32 @@ func _award_exp() -> void:
 			await seq.say_wait(BattleCopy.uninstalled_move(MoveDex.display_name(StringName(replaced_id))))
 		await seq.say_wait(BattleCopy.learned_move(player.name, MoveDex.display_name(StringName(learned_id))))
 	ui.player_display_hp = float(player.hp)
+
+
+## Losing fades the screen to black before handing control back, so the swap out of BATTLE is
+## covered rather than a hard cut. Follows the shape Transition.gd documents: await the close,
+## do the swap, then start the open without awaiting it -- this node is freed by the swap, and
+## awaiting past that point resumes inside a freed object.
+##
+## The party is healed here because battle owns creature HP; the overworld separately hears
+## battle_lost and walks the player home. Without the heal the next encounter would open with
+## a creature already on nought HP.
+func _black_out() -> void:
+	await seq.say_wait(BattleCopy.blacked_out(player.name))
+	heal_party()
+	# instant is how tests skip battle animation; the iris honours it too so a headless run
+	# does not sit through the fade.
+	var fade := 0.0 if instant else BattleConfig.BLACKOUT_FADE
+	await Transition.close(ui.player_center(), fade)
+	_finish(Result.LOST)
+	Transition.open(fade)
+
+
+## Full heal for everyone. GameData hands out the live creatures, so this also revives the
+## fainted one currently on the field.
+static func heal_party() -> void:
+	for creature in GameData.get_party():
+		creature.hp = creature.max_hp
 
 
 func _finish(result: int) -> void:

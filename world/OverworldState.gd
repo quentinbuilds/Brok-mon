@@ -13,7 +13,10 @@ const NPC_GROUP := "npc"
 @onready var _camera: Camera2D = $Camera
 @onready var _walker: Node = get_node_or_null("Player/Walker")
 @onready var _talk: Label = get_node_or_null("TalkHud/TalkBox")
-@onready var _talk_panel: ColorRect = get_node_or_null("TalkHud/Panel")
+@onready var _talk_panel: TextureRect = get_node_or_null("TalkHud/Panel")
+@onready var _portrait: TextureRect = get_node_or_null("TalkHud/Portrait")
+@onready var _prompt: Node2D = get_node_or_null("InteractPrompt")
+@onready var _minimap: Minimap = get_node_or_null("Minimap")
 @onready var _beach: Sprite2D = $BeachBackground
 @onready var _interior: Sprite2D = $InteriorBackground
 @onready var _house: Sprite2D = $House
@@ -28,6 +31,33 @@ var _map_transition_locked: bool = false
 ## no physics bodies -- collision is a glyph lookup -- so an NPC is made solid by removing its
 ## tile from the walk query rather than by giving it a collider.
 var _npc_tiles: Dictionary = {}
+
+## How many times the player has talked to each NPC, so repeat visits rotate through that
+## NPC's variations instead of replaying the opener.
+var _talk_counts: Dictionary = {}
+
+## Where the "A TALK" badge sits relative to an NPC's top-left corner: centred on a 16 px
+## sprite and lifted clear of its head.
+const PROMPT_OFFSET := Vector2(-7, -13)
+
+
+## The overworld is built once and never freed, so this connects once. GameStateBase drives its
+## lifecycle through _notification rather than _ready, so defining _ready here is safe.
+func _ready() -> void:
+	if not EventBus.battle_lost.is_connected(_on_blacked_out):
+		EventBus.battle_lost.connect(_on_blacked_out)
+
+
+## Losing sends the player home. Core is connected to battle_lost before this node exists, so by
+## the time this runs the swap back to OVERWORLD has already happened and _on_enter has been and
+## gone -- which is why the walk home is done here rather than there. The battle holds the screen
+## black across the whole thing, so none of it is seen.
+func _on_blacked_out() -> void:
+	if not is_inside_tree():
+		return
+	_close_talk()
+	next_exterior = MapCycle.Mode.BEACH
+	_switch_map(MapCycle.Mode.DEFAULT, GrassMap.START_TILE)
 
 
 func _on_enter() -> void:
@@ -47,10 +77,15 @@ func _on_enter() -> void:
 	_player.texture = null
 	_sync_walker()
 	_follow_camera()
+	if _minimap:
+		_minimap.track(tile)
 	_close_talk()
 
 
 func update(delta: float) -> void:
+	# Cheap enough to re-evaluate every frame, and doing it here means the badge is correct
+	# after a step, a map switch, or a closed dialogue without wiring it into each of those.
+	_refresh_prompt()
 	if talking:
 		if InputManager.button_a_just_pressed() \
 				or InputManager.button_b_just_pressed() \
@@ -90,17 +125,43 @@ func try_talk() -> bool:
 	var npc := NpcTalk.nearest(_player.position, get_tree().get_nodes_in_group(NPC_GROUP))
 	if npc == null:
 		return false
-	_open_talk(NpcTalk.line_for_node(npc))
+	var id := NpcTalk.id_of(npc)
+	var seen := int(_talk_counts.get(id, 0))
+	_talk_counts[id] = seen + 1
+	_open_talk(NpcTalk.line_at(id, seen), NpcTalk.portrait_path(id))
 	return true
 
 
-func _open_talk(text: String) -> void:
+## The NPC the player is close enough to talk to, or null. Wider than the talk radius so the
+## badge appears a step before A does anything.
+func prompt_target() -> Node:
+	if not is_inside_tree() or _player == null or talking:
+		return null
+	return NpcTalk.nearest_in_prompt_range(_player.position, get_tree().get_nodes_in_group(NPC_GROUP))
+
+
+## Floats the "A TALK" badge over whoever is in range, and hides it otherwise.
+func _refresh_prompt() -> void:
+	if _prompt == null:
+		return
+	var npc := prompt_target()
+	_prompt.visible = npc != null
+	if npc != null:
+		_prompt.position = (NpcTalk.position_of(npc) + PROMPT_OFFSET).round()
+
+
+func _open_talk(text: String, portrait_path: String = "") -> void:
 	talking = true
 	if _talk:
 		_talk.text = text
 		_talk.visible = true
 	if _talk_panel:
 		_talk_panel.visible = true
+	if _portrait:
+		var art: Texture2D = load(portrait_path) if ResourceLoader.exists(portrait_path) else null
+		_portrait.texture = art
+		_portrait.visible = art != null
+	_refresh_prompt()
 
 
 func _close_talk() -> void:
@@ -110,6 +171,10 @@ func _close_talk() -> void:
 		_talk.text = ""
 	if _talk_panel:
 		_talk_panel.visible = false
+	if _portrait:
+		_portrait.visible = false
+		_portrait.texture = null
+	_refresh_prompt()
 
 
 func _sync_walker() -> void:
@@ -129,6 +194,8 @@ func is_in_encounter_zone() -> bool:
 
 func _on_step_finished() -> void:
 	GameData.player_tile = _player.tile
+	if _minimap:
+		_minimap.track(_player.tile)
 	if _try_map_transition(_player.tile):
 		return
 	EventBus.player_moved.emit(_player.tile, is_in_encounter_zone())
@@ -157,6 +224,9 @@ func _switch_map(mode: MapCycle.Mode, spawn: Vector2i) -> void:
 	GameData.player_tile = spawn
 	_sync_walker()
 	_follow_camera()
+	_refresh_prompt()
+	if _minimap:
+		_minimap.track(spawn)
 
 
 func _spawn_for_mode(mode: MapCycle.Mode) -> Vector2i:
@@ -200,6 +270,8 @@ func _apply_map_presentation() -> void:
 		if npc is CanvasItem:
 			npc.visible = on_default
 	_refresh_npc_tiles()
+	if _minimap:
+		_minimap.set_source(map_mode, _npc_tiles)
 	_setup_camera()
 
 
