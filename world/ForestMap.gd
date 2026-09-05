@@ -1,13 +1,17 @@
 extends TileMapLayer
 ## 16x16 forest ground. Open this scene (or OverworldState) and paint with ForestTileset.
-## Demo cells are already stored on the layer; paint_demo() runs only if the layer is empty.
+## Demo cells may be stored on the layer; paint_demo() fills a 4x-larger map if empty or small.
 
 const Catalog := preload("res://world/tiles/ForestTileCatalog.gd")
+
+const CHUNK := Vector2i(13, 8)
+const DEMO_SIZE := Vector2i(52, 32) ## 4x CHUNK in each dimension
+
 
 func _ready() -> void:
 	if tile_set == null:
 		tile_set = load(Catalog.TILESET_PATH) as TileSet
-	if get_used_cells().is_empty():
+	if get_used_cells().is_empty() or get_used_rect().size.x < DEMO_SIZE.x or get_used_rect().size.y < DEMO_SIZE.y:
 		paint_demo()
 
 
@@ -30,24 +34,40 @@ func is_water_cell(cell: Vector2i) -> bool:
 	return Catalog.is_water(str(data.get_custom_data("name")))
 
 
+func pixel_rect() -> Rect2:
+	var used := get_used_rect()
+	var ts := Vector2(Catalog.TILE_SIZE, Catalog.TILE_SIZE)
+	if tile_set != null:
+		ts = Vector2(tile_set.tile_size)
+	return Rect2(Vector2(used.position) * ts, Vector2(used.size) * ts)
+
+
 func paint_demo() -> void:
-	for y in 8:
-		for x in 13:
+	for y in DEMO_SIZE.y:
+		for x in DEMO_SIZE.x:
 			paint_named(Vector2i(x, y), "grass")
-	_stamp3(Vector2i(3, 0), "forest", "grass")
-	paint_named(Vector2i(1, 1), "tree_nw")
-	paint_named(Vector2i(2, 1), "tree_ne")
-	paint_named(Vector2i(1, 2), "tree_sw")
-	paint_named(Vector2i(2, 2), "tree_se")
-	_stamp3(Vector2i(7, 2), "path", "path")
-	paint_named(Vector2i(8, 3), "path_grass_nw")
-	paint_named(Vector2i(8, 4), "path_grass_sw")
-	paint_named(Vector2i(9, 3), "path_pebbles_a")
-	_stamp3(Vector2i(3, 5), "farm", "farmland")
-	_stamp3(Vector2i(8, 5), "pond", "water")
-	paint_named(Vector2i(0, 5), "grass_tuft_a")
-	paint_named(Vector2i(0, 6), "grass_tuft_b")
-	paint_named(Vector2i(1, 6), "grass_tuft_c")
+	var tiles_x := int(DEMO_SIZE.x / CHUNK.x)
+	var tiles_y := int(DEMO_SIZE.y / CHUNK.y)
+	for cy in tiles_y:
+		for cx in tiles_x:
+			_stamp_chunk(Vector2i(cx * CHUNK.x, cy * CHUNK.y))
+
+
+func _stamp_chunk(o: Vector2i) -> void:
+	_stamp3(o + Vector2i(3, 0), "forest", "grass")
+	paint_named(o + Vector2i(1, 1), "tree_nw")
+	paint_named(o + Vector2i(2, 1), "tree_ne")
+	paint_named(o + Vector2i(1, 2), "tree_sw")
+	paint_named(o + Vector2i(2, 2), "tree_se")
+	_stamp3(o + Vector2i(7, 2), "path", "path")
+	paint_named(o + Vector2i(8, 3), "path_grass_nw")
+	paint_named(o + Vector2i(8, 4), "path_grass_sw")
+	paint_named(o + Vector2i(9, 3), "path_pebbles_a")
+	_stamp3(o + Vector2i(3, 5), "farm", "farmland")
+	_stamp3(o + Vector2i(8, 5), "pond", "water")
+	paint_named(o + Vector2i(0, 5), "grass_tuft_a")
+	paint_named(o + Vector2i(0, 6), "grass_tuft_b")
+	paint_named(o + Vector2i(1, 6), "grass_tuft_c")
 
 
 func _stamp3(origin: Vector2i, prefix: String, center: String) -> void:

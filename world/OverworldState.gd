@@ -6,7 +6,6 @@ extends GameStateBase
 const SPEED := 60.0
 const TILE := 8
 const SPRITE := 16
-const BOUNDS := Rect2(0, 0, 200, 120)
 const NPC_GROUP := "npc"
 
 @onready var _player = $Player
@@ -32,9 +31,16 @@ func can_walk(pos: Vector2) -> bool:
 func is_blocked(rect: Rect2) -> bool:
 	return _water_blocks(rect) or _npc_blocks(rect)
 
+func walk_bounds() -> Rect2:
+	if _map != null:
+		return _map.pixel_rect()
+	return Rect2(0, 0, 200, 120)
+
+
 func try_move(next: Vector2) -> bool:
-	next.x = clampf(next.x, BOUNDS.position.x, BOUNDS.end.x - SPRITE)
-	next.y = clampf(next.y, BOUNDS.position.y, BOUNDS.end.y - SPRITE)
+	var b := walk_bounds()
+	next.x = clampf(next.x, b.position.x, b.end.x - SPRITE)
+	next.y = clampf(next.y, b.position.y, b.end.y - SPRITE)
 	if is_blocked(_footprint(next)):
 		return false
 	_player.position = next
